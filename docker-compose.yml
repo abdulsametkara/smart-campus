@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: smart_campus_postgres
+    environment:
+      POSTGRES_DB: campus_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: campus123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: smart_campus_backend
+    depends_on:
+      - postgres
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgres://admin:campus123@postgres:5432/campus_db
+      JWT_ACCESS_TOKEN_SECRET: change_me_access
+      JWT_REFRESH_TOKEN_SECRET: change_me_refresh
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USER: your_email@example.com
+      EMAIL_PASS: your_email_app_password
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./backend:/usr/src/app
+    working_dir: /usr/src/app
+    command: npm run dev
+
+volumes:
+  postgres_data:

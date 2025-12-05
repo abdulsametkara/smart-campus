@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "admin",
+    "password": "campus123",
+    "database": "campus_db",
+    "host": "postgres",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "admin",
+    "password": "campus123",
+    "database": "campus_db_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "admin",
+    "password": "campus123",
+    "database": "campus_db",
+    "host": "postgres",
+    "dialect": "postgres"
+  }
+}
