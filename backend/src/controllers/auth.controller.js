@@ -7,7 +7,7 @@ const db = require('../../models');
 
 const register = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, full_name, phone_number, department_id, student_number } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
@@ -30,7 +30,12 @@ const register = async (req, res) => {
       password_hash: passwordHash,
       role: roleToUse,
       is_email_verified: false,
+      full_name,
+      phone_number,
     });
+
+    // Eğer öğrenciyse ve student_number/department_id varsa Student tablosuna da ekle (Opsiyonel, Part 2 için olabilir ama şimdi eklemek iyidir)
+    // Ancak şimdilik temel User bilgilerini kaydetmek yeterli.
 
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -106,6 +111,8 @@ const login = async (req, res) => {
         id: user.id,
         email: user.email,
         role: user.role,
+        full_name: user.full_name,
+        profile_picture_url: user.profile_picture_url,
       },
     });
   } catch (err) {
@@ -306,4 +313,46 @@ module.exports = {
   forgotPassword,
   resetPassword,
   logout,
+  resendVerification: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      const user = await User.findOne({ where: { email } });
+
+      if (!user) {
+        // Güvenlik için aynı mesajı döndür
+        return res.json({ message: 'Doğrulama maili gönderildi' });
+      }
+
+      if (user.is_email_verified) {
+        return res.status(400).json({ message: 'Email zaten doğrulanmış' });
+      }
+
+      // Yeni token oluştur
+      const crypto = require('crypto');
+      const token = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await EmailVerification.create({
+        user_id: user.id,
+        token,
+        expires_at: expiresAt,
+      });
+
+      try {
+        await sendVerificationEmail(user, token);
+      } catch (emailErr) {
+        console.error('Error sending verification email', emailErr);
+      }
+
+      return res.json({ message: 'Doğrulama maili gönderildi' });
+    } catch (err) {
+      console.error('Resend verification error', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  },
 };

@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { User, Student, Faculty } = require('../../models');
+const { hashPassword, comparePassword } = require('../utils/password');
 
 const serializeUser = (userInstance) => {
   if (!userInstance) return null;
@@ -158,9 +159,42 @@ const listUsers = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ message: 'Mevcut şifre ve yeni şifre gerekli' });
+    }
+
+    if (new_password.length < 8) {
+      return res.status(400).json({ message: 'Yeni şifre en az 8 karakter olmalı' });
+    }
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    const isMatch = await comparePassword(current_password, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Mevcut şifre yanlış' });
+    }
+
+    user.password_hash = await hashPassword(new_password);
+    await user.save();
+
+    return res.json({ message: 'Şifre başarıyla güncellendi' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    return res.status(500).json({ message: `Sunucu hatası: ${err.message}` });
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
   uploadProfilePicture,
   listUsers,
+  changePassword,
 };

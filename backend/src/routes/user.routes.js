@@ -4,6 +4,7 @@ const {
   updateMe,
   uploadProfilePicture,
   listUsers,
+  changePassword,
 } = require('../controllers/user.controller');
 const { authenticate, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -26,6 +27,7 @@ const uploadProfilePictureMiddleware = (req, res, next) => {
 };
 
 router.post('/me/profile-picture', authenticate, uploadProfilePictureMiddleware, uploadProfilePicture);
+router.put('/me/password', authenticate, changePassword);
 
 router.get('/', authenticate, authorize('admin'), validate(listUsersSchema), listUsers);
 

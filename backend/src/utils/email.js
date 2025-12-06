@@ -15,7 +15,9 @@ const createTransporter = () => {
 const sendVerificationEmail = async (user, token) => {
   const transporter = createTransporter();
 
-  const verifyUrl = `${process.env.APP_BASE_URL || 'http://localhost:5000'}/verify-email?token=${token}`;
+  // Link Frontend URL'ine gitmeli: http://localhost:3000/verify-email/:token
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const verifyUrl = `${frontendUrl}/verify-email/${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
@@ -28,7 +30,9 @@ const sendVerificationEmail = async (user, token) => {
 const sendPasswordResetEmail = async (user, token) => {
   const transporter = createTransporter();
 
-  const resetUrl = `${process.env.APP_BASE_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
+  // Link Frontend URL'ine gitmeli: http://localhost:3000/reset-password/:token
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const resetUrl = `${frontendUrl}/reset-password/${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
