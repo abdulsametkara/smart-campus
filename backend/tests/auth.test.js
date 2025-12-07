@@ -57,6 +57,7 @@ describe('Auth endpoints', () => {
     refreshToken = res.body.refreshToken;
   });
 
+
   // 5. Login Fail - Wrong Password
   it('should fail login with wrong password', async () => {
     const res = await request(app).post('/api/v1/auth/login').send({
@@ -100,15 +101,74 @@ describe('Auth endpoints', () => {
     expect(res.status).toBe(200);
   });
 
-  // 10. Logout Success
+  // 10. Verify Email Endpoint
+  it('should verify email with valid token', async () => {
+    const crypto = require('crypto');
+    const verifyToken = crypto.randomUUID();
+    const user = await db.User.findOne({ where: { email: 'test@example.com' } });
+    await user.update({ is_email_verified: false });
+
+    await db.EmailVerification.create({
+      user_id: user.id,
+      token: verifyToken,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+
+    const res = await request(app).post('/api/v1/auth/verify-email').send({
+      token: verifyToken,
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.message).toContain('verified');
+  });
+
+  // 11. Reset Password
+  it('should reset password with valid token', async () => {
+    const crypto = require('crypto');
+    const resetToken = crypto.randomUUID();
+    const user = await db.User.findOne({ where: { email: 'test@example.com' } });
+
+    await db.PasswordReset.create({
+      user_id: user.id,
+      token: resetToken,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
+      token: resetToken,
+      password: 'NewPassword1',
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.message).toContain('reset');
+  });
+
+  // 12. Resend Verification
+  it('should resend verification email', async () => {
+    const user = await db.User.findOne({ where: { email: 'test@example.com' } });
+    await user.update({ is_email_verified: false });
+
+    const res = await request(app).post('/api/v1/auth/resend-verification').send({
+      email: 'test@example.com',
+    });
+    expect(res.status).toBe(200);
+  });
+
+  // 13. Logout Success
   it('should logout successfully', async () => {
+    const user = await db.User.findOne({ where: { email: 'test@example.com' } });
+    await user.update({ is_email_verified: true });
+
+    const loginRes = await request(app).post('/api/v1/auth/login').send({
+      email: 'test@example.com',
+      password: 'NewPassword1',
+    });
+    const newRefreshToken = loginRes.body.refreshToken;
+
     const res = await request(app).post('/api/v1/auth/logout').send({
-      refreshToken,
+      refreshToken: newRefreshToken,
     });
     expect(res.status).toBe(204);
-    
-    // Verify token is revoked in DB
-    const session = await SessionToken.findOne({ where: { token: refreshToken } });
+
+    const session = await SessionToken.findOne({ where: { token: newRefreshToken } });
     expect(session.revoked_at).not.toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,7 +12,7 @@ const schema = yup.object({
 });
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [showResend, setShowResend] = useState(false);
@@ -24,13 +24,21 @@ const LoginPage = () => {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: yupResolver(schema) });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const onSubmit = async (values) => {
     setError('');
     setShowResend(false);
     setResendMessage('');
     try {
       await login(values.email, values.password);
-      navigate('/dashboard');
+      // Force navigation after state update
+      window.location.href = '/dashboard';
     } catch (err) {
       const message = err?.response?.data?.message || 'Giriş başarısız';
       setError(message);
@@ -71,7 +79,7 @@ const LoginPage = () => {
             <input id="password" type="password" placeholder="••••••••" {...register('password')} />
             {errors.password && <small>{errors.password.message}</small>}
           </div>
-          
+
           <div className="form-field checkbox-field" style={{ marginBottom: 16 }}>
             <label className="checkbox-label">
               <input type="checkbox" {...register('rememberMe')} />
@@ -83,8 +91,8 @@ const LoginPage = () => {
             <div className="alert alert-error">
               {error}
               {showResend && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleResendVerification}
                   className="resend-btn"
                 >

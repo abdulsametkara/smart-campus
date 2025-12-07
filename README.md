@@ -18,21 +18,25 @@ Bu proje, üniversite kampüs süreçlerini yöneten kapsamlı bir web platformu
 
 ### Adım Adım Çalıştırma
 
+#### Opsiyon 1: Docker ile Tam Kurulum (Önerilen) 🐳
+
 1. **Projeyi Klonlayın:**
    ```bash
    git clone <repo-url>
    cd smart-campus
    ```
 
-2. **Docker ile Başlatın:**
-   Ana dizinde (docker-compose.yml dosyasının olduğu yer) şu komutu çalıştırın:
+2. **Tüm Servisleri Başlatın:**
    ```bash
    docker-compose up --build
    ```
-   *Bu işlem PostgreSQL ve Backend servislerini ayağa kaldıracaktır.*
+   *Bu komut 3 servisi başlatır:*
+   - PostgreSQL (port 5432)
+   - Backend API (port 5000)
+   - Frontend (port 3000)
 
 3. **Veritabanı Hazırlığı (İlk Çalıştırma):**
-   Backend container çalıştıktan sonra, yeni bir terminal açıp migration ve seed işlemlerini yapın:
+   Yeni bir terminal açıp:
    ```bash
    # Migration (Tabloları oluştur)
    docker exec -it smart_campus_backend npx sequelize-cli db:migrate
@@ -41,14 +45,26 @@ Bu proje, üniversite kampüs süreçlerini yöneten kapsamlı bir web platformu
    docker exec -it smart_campus_backend npx sequelize-cli db:seed:all
    ```
 
-4. **Frontend'i Başlatın:**
-   Frontend şu an Docker Compose'a dahil edilmemiştir (geliştirme kolaylığı için). Yeni bir terminalde:
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-   Tarayıcıda `http://localhost:3000` adresine gidin.
+4. **Uygulamaya Erişin:**
+   - **Frontend:** http://localhost:3000
+   - **Backend API:** http://localhost:5000/api/v1
+   - **PostgreSQL:** localhost:5432
+
+#### Opsiyon 2: Lokal Geliştirme
+
+**Backend:**
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
 
 ## 🧪 Test Kullanıcıları (Seed Data)
 

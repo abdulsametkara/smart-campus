@@ -8,21 +8,29 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 // Prefer config.js (env-aware, JS) if available, otherwise fallback to config.json
 let config;
-const configJsPath = path.join(__dirname, '..', 'config', 'config.js');
-if (fs.existsSync(configJsPath)) {
-  // eslint-disable-next-line import/no-dynamic-require, global-require
-  config = require(configJsPath)[env];
-} else {
-  // eslint-disable-next-line global-require
-  config = require(__dirname + '/../config/config.json')[env];
-}
 const db = {};
-
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+
+if (env === 'test') {
+  sequelize = new Sequelize('sqlite::memory:', {
+    dialect: 'sqlite',
+    logging: false
+  });
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  const configJsPath = path.join(__dirname, '..', 'config', 'config.js');
+  if (fs.existsSync(configJsPath)) {
+    // eslint-disable-next-line import/no-dynamic-require, global-require
+    config = require(configJsPath)[env];
+  } else {
+    // eslint-disable-next-line global-require
+    config = require(__dirname + '/../config/config.json')[env];
+  }
+
+  if (config.use_env_variable) {
+    sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  } else {
+    sequelize = new Sequelize(config.database, config.username, config.password, config);
+  }
 }
 
 fs
