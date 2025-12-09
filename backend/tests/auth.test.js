@@ -5,6 +5,12 @@ const app = require('../src/app');
 const db = require('../models');
 const { SessionToken } = require('../models');
 
+// Mock email service
+jest.mock('../src/utils/email', () => ({
+  sendVerificationEmail: jest.fn().mockResolvedValue(true),
+  sendPasswordResetEmail: jest.fn().mockResolvedValue(true),
+}));
+
 describe('Auth endpoints', () => {
   let refreshToken;
 
