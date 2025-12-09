@@ -59,7 +59,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }} # Kullanıcı adı (örn: root)
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH Private Key
           script: |
-            cd /home/smart-campus
+            cd /home/${{ secrets.SERVER_USER }}/smart-campus
+            git checkout main
             git pull origin main
             docker-compose down
             docker-compose up --build -d
