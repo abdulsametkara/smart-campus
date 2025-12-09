@@ -27,13 +27,18 @@ jobs:
         cache: 'npm'
         cache-dependency-path: backend/package-lock.json
 
-    # Backend Kurulumu ve Testi
     - name: Backend Install & Test
       working-directory: ./backend
       run: |
         npm ci
         echo "NODE_ENV=test" >> .env
-        echo "JWT_SECRET=test_secret" >> .env
+        echo "JWT_ACCESS_TOKEN_SECRET=test_access_secret" >> .env
+        echo "JWT_REFRESH_TOKEN_SECRET=test_refresh_secret" >> .env
+        echo "JWT_EMAIL_VERIFICATION_SECRET=test_email_secret" >> .env
+        echo "JWT_PASSWORD_RESET_SECRET=test_reset_secret" >> .env
+        echo "EMAIL_USER=test@example.com" >> .env
+        echo "EMAIL_PASS=testpass" >> .env
+        echo "EMAIL_FROM=noreply@example.com" >> .env
         npm test
 
     # Frontend Kurulumu ve Testi (Smoke Tests)
