@@ -29,7 +29,6 @@ jobs:
 
     - name: Backend Install & Test
       working-directory: ./backend
-      continue-on-error: true # Testler geçici olarak hata verse de devam et
       run: |
         npm install
         echo "NODE_ENV=test" >> .env

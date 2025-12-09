@@ -1,4 +1,5 @@
-# Smart Campus Ecosystem Management Platform
+# Smart Campus Project 🚀
+> **Status:** ✅ Fully Dockerized | ✅ CI/CD Active
 
 Web ve Mobil Programlama Dersi Final Projesi - Part 1
 
