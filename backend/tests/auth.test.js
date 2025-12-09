@@ -22,6 +22,11 @@ describe('Auth endpoints', () => {
     await db.sequelize.close();
   });
 
+  afterEach(async () => {
+    // Session token çakışmalarını önlemek için her testten sonra temizle
+    await SessionToken.destroy({ where: {}, truncate: true });
+  });
+
   // 1. Register Success
   it('should register a new user', async () => {
     const res = await request(app).post('/api/v1/auth/register').send({
