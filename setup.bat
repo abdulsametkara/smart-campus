@@ -62,8 +62,8 @@ echo.
 echo --------------------------------------------------------
 echo [5/7] Backend Servisinin Acilmasi Bekleniyor...
 echo --------------------------------------------------------
-echo Bekleniyor (15 saniye)...
-timeout /t 15 /nobreak >nul
+echo Backend hazirlaniyor, lutfen bekleyin (30 saniye)...
+timeout /t 30 /nobreak >nul
 
 echo.
 echo --------------------------------------------------------
