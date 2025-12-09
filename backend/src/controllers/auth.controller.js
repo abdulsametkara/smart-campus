@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { User, EmailVerification, PasswordReset, SessionToken } = require('../../models');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { signAccessToken, signRefreshToken, verifyToken } = require('../utils/jwt');
-const { sendVerificationEmail } = require('../utils/email');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
 const db = require('../../models');
 
 const register = async (req, res) => {
@@ -180,7 +180,6 @@ const forgotPassword = async (req, res) => {
     });
 
     try {
-      const { sendPasswordResetEmail } = require('../utils/email');
       await sendPasswordResetEmail(user, token);
     } catch (emailErr) {
       console.error('Error sending password reset email', emailErr);
