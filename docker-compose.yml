@@ -12,32 +12,44 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - campus_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d campus_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
     container_name: smart_campus_backend
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - ./backend/.env
     ports:
       - '5000:5000'
     environment:
       - NODE_ENV=production
+    volumes:
+      - ./backend/uploads:/usr/src/app/uploads
     networks:
       - campus_network
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_API_URL=${FRONTEND_API_URL:-http://localhost:5000/api/v1}
     container_name: smart_campus_frontend
     depends_on:
       - backend
     ports:
       - '3000:80'
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000/api/v1
     networks:
       - campus_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
