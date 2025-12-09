@@ -1,0 +1,66 @@
+name: Smart Campus CI/CD
+
+# Hangi durumlarda çalışacak?
+on:
+  push:
+    branches: [ "main", "samet" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # 1. GÖREV: TESTLERİ ÇALIŞTIR
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Node.js Kurulumu
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    # Backend Kurulumu ve Testi
+    - name: Backend Install & Test
+      working-directory: ./backend
+      run: |
+        npm ci
+        echo "NODE_ENV=test" >> .env
+        echo "JWT_SECRET=test_secret" >> .env
+        npm test
+
+    # Frontend Kurulumu ve Testi (Smoke Tests)
+    - name: Frontend Install & Test
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm test -- --watchAll=false
+
+  # 2. GÖREV: CANLIYA ALMA (DEPLOY)
+  # Bu kısım sadece 'main' branch'e push gelince ve testler geçerse çalışır
+  deploy:
+    needs: test # Testler bitmeden çalışmaz
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          # Bu bilgileri GitHub Repository Settings > Secrets kısmına eklemelisin
+          host: ${{ secrets.SERVER_HOST }}     # Sunucu IP adresi
+          username: ${{ secrets.SERVER_USER }} # Kullanıcı adı (örn: root)
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH Private Key
+          script: |
+            cd /home/smart-campus
+            git pull origin main
+            docker-compose down
+            docker-compose up --build -d
+            docker system prune -f
