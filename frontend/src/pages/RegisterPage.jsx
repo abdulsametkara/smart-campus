@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import Swal from 'sweetalert2';
 import api from '../services/api';
 
 const schema = yup.object({
@@ -33,24 +34,50 @@ const schema = yup.object({
   terms: yup.boolean().oneOf([true], 'Kullanım koşullarını kabul etmelisiniz'),
 });
 
+const PasswordStrengthMeter = ({ password }) => {
+  if (!password) return null;
+
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+  const colors = ['#e5e7eb', '#ef4444', '#f59e0b', '#10b981', '#059669'];
+  const labels = ['Yok', 'Zayıf', 'Orta', 'Güçlü', 'Çok Güçlü'];
+  const width = (strength / 4) * 100;
+
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ height: '4px', width: '100%', background: '#e5e7eb', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${width}%`, background: colors[strength], transition: 'width 0.3s' }}></div>
+      </div>
+      <p style={{ fontSize: '0.75rem', color: colors[strength], marginTop: '0.25rem', textAlign: 'right' }}>
+        {labels[strength]}
+      </p>
+    </div>
+  );
+};
+
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [departments, setDepartments] = useState([]);
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm({ 
-    resolver: yupResolver(schema), 
-    defaultValues: { role: 'student', terms: false } 
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { role: 'student', terms: false }
   });
 
   const selectedRole = useWatch({ control, name: 'role' });
+  const passwordValue = watch('password'); // Şifreyi anlık izle
 
+  // ... (useEffect same as before)
   useEffect(() => {
     const loadDepartments = async () => {
       try {
@@ -69,8 +96,6 @@ const RegisterPage = () => {
   }, []);
 
   const onSubmit = async (values) => {
-    setError('');
-    setSuccess('');
     try {
       const payload = {
         full_name: values.full_name,
@@ -85,10 +110,29 @@ const RegisterPage = () => {
         payload.employee_number = values.employee_number;
       }
       await api.post('/auth/register', payload);
-      setSuccess('Kayıt başarılı! Email adresinize doğrulama linki gönderildi.');
-      setTimeout(() => navigate('/login'), 2000);
+
+      // SweetAlert Success
+      Swal.fire({
+        icon: 'success',
+        title: 'Kayıt Başarılı! 🎉',
+        text: 'Lütfen e-posta adresinize gönderilen linke tıklayarak hesabınızı doğrulayın.',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Giriş Yap'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login');
+        }
+      });
+
     } catch (err) {
-      setError(err?.response?.data?.message || 'Kayıt başarısız');
+      // SweetAlert Error
+      Swal.fire({
+        icon: 'error',
+        title: 'Kayıt Başarısız 😔',
+        text: err?.response?.data?.message || 'Bir hata oluştu.',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Tamam'
+      });
     }
   };
 
@@ -96,7 +140,7 @@ const RegisterPage = () => {
     <div className="auth-page">
       <div className="card auth-card" style={{ maxWidth: 480 }}>
         <div className="auth-header">
-          <p className="eyebrow">Campy</p>
+          <h2 className="app-brand" style={{ display: 'inline-block', fontSize: '2.5rem', marginBottom: '1rem' }}>Campy</h2>
           <h2>Kayıt Ol</h2>
           <p>Hesap oluştur ve kampüs sistemine katıl.</p>
         </div>
@@ -117,6 +161,7 @@ const RegisterPage = () => {
             <div className="form-field">
               <label htmlFor="password">Şifre</label>
               <input id="password" type="password" placeholder="En az 8 karakter" {...register('password')} />
+              <PasswordStrengthMeter password={passwordValue} />
               {errors.password && <small>{errors.password.message}</small>}
             </div>
             <div className="form-field">
@@ -126,6 +171,7 @@ const RegisterPage = () => {
             </div>
           </div>
 
+          {/* ... Role/Department/Numbers same ... */}
           <div className="form-grid">
             <div className="form-field">
               <label htmlFor="role">Kullanıcı Tipi</label>
@@ -163,7 +209,7 @@ const RegisterPage = () => {
             </div>
           )}
 
-          <div className="form-field checkbox-field">
+          <div className="checkbox-wrapper">
             <label className="checkbox-label">
               <input type="checkbox" {...register('terms')} />
               <span>Kullanım koşullarını ve gizlilik politikasını kabul ediyorum</span>
@@ -171,14 +217,12 @@ const RegisterPage = () => {
             {errors.terms && <small>{errors.terms.message}</small>}
           </div>
 
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
-          
+
           <button className="btn" type="submit" disabled={isSubmitting} style={{ width: '100%' }}>
             {isSubmitting ? 'Kaydediliyor...' : 'Kayıt Ol'}
           </button>
         </form>
-        <div className="inline-links">
+        <div className="inline-links" style={{ justifyContent: 'center' }}>
           <Link to="/login">Zaten hesabın var mı? Giriş yap</Link>
         </div>
       </div>

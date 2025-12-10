@@ -23,9 +23,9 @@ const DashboardPage = () => {
           <h1>Hızlı Erişim</h1>
           <p className="muted">Profilini düzenle veya sistem ayarlarına eriş.</p>
           <div className="hero-actions">
-            <Link className="btn" to="/profile">Profili Düzenle</Link>
+            <Link className="btn" to="/profile" style={{ textDecoration: 'none' }}>Profili Düzenle</Link>
             {user?.role === 'admin' && (
-              <Link className="btn secondary" to="/admin/users">Kullanıcı Yönetimi</Link>
+              <Link className="btn secondary" to="/admin/users" style={{ textDecoration: 'none' }}>Kullanıcı Yönetimi</Link>
             )}
           </div>
         </div>

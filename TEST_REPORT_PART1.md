@@ -72,3 +72,22 @@ These tests ensure that all critical pages render without crashing and contain e
 - **Frontend Env:** Jest + React Testing Library
 - **Date:** 2025-12-07
 - **Result:** All critical paths for Part 1 are verified and fully functional.
+
+---
+
+## 5. Bonus & Security Features (Manual Verification)
+
+**Date:** 2025-12-10
+**Status:** ✅ ALL PASSED
+
+Following advanced features were implemented and manually verified in the production environment:
+
+| Feature | Test Scenario | Expected Outcome | Result |
+|---------|---------------|------------------|--------|
+| **2FA** | Enable 2FA from Profile | QR Code generated, secret saved | ✅ PASS |
+| **2FA** | Login with 2FA enabled | System asks for code, temp token issued | ✅ PASS |
+| **2FA** | Verify valid TOTP code | Login successful, full tokens issued | ✅ PASS |
+| **Account Lockout** | 5 failed login attempts | Account locked for 15 mins | ✅ PASS |
+| **Activity Logs** | User performs actions | Actions logged in DB with timestamp | ✅ PASS |
+| **Admin Logs** | View `/admin/logs` | Logs displayed in paginated table | ✅ PASS |
+| **Password Strength** | Enter weak/strong password | Visual meter updates colors/labels | ✅ PASS |
