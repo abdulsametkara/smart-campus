@@ -51,18 +51,18 @@ const AdminLogsPage = () => {
     };
 
     return (
-        <div className="admin-page-container fade-in">
+        <div className="page">
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Sistem Logları</h1>
                     <p className="page-subtitle">Kullanıcı aktivitelerini ve sistem olaylarını izleyin.</p>
                 </div>
-                <button className="btn btn-outline" onClick={() => loadLogs(meta.page)}>
+                <button className="btn" onClick={() => loadLogs(meta.page)}>
                     🔄 Yenile
                 </button>
             </div>
 
-            <div className="table-container glass-panel">
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 {loading ? (
                     <div className="spinner-container">
                         <div className="spinner"></div>
@@ -128,23 +128,23 @@ const AdminLogsPage = () => {
 
                         {/* Pagination */}
                         {meta.totalPages > 1 && (
-                            <div className="pagination">
+                            <div className="pagination-wrapper" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', borderTop: '1px solid #e2e8f0' }}>
                                 <button
-                                    className="pagination-btn"
+                                    className="btn sm outline"
                                     onClick={() => handlePageChange(meta.page - 1)}
                                     disabled={meta.page === 1}
                                 >
-                                    &lt; Önceki
+                                    ← Önceki
                                 </button>
-                                <span className="pagination-info">
+                                <span className="pagination-info" style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                                     Sayfa {meta.page} / {meta.totalPages}
                                 </span>
                                 <button
-                                    className="pagination-btn"
+                                    className="btn sm outline"
                                     onClick={() => handlePageChange(meta.page + 1)}
                                     disabled={meta.page === meta.totalPages}
                                 >
-                                    Sonraki &gt;
+                                    Sonraki →
                                 </button>
                             </div>
                         )}
