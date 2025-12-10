@@ -87,7 +87,9 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    user.profile_picture_url = `/uploads/${req.file.filename}`;
+    // Use SERVER_URL from environment, fallback to localhost for development
+    const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+    user.profile_picture_url = `${serverUrl}/uploads/${req.file.filename}`;
     await user.save();
 
     return res.json({ profile_picture_url: user.profile_picture_url });
