@@ -64,8 +64,3 @@ frontend/
 │   ├── App.js          # Ana uygulama bileşeni ve routing
 │   └── App.css         # Global stiller
 ```
-
-## 4. Grup Üyeleri
-- **[Ad Soyad]** - [Öğrenci No] - [Rol/Görev]
-- **[Ad Soyad]** - [Öğrenci No] - [Rol/Görev]
-- **[Ad Soyad]** - [Öğrenci No] - [Rol/Görev]
