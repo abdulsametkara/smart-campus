@@ -50,7 +50,16 @@ const VerifyEmailPage = () => {
   }, [token, navigate]);
 
   return (
-    <div className="auth-page">
+    <div
+      className="auth-page"
+      style={{
+        backgroundImage: `url(${process.env.PUBLIC_URL || ''}/images/recep-tayyip-erdogan-universitesi.webp)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="card auth-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '300px', justifyContent: 'center' }}>
 
         <div className="auth-header">
