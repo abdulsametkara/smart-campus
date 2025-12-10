@@ -120,7 +120,11 @@ const ProfilePage = () => {
             <div className="avatar-frame-large">
               {user?.profile_picture_url ? (
                 <img
-                  src={`http://localhost:5000${user.profile_picture_url}`}
+                  src={
+                    user.profile_picture_url.startsWith('http')
+                      ? user.profile_picture_url
+                      : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${user.profile_picture_url.startsWith('/') ? '' : '/'}${user.profile_picture_url}`.replace('/api/v1', '')
+                  }
                   alt="avatar"
                   className="avatar-img"
                 />
@@ -167,14 +171,14 @@ const ProfilePage = () => {
         </div>
 
         <div className="card">
-          <div 
-            className="collapsible-header" 
+          <div
+            className="collapsible-header"
             onClick={() => setShowPasswordSection(!showPasswordSection)}
           >
             <h2>Şifre Değiştir</h2>
             <span className={`collapse-icon ${showPasswordSection ? 'open' : ''}`}>▼</span>
           </div>
-          
+
           {showPasswordSection && (
             <div className="collapsible-content">
               <p className="muted" style={{ marginBottom: 16 }}>
@@ -182,32 +186,32 @@ const ProfilePage = () => {
               </p>
               <div className="form-field">
                 <label>Mevcut Şifre</label>
-                <input 
-                  type="password" 
-                  name="current_password" 
-                  value={passwordForm.current_password} 
-                  onChange={onPasswordChange} 
-                  placeholder="Mevcut şifrenizi girin" 
+                <input
+                  type="password"
+                  name="current_password"
+                  value={passwordForm.current_password}
+                  onChange={onPasswordChange}
+                  placeholder="Mevcut şifrenizi girin"
                 />
               </div>
               <div className="form-field">
                 <label>Yeni Şifre</label>
-                <input 
-                  type="password" 
-                  name="new_password" 
-                  value={passwordForm.new_password} 
-                  onChange={onPasswordChange} 
-                  placeholder="En az 8 karakter, büyük harf ve rakam" 
+                <input
+                  type="password"
+                  name="new_password"
+                  value={passwordForm.new_password}
+                  onChange={onPasswordChange}
+                  placeholder="En az 8 karakter, büyük harf ve rakam"
                 />
               </div>
               <div className="form-field">
                 <label>Yeni Şifre Tekrar</label>
-                <input 
-                  type="password" 
-                  name="confirm_password" 
-                  value={passwordForm.confirm_password} 
-                  onChange={onPasswordChange} 
-                  placeholder="Yeni şifreyi tekrar girin" 
+                <input
+                  type="password"
+                  name="confirm_password"
+                  value={passwordForm.confirm_password}
+                  onChange={onPasswordChange}
+                  placeholder="Yeni şifreyi tekrar girin"
                 />
               </div>
               {passwordMessage && <div className="alert alert-success">{passwordMessage}</div>}
@@ -217,7 +221,7 @@ const ProfilePage = () => {
               </button>
             </div>
           )}
-          
+
           {!showPasswordSection && (
             <p className="muted" style={{ marginTop: 8 }}>
               Şifrenizi değiştirmek için tıklayın.
