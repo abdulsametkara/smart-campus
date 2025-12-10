@@ -77,4 +77,17 @@ smart-campus/
 | 211401064  | Hayrunnisa Kasımay | Backend    | Veritabanı Tasarımı, Loglama Sistemi, API Endpointleri |
 | 221401030  | Ömer Şahan Sofu    | Tester/Doc | Test Senaryoları, Dokümantasyon, Bug Raporlama         |
 
+
 *(Not: Görev dağılımı proje sürecinde dinamik olarak yönetilmiştir.)*
+
+---
+
+## 5. Test Verileri (Seed Data)
+Proje veritabanı, testlerin kolay yapılması için aşağıdaki varsayılan kullanıcılarla doldurulmuştur:
+
+| Rol | Email | Şifre |
+|---|---|---|
+| **Öğrenci** | `student1@example.com` ... `student5@example.com` | `Password1` |
+| **Akademisyen** | `faculty1@example.com`, `faculty2@example.com` | `Password1` |
+| **Admin** | `admin@example.com` | `Password1` |
+

@@ -1,4 +1,5 @@
 # Smart Campus - API Documentation (Part 1)
+
 Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authentication, User Management ve Admin API endpoint'lerini detaylandırır.
 
 ---
@@ -6,6 +7,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ## 1. Authentication Endpoints
 
 ### Register User
+
 **URL:** `POST /api/v1/auth/register`
 **Authentication:** None
 **Authorization:** None
@@ -22,6 +24,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 | department | String | No | Akademisyen ise zorunlu |
 
 **Example Request:**
+
 ```json
 {
   "full_name": "Ahmet Yılmaz",
@@ -33,6 +36,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ```
 
 **Success Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -44,6 +48,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ---
 
 ### Login
+
 **URL:** `POST /api/v1/auth/login`
 **Authentication:** None
 **Authorization:** None
@@ -56,6 +61,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 | password | String | Yes | Kullanıcı şifresi |
 
 **Example Request:**
+
 ```json
 {
   "email": "ahmet@example.com",
@@ -64,6 +70,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ```
 
 **Success Response (200 OK - Standart):**
+
 ```json
 {
   "success": true,
@@ -74,6 +81,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ```
 
 **Success Response (200 OK - 2FA Gerekli):**
+
 ```json
 {
   "success": true,
@@ -87,6 +95,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ---
 
 ### 2FA Verify (Login)
+
 **URL:** `POST /api/v1/auth/2fa/verify-login`
 **Authentication:** None (Requires tempToken from login)
 **Authorization:** None
@@ -99,6 +108,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 | token | String | Yes | Google Authenticator kodu (6 hane) |
 
 **Example Request:**
+
 ```json
 {
   "userId": 15,
@@ -109,6 +119,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ---
 
 ### Forgot Password
+
 **URL:** `POST /api/v1/auth/forgot-password`
 **Authentication:** None
 **Authorization:** None
@@ -124,6 +135,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ## 2. User Management Endpoints
 
 ### Get Profile
+
 **URL:** `GET /api/v1/users/profile`
 **Authentication:** Required (JWT)
 **Authorization:** All Roles
@@ -135,6 +147,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 | Authorization | String | Yes | Bearer {token} |
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -152,6 +165,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ---
 
 ### Upload Avatar
+
 **URL:** `POST /api/v1/users/profile/upload-avatar`
 **Authentication:** Required (JWT)
 **Authorization:** All Roles
@@ -167,6 +181,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ## 3. Admin Endpoints
 
 ### List Users
+
 **URL:** `GET /api/v1/admin/users`
 **Authentication:** Required (JWT)
 **Authorization:** Admin Only
@@ -180,6 +195,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 ---
 
 ### System Logs
+
 **URL:** `GET /api/v1/admin/logs`
 **Authentication:** Required (JWT)
 **Authorization:** Admin Only
@@ -192,6 +208,7 @@ Bu döküman, Smart Campus projesinin "Part 1" kapsamında geliştirilen Authent
 | limit | Integer | No | Sayfa başı kayıt (Def: 20) |
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,

@@ -59,4 +59,3 @@ Testler aşağıdaki ana modülleri kapsamaktadır:
 ### Jest Test Çıktısı
 
 ![Jest Test Sonuçları](../screen_shots/jest_test_result.png)
-
