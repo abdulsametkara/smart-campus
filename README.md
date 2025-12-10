@@ -61,8 +61,8 @@ docker compose exec backend npm run db:migrate
 ```
 
 ### 5. Erişim
-- **Web Arayüzü:** [http://localhost:3000](http://localhost:3000)
-- **API:** [http://localhost:5000](http://localhost:5000)
+- **Web Arayüzü:** [http://34.38.237.95:3000](http://34.38.237.95:3000)
+- **API:** [http://34.38.237.95:5000](http://34.38.237.95:5000)
 
 ---
 

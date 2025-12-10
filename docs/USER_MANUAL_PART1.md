@@ -2,15 +2,20 @@
 
 ## 1. Sisteme Erişim
 
-Web tarayıcınızdan `http://localhost:3000/login` adresine giderek Campy'e erişebilirsiniz.
+Web tarayıcınızdan `http://34.38.237.95:3000/login` adresine giderek Campy'e erişebilirsiniz.
 
-### Varsayılan Test Kullanıcıları (Seed Data)
-Aşağıdaki hesapları kullanarak sisteme giriş yapabilirsiniz:
+
+
+## Varsayılan Kullanıcılar (Seed Data)
 
 | Rol | Email | Şifre |
-|---|---|---|
+
+|-----|-------|-------|
+
 | **Öğrenci** | `student1@example.com` | `Password1` |
+
 | **Akademisyen** | `faculty1@example.com` | `Password1` |
+
 | **Admin** | `admin@example.com` | `Password1` |
 
 ---
