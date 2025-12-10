@@ -234,9 +234,6 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 Bu proje eğitim amaçlı geliştirilmiştir.
 
-## 👥 Geliştiriciler
-
-[Grup üyeleri buraya eklenecek]
 
 ---
 
