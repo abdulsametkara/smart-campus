@@ -23,7 +23,8 @@ const ForgotPasswordPage = () => {
     setError('');
     try {
       const res = await api.post('/auth/forgot-password', values);
-      setMessage(res?.data?.message || 'Eğer email kayıtlıysa mail gönderildi.');
+      // Backend ne dönerse dönsün, güvenlik ve UX için standart bir mesaj gösterelim.
+      setMessage('Eğer bu e-posta adresi sistemimizde kayıtlıysa, şifre sıfırlama bağlantısı gönderilmiştir. (Lütfen spam/gereksiz kutusunu da kontrol ediniz.)');
     } catch (err) {
       setError(err?.response?.data?.message || 'İstek başarısız');
     }

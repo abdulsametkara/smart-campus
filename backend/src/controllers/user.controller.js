@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { User, Student, Faculty } = require('../../models');
+const { User, Student, Faculty, SessionToken, EmailVerification, PasswordReset, ActivityLog, sequelize } = require('../../models'); // Modelleri yukarıda aldık
 const { hashPassword, comparePassword } = require('../utils/password');
 
 const serializeUser = (userInstance) => {
@@ -13,6 +13,7 @@ const serializeUser = (userInstance) => {
     phone_number: plain.phone_number,
     role: plain.role,
     profile_picture_url: plain.profile_picture_url,
+    is_2fa_enabled: plain.is_2fa_enabled,
     created_at: plain.created_at,
     updated_at: plain.updated_at,
   };
@@ -87,7 +88,8 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    user.profile_picture_url = `/uploads/${req.file.filename}`;
+    const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+    user.profile_picture_url = `${serverUrl}/uploads/${req.file.filename}`;
     await user.save();
 
     return res.json({ profile_picture_url: user.profile_picture_url });
@@ -191,10 +193,79 @@ const changePassword = async (req, res) => {
   }
 };
 
+const updateUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { full_name, user_role, phone_number } = req.body;
+    const role = req.body.role;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (full_name !== undefined) user.full_name = full_name;
+    if (phone_number !== undefined) user.phone_number = phone_number;
+    if (role !== undefined) user.role = role;
+
+    await user.save();
+
+    return res.json(serializeUser(user));
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.id === req.user.id) {
+      return res.status(400).json({ message: 'Kendinizi silemezsiniz' });
+    }
+
+    // İlişkili tabloları ve kullanıcıyı silmek için manuel temizlik (Transaction yoksa sırasıyla)
+    // Önemli: ActivityLogs ve EmailVerification foreign key hatası oluşturabilir.
+
+    // 1. Logları ve Tokenları Temizle
+    await SessionToken.destroy({ where: { user_id: user.id } });
+    await EmailVerification.destroy({ where: { user_id: user.id } });
+    await PasswordReset.destroy({ where: { user_id: user.id } });
+    await ActivityLog.destroy({ where: { user_id: user.id } });
+
+    // 2. Profil Verilerini Temizle
+    if (user.role === 'student') {
+      const student = await Student.findOne({ where: { user_id: user.id } });
+      if (student) await student.destroy();
+    } else if (user.role === 'faculty') {
+      const faculty = await Faculty.findOne({ where: { user_id: user.id } });
+      if (faculty) await faculty.destroy();
+    }
+
+    // 3. Kullanıcıyı Sil
+    await user.destroy();
+
+    return res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    console.error('Delete error:', err);
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(400).json({ message: 'Bu kullanıcıya bağlı kritik veriler olduğu için silinemiyor (FK Error). Veritabanı yöneticisine bildirin.' });
+    }
+    return res.status(500).json({ message: 'Silme işlemi sırasında sunucu hatası oluştu.' });
+  }
+};
+
 module.exports = {
   getMe,
   updateMe,
   uploadProfilePicture,
   listUsers,
   changePassword,
+  updateUserByAdmin,
+  deleteUser,
 };

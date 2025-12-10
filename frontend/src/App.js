@@ -10,6 +10,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import AdminLogsPage from './pages/AdminLogsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 
@@ -26,7 +27,10 @@ function Header() {
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
           <Link to="/profile" className="nav-link">Profil</Link>
           {user.role === 'admin' && (
-            <Link to="/admin/users" className="nav-link">Kullanıcılar</Link>
+            <>
+              <Link to="/admin/users" className="nav-link">Kullanıcılar</Link>
+              <Link to="/admin/logs" className="nav-link">Loglar</Link>
+            </>
           )}
           <button className="btn secondary btn-sm" onClick={logout} style={{ marginLeft: 8 }}>
             Çıkış
@@ -70,6 +74,14 @@ function AppContent() {
             element={
               <ProtectedRoute roles={['admin']}>
                 <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/logs"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminLogsPage />
               </ProtectedRoute>
             }
           />

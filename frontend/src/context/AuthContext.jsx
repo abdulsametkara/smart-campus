@@ -24,7 +24,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
+
+    // 2FA Gerekli mi?
+    if (res.data.is2FARequired) {
+      return res.data; // { is2FARequired: true, tempToken: '...' }
+    }
+
     const { accessToken: at, refreshToken: rt, user: u } = res.data;
+    localStorage.setItem('accessToken', at);
+    localStorage.setItem('refreshToken', rt);
+    localStorage.setItem('user', JSON.stringify(u));
+    setAccessToken(at);
+    setRefreshToken(rt);
+    setUser(u);
+    return u;
+  }, []);
+
+  const verify2FALogin = useCallback(async (tempToken, code) => {
+    const res = await api.post('/auth/2fa/login', { tempToken, code });
+    const { accessToken: at, refreshToken: rt, user: u } = res.data;
+
     localStorage.setItem('accessToken', at);
     localStorage.setItem('refreshToken', rt);
     localStorage.setItem('user', JSON.stringify(u));
@@ -67,6 +86,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user && !!accessToken,
     login,
+    verify2FALogin,
     refresh,
     logout,
     setUser,
