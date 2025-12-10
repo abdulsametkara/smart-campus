@@ -30,5 +30,7 @@ router.post('/me/profile-picture', authenticate, uploadProfilePictureMiddleware,
 router.put('/me/password', authenticate, changePassword);
 
 router.get('/', authenticate, authorize('admin'), validate(listUsersSchema), listUsers);
+router.put('/:id', authenticate, authorize('admin'), require('../controllers/user.controller').updateUserByAdmin);
+router.delete('/:id', authenticate, authorize('admin'), require('../controllers/user.controller').deleteUser);
 
 module.exports = router;

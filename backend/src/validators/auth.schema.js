@@ -16,6 +16,12 @@ const register = Joi.object({
     email,
     password,
     role: Joi.string().valid('student', 'faculty', 'admin').optional(),
+    full_name: Joi.string().max(150).optional(),
+    phone_number: Joi.string().max(30).optional(),
+    // Rol bazlı diğer alanlar
+    department_id: Joi.number().integer().optional(),
+    student_number: Joi.string().optional(),
+    employee_number: Joi.string().optional(),
   }),
   query: Joi.object().empty({}),
   params: Joi.object().empty({}),

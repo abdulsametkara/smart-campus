@@ -53,8 +53,8 @@ const AdminUsersPage = () => {
           Swal.fire('Silindi!', 'Kullanıcı başarıyla silindi.', 'success');
           loadUsers(meta.page);
         } catch (err) {
-          // Backend'de delete endpoint yoksa bile UI'da simüle edelim veya hata gösterelim
-          Swal.fire('Hata', 'Silme işlemi başarısız (Yetki yok veya endpoint eksik).', 'error');
+          const msg = err?.response?.data?.message || 'Silme işlemi başarısız.';
+          Swal.fire('Hata', msg, 'error');
         }
       }
     });

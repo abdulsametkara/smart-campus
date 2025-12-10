@@ -31,7 +31,7 @@ const ResetPasswordPage = () => {
     setError('');
     try {
       const res = await api.post('/auth/reset-password', { token, password: values.password });
-      setMessage(res?.data?.message || 'Şifre güncellendi');
+      setMessage('Şifreniz başarıyla güncellendi! Giriş sayfasına yönlendiriliyorsunuz...');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
       setError(err?.response?.data?.message || 'İşlem başarısız');

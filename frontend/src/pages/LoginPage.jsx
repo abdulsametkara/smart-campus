@@ -13,10 +13,9 @@ const schema = yup.object({
 });
 
 const LoginPage = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, verify2FALogin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  /* showResend vs. local states yerine direct Swal handle edeceğiz */
 
   const {
     register,
@@ -51,8 +50,53 @@ const LoginPage = () => {
 
   const onSubmit = async (values) => {
     try {
-      await login(values.email, values.password);
-      // Başarılı girişte sessizce yönlendir veya Toast göster (genelde direkt yönlendirme iyidir)
+      const response = await login(values.email, values.password);
+
+      // 2FA KONTROLÜ
+      if (response && response.is2FARequired) {
+        const { tempToken } = response;
+
+        await Swal.fire({
+          title: 'İki Aşamalı Doğrulama',
+          input: 'text',
+          inputLabel: 'Lütfen Authenticator uygulamasındaki 6 haneli kodu girin:',
+          inputPlaceholder: '000 000',
+          confirmButtonText: 'Doğrula',
+          showCancelButton: true,
+          cancelButtonText: 'İptal',
+          inputValidator: (value) => {
+            if (!value) {
+              return 'Kodu girmelisiniz!';
+            }
+          },
+          preConfirm: async (code) => {
+            try {
+              // Context içinden aldığımız verify2FALogin fonksiyonunu kullanacağız
+              await verify2FALogin(tempToken, code);
+            } catch (error) {
+              Swal.showValidationMessage(
+                `Hata: ${error.response?.data?.message || 'Kod doğrulanamadı'}`
+              );
+            }
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const Toast = Swal.mixin({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+            });
+            Toast.fire({ icon: 'success', title: 'Giriş başarılı' });
+            window.location.href = '/dashboard';
+          }
+        });
+
+        return; // 2FA akışına girdi, normal akışı bitir.
+      }
+
+      // Normal Giriş Başarılı
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -96,7 +140,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div 
+    <div
       className="auth-page"
       style={{
         backgroundImage: `url(${process.env.PUBLIC_URL || ''}/images/recep-tayyip-erdogan-universitesi.webp)`,
@@ -130,11 +174,11 @@ const LoginPage = () => {
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              <input 
-                id="password" 
-                type={showPassword ? "text" : "password"} 
-                placeholder="••••••••" 
-                {...register('password')} 
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                {...register('password')}
               />
               <button
                 type="button"

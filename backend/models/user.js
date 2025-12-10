@@ -46,6 +46,23 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      failed_login_attempts: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      account_locked_until: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      two_factor_secret: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      is_2fa_enabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
