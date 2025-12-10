@@ -1,15 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
+
+// Password Strength Meter Component (Reusable later)
+const PasswordStrengthMeter = ({ password }) => {
+  if (!password) return null;
+
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+  const colors = ['#e5e7eb', '#ef4444', '#f59e0b', '#10b981', '#059669'];
+  const labels = ['Yok', 'Zayıf', 'Orta', 'Güçlü', 'Çok Güçlü'];
+  const width = (strength / 4) * 100;
+
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ height: '4px', width: '100%', background: '#e5e7eb', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${width}%`, background: colors[strength], transition: 'width 0.3s' }}></div>
+      </div>
+      <p style={{ fontSize: '0.75rem', color: colors[strength], marginTop: '0.25rem', textAlign: 'right' }}>
+        {labels[strength]}
+      </p>
+    </div>
+  );
+};
 
 const ProfilePage = () => {
   const { user, setUser } = useAuth();
   const [form, setForm] = useState({ full_name: '', phone_number: '' });
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
 
@@ -23,7 +46,7 @@ const ProfilePage = () => {
         });
         setUser(res.data);
       } catch (err) {
-        setError('Profil yüklenemedi');
+        Swal.fire({ icon: 'error', title: 'Hata', text: 'Profil bilgileri yüklenemedi' });
       } finally {
         setLoading(false);
       }
@@ -36,22 +59,34 @@ const ProfilePage = () => {
   };
 
   const onSave = async () => {
-    setMessage('');
-    setError('');
     try {
       const res = await api.put('/users/me', form);
       setUser(res.data);
-      setMessage('Profil güncellendi');
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      Toast.fire({ icon: 'success', title: 'Profil güncellendi' });
+
     } catch (err) {
-      setError(err?.response?.data?.message || 'Güncelleme başarısız');
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: err?.response?.data?.message || 'Güncelleme başarısız',
+        confirmButtonText: 'Tamam',
+        confirmButtonColor: '#ef4444'
+      });
     }
   };
 
   const onUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setMessage('');
-    setError('');
+
     const formData = new FormData();
     formData.append('profilePicture', file);
     try {
@@ -59,9 +94,22 @@ const ProfilePage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setUser((prev) => ({ ...prev, profile_picture_url: res.data.profile_picture_url }));
-      setMessage('Fotoğraf yüklendi');
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      Toast.fire({ icon: 'success', title: 'Fotoğraf güncellendi' });
+
     } catch (err) {
-      setError(err?.response?.data?.message || 'Yükleme başarısız');
+      Swal.fire({
+        icon: 'error',
+        title: 'Yükleme Başarısız',
+        text: err?.response?.data?.message || 'Lütfen geçerli bir resim dosyası seçin.',
+      });
     }
   };
 
@@ -70,16 +118,13 @@ const ProfilePage = () => {
   };
 
   const onChangePassword = async () => {
-    setPasswordMessage('');
-    setPasswordError('');
-
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      setPasswordError('Yeni şifreler eşleşmiyor');
+      Swal.fire({ icon: 'error', title: 'Hata', text: 'Yeni şifreler eşleşmiyor' });
       return;
     }
 
     if (passwordForm.new_password.length < 8) {
-      setPasswordError('Şifre en az 8 karakter olmalı');
+      Swal.fire({ icon: 'warning', title: 'Zayıf Şifre', text: 'Şifre en az 8 karakter olmalı' });
       return;
     }
 
@@ -88,11 +133,23 @@ const ProfilePage = () => {
         current_password: passwordForm.current_password,
         new_password: passwordForm.new_password,
       });
-      setPasswordMessage('Şifre başarıyla güncellendi');
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Şifre Değiştirildi',
+        text: 'Şifreniz başarıyla güncellendi.',
+        confirmButtonColor: '#10b981'
+      });
+
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+      setShowPasswordSection(false); // Kapat
+
     } catch (err) {
-      console.error('Şifre değiştirme hatası:', err);
-      setPasswordError(err?.response?.data?.message || 'Şifre güncellenemedi. Lütfen tekrar deneyin.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: err?.response?.data?.message || 'Şifre güncellenemedi. Mevcut şifrenizi kontrol edin.',
+      });
     }
   };
 
@@ -163,9 +220,8 @@ const ProfilePage = () => {
             <label>Email</label>
             <input value={user?.email || ''} disabled style={{ opacity: 0.7, cursor: 'not-allowed' }} />
           </div>
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-error">{error}</div>}
-          <button className="btn" onClick={onSave}>
+
+          <button className="btn" onClick={onSave} style={{ marginTop: '1rem' }}>
             Değişiklikleri Kaydet
           </button>
         </div>
@@ -203,8 +259,9 @@ const ProfilePage = () => {
                   onChange={onPasswordChange}
                   placeholder="En az 8 karakter, büyük harf ve rakam"
                 />
+                <PasswordStrengthMeter password={passwordForm.new_password} />
               </div>
-              <div className="form-field">
+              <div className="form-field" style={{ marginTop: '1rem' }}>
                 <label>Yeni Şifre Tekrar</label>
                 <input
                   type="password"
@@ -214,9 +271,8 @@ const ProfilePage = () => {
                   placeholder="Yeni şifreyi tekrar girin"
                 />
               </div>
-              {passwordMessage && <div className="alert alert-success">{passwordMessage}</div>}
-              {passwordError && <div className="alert alert-error">{passwordError}</div>}
-              <button className="btn" onClick={onChangePassword}>
+
+              <button className="btn" onClick={onChangePassword} style={{ marginTop: '1rem' }}>
                 Şifreyi Güncelle
               </button>
             </div>
