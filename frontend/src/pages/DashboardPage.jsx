@@ -103,6 +103,58 @@ const DashboardPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Attendance Module Quick Access */}
+      <section className="attendance-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
+        <h2 style={{ marginBottom: '1rem' }}>Yoklama İşlemleri</h2>
+        <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+
+          {user?.role === 'student' && (
+            <>
+              <Link to="/attendance/student" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📍</div>
+                <h3>Yoklamaya Katıl</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>GPS ile derse giriş yap</p>
+              </Link>
+
+              <Link to="/attendance/my-stats" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
+                <h3>Devamsızlık Durumu</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Katılım oranlarını incele</p>
+              </Link>
+
+              <Link to="/attendance/excuses/new" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
+                <h3>Mazeret Bildir</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Rapor veya izin yükle</p>
+              </Link>
+            </>
+          )}
+
+          {user?.role === 'faculty' && (
+            <>
+              <Link to="/attendance/instructor" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎓</div>
+                <h3>Yoklama Başlat</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>QR kod ve oturum aç</p>
+              </Link>
+
+              <Link to="/attendance/report" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📈</div>
+                <h3>Yoklama Raporu</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Sınıf listesini gör</p>
+              </Link>
+
+              <Link to="/attendance/excuses/manage" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚖️</div>
+                <h3>Mazeret Yönetimi</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Talepleri onayla/reddet</p>
+              </Link>
+            </>
+          )}
+
+        </div>
+      </section>
     </div>
   );
 };

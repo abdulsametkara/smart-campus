@@ -1,0 +1,2172 @@
+
+--- Page 1 ---
+WEB PR OGRAML AMA DERSİ FİNAL PR OJESİ
+Akıllı Kampüs Ek osist em Y önetim Platformu
+Ders Adı:  Web ve Mobil Pr ogramlama  
+Öğretim Üy esi: Dr. Öğr etim Üy esi Mehmet Sevri  
+Dönem:  Güz 2024-5-2025-6  
+Proje T ürü: Grup Pr ojesi (3-4 kişi)
+Final T eslim:  28 Aralık 2025, 23:59  
+Sunum Günü:  29 Aralık 2025
+⚠ ÖNEMLİ UY ARI: 
+Bu pr oje aşamalı olarak  geliştirilecek tir. Her haf ta Pazar günü zorunlu ara t eslimler
+bulunmak tadır. Son güne bırakılan pr ojeler değerlendirlmey ecektir. Sürekli geliştir me v e GitHub
+commit geçmişi değerlendir meye dahildir .
+İçindekiler
+1. Proje Tanımı v e Amaç
+2. Projenin Kapsamı v e Modüller
+3. Teknik Ger eksinimler
+4. Proje Zaman Çizelgesi v e Ara T eslimler
+5. Part 1: Kimlik Doğrulama v e Kullanıcı Y önetimi
+6. Part 2: Akademik Y önetim v e GPS Y oklama
+7. Part 3: Y emek Ser visi, Etkinlik v e Çizelgeleme
+8. Part 4: Final T eslim v e Ent egrasy on
+9. Dokümantasy on Ger eksinimleri
+10. Değerlendir me Krit erleri
+11. Teslim For matı v e Kurallar
+12. Akademik Dürüstlük
+1. Proje T anımı v e Amaç
+
+--- Page 2 ---
+1.1 Genel Bakış
+Akıllı Kampüs Ek osistem Y önetim Platfor mu, bir üniv ersite kampüsünün günlük operasy onlarını
+dijitalleştir en ve optimize eden kapsamlı bir w eb uy gulaması geliştirilecek tir. Bu pr oje,
+öğrencilerin ger çek dünya senar yolarına uy gun, ölçeklenebilir v e moder n web teknolojileri
+kullanarak pr ofesyonel bir uy gulama geliştir me deneyimi kazanmalarını amaçlamak tadır.
+1.2 Pr oje Amaçları
+Bu pr oje ile sizler den beklenenler :
+1. Full-S tack Dev elopment:  Moder n React fr ontend v e Node.js/Expr ess b ackend geliştir me
+2. REST ful API T asarımı:  Profesyonel API mimari v e dokümantasy onu
+3. Veritab anı Y önetimi:  İlişkisel v eritab anı (P ostgreSQL) tasarımı v e optimizasy onu
+4. Authentication & Authorization:  JWT tab anlı güv enli kimlik doğrulama sist emi
+5. GPS v e Geolocation:  Tarayıcı tab anlı GPS ent egrasy onu v e coğrafi hesaplamalar
+6. Payment Int egration:  Ödeme sist emi ent egrasy onu (t est or tamı)
+7. Real-time Featur es: WebSock et ile ger çek zamanlı bildirimler v e veri akışı
+8. QR Code Int egration:  QR k od oluştur ma v e okuma
+9. File Uplo ad & S torage:  Profil fot oğrafları v e döküman yükleme
+10. Responsiv e Design:  Mobil v e desk top uyumlu arayüz
+11. Testing:  Unit, int egration v e E2E t estleri
+12. Deployment:  Dock er containerization v e cloud deployment
+13. Documentation:  Profesyonel t eknik dokümantasy on hazırlama
+14. Team Collaboration:  Git/GitHub ile ekip çalışması v e versiyon kontrolü
+1.3 Hedef Kullanıcılar
+Öğrenciler : Ders kayıt, y oklama, not görüntüleme, y emek r ezervasyonu
+Öğretim Üy eleri:  Yoklama açma, not girişi, der s programı görüntüleme
+İdari P ersonel:  Kullanıcı y önetimi, raporlama, sist em yapılandır ması
+Yemekhane P ersoneli:  Yemek menüsü y önetimi, QR k od okutma
+Tesis Y öneticileri:  Derslik rezervasyonu, IoT sensör v erilerini izleme
+2. Projenin Kapsamı v e Modüller
+2.1 Modüller Genel Bakış
+
+--- Page 3 ---
+Proje 12 ana modülden  oluşmak tadır. Her modül birbirleriyle ent egre çalışan b ağımsız bir
+fonksiy onellik sağlar .
+2.1.1 Authentication & User Management (Zorunlu)
+Moder n ve güv enli kullanıcı kimlik doğrulama sist emi.
+Özellikler :
+Kullanıcı kay dı (öğr enci, öğr etim üy esi, admin)
+Email doğrulama sist emi
+JWT tab anlı login/logout
+Refresh t oken mekanizması
+Şifre sıfırlama (for got p assw ord)
+Profil yönetimi (CRUD)
+Profil fot oğrafı yükleme
+İsteğe b ağlı: 2F A (Two-Factor Authentication)
+Teknik Detaylar :
+Şifre hashleme: bcr ypt (minimum 10 salt r ounds)
+JWT token expir y: Access t oken 15 dakika, R efresh t oken 7 gün
+Email ser vis: NodeMailer + Gmail SMTP v eya b aşka ser vis
+Dosya uplo ad: Mult er middlewar e
+Storage: AWS S3 , Google Cloud, Azur e vb.
+2.1.2 Academic Management (Zorunlu)
+Akademik sür eçlerin y önetimi.
+Özellikler :
+Ders kataloğu (cour se catalog) görüntüleme
+Ders detayları (açıklama, kr edi, ECTS, önk oşullar)
+Ders bölümü (section) y önetimi
+Derse kayıt olma (enr ollment)
+Önkoşul k ontrolü (r ecursive prerequisit e checking)
+Çakışma k ontrolü (schedule conflict det ection)
+Kapasite kontrolü (at omic incr ement)
+
+--- Page 4 ---
+Dersi bırakma (dr op cour se)
+Kayıtlı der slerim list esi
+Not görüntüleme (öğr enci)
+Not girişi (öğr etim üy esi)
+Transkript, öğr enci belegesi görüntüleme v e PDF indir me
+Akademik takvim, kişisel der s takvimi, duyuru görüntüleme
+Teknik Detaylar :
+Önkoşul k ontrolü: Graph trav ersal algoritması (BF S/DF S)
+Schedule conflict: Time ov erlap det ection algorithm
+Capacity: Datab ase transaction v e row-lev el locking
+PDF generation: PDFKit v eya Puppet eer
+Grade calculation: Ot omatik har f notu hesaplama (4.0 scale)
+2.1.3 GPS-Based A ttendance S ystem (Zorunlu)
+Coğrafi k onum tab anlı ot omatik y oklama sist emi.
+Özellikler :
+Yoklama oturumu açma (öğr etim üy esi)
+Derslik GPS k oordinatları ot omatik alınır
+Geofencing radius (v arsayılan 15m)
+QR k od alt ernatifi de olacak , 5 saniy e de bir y enilecek , okudnuğunda k onum doğrulama
+ile bilirk te var yazacak (b ackup)
+Öğrenci y oklama v erme
+Tarayıcı GPS API ile k onum alma
+Sunucuda mesafe hesaplama (Hav ersine for mula)
+GPS spoo fing t espiti (mock location det ection)
+Yoklama durumu görüntüleme (öğr enci)
+Yoklama raporları (öğr etim üy esi)
+Devamsızlık uyarıları (ot omatik email/SMS)
+Mazer et bildir me v e onaylama
+Teknik Detaylar :
+GPS API: Navigat or.geolocation.getCurr entPosition()
+
+--- Page 5 ---
+Doğruluk : high accuracy mode, timeout: 10s
+Mesafe hesaplama: Hav ersine for mula
+distance = 2 * R * asin(sqrt(sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)))
+Spoo fing det ection:
+IP addr ess v alidation (kampüs IP aralığı), öğr enci y oklamaya sadece kapüs ağına b ağlı
+iken bağlanabilmelidir , gelen ip belirleme
+Mock location flag k ontrolü
+Velocity check (önceki k onumdan impossible trav el)
+Device sensor tutarlılığı
+Fraud flagging: Şüpheli ak tiviteler ot omatik işar etlenir
+2.1.4 Cour se Scheduling & R esour ce Management (Zorunlu)
+Ders programını v erilen kısılatra gör e otomatik oluştur ma v e kaynak y önetimi.
+Özellikler :
+Otomatik der s programı oluştur ma (constraint satisfaction pr oblem)
+Ders programı görüntüleme (öğr enci/öğr etim üy esi)
+Derslik rezervasyonu
+Laboratuv ar rezervasyonu
+Ekipman ödünç alma/iade sist emi
+Çakışma k ontrolü
+Kaynak kullanım raporları
+Teknik Detaylar :
+Scheduling algorithm: Constraint satisfaction pr oblem (CSP)
+Hard constraints: Çakışma olmamalı, kap asite yeterli olmalı
+Soft constraints: Öğr etim üy esi tercihleri, boşlukları minimize et
+Algorithm seçenekleri:
+Backtracking with heuristics
+Genetic algorithm (bonus)
+Simulat ed annealing (bonus)
+
+--- Page 6 ---
+iCal expor t: ICS for mat dosya oluştur ma
+Conflict det ection: Time int erval ov erlap
+2.1.5 Meal R eservation S ystem (Zorunlu)
+Yemekhane r ezervasyon ve ödeme sist emi.
+Özellikler :
+Günlük menü görüntüleme
+Yemek r ezervasyonu (öğle/akşam)
+Burslu/ücr etli öğr enci ayrımı
+Rezervasyon iptali
+QR k od ile y emek kullanımı
+Sanal cüzdan (wallet) sist emi
+Para yükleme (ödeme ent egrasy onu)
+İşlem geçmişi
+Beslenme takibi (kalori, makr o besinler)
+Teknik Detaylar :
+QR code: QR Code librar y ile unique ID oluştur ma
+Payment int egration: S tripe t est mode v eya P ayTR sandbo x
+Webhook : Payment confir mation callb ack
+Quota check : Burslu öğr enciler günde max 2 öğün
+Wallet transaction: A CID pr oper ties, double-entr y bookk eeping
+Nutritional data: JSON for mat menu it ems
+2.1.6 Event Management (Zorunlu)
+Kampüs etkinlikleri y önetimi.
+Özellikler :
+Etkinlik list eleme v e filtr eleme
+Etkinlik detayları
+Etkinliğe kayıt olma
+Kapasite yönetimi
+
+--- Page 7 ---
+Bekleme list esi (waitlist)
+QR k od ile giriş k ontrolü
+Etkinlik sonrası ank et
+Email bildirimler
+Teknik Detaylar :
+QR code generation: Unique r egistration code per user
+Capacity management: Optimistic locking v eya pessimistic locking
+Waitlist: FIFO queue implementation
+Survey: Dynamic for m builder (JSON schema)
+Email notifications: Ev ent reminder s (1 day befor e, 1 hour befor e)
+2.1.7 Notification S ystem (Zorunlu)
+Çok kanallı bildirim sist emi.
+Özellikler :
+In-app notifications (bildirim kutusu)
+Email notifications
+Push notifications (w eb push - bonus)
+SMS notifications (ist eğe b ağlı)
+Bildirim t ercihleri (kat egori b azında aç/kap a)
+Okundu/okunmadı durumu
+Toplu işar etleme
+Teknik Detaylar :
+Real-time: W ebSock et (Sock et.io)
+Email: NodeMailer
+Push: W eb Push API (bonus)
+SMS: T wilio API (bonus - t est mode)
+Queue syst em: Bull + R edis (bonus) v eya simple cr on job
+Categories: academic, att endance, meal, ev ent, p ayment, syst em
+2.1.8 Analy tics & R epor ting (Ger ekli)
+
+--- Page 8 ---
+Sistem geneli istatistikler v e raporlar .
+Özellikler :
+Admin dashbo ard (istatistikler)
+Akademik per formans raporları (GP A, geçme oranı)
+Yoklama analitiği (dev amsızlık istatistikleri)
+Yemek kullanım raporları
+Kaynak kullanım raporları
+Expor t: Excel, PDF , CSV
+Teknik Detaylar :
+Char ts: Char t.js veya R echar ts
+Data aggr egation: SQL GR OUP B Y, window functions
+Expor t libraries: Ex celJS, PDFKit
+Caching: R edis v eya memor y cache (optimization)
+2.1.9 IoT Sensor Int egration (İst eğe Bağlı - Bonus)
+Akıllı kampüs için IoT sensör ent egrasy onu.
+Özellikler :
+Sensör v erilerini görüntüleme (sıcaklık , nem, doluluk)
+Gerçek zamanlı v eri akışı (W ebSock et)
+Anomali t espiti v e uyarılar
+Enerji tük etimi takibi
+Grafikler v e gör selleştir me
+Teknik Detaylar :
+WebSock et: Real-time sensor data str eaming
+Time-series data: Efficient st orage and quer ying
+Mock sensor s: Simulat ed sensor data for t esting
+Alerts: Thr eshold-b ased notification trigger s
+2.2 Modül Öncelik v e Zorunluluk
+
+--- Page 9 ---
+Modül Öncelik Zorunluluk Part
+Authentication & User Management P0 Zorunlu Part 1
+Academic Management P0 Zorunlu Part 2
+GPS-Based A ttendance P0 Zorunlu Part 2
+Cour se Scheduling P1 Zorunlu Part 3
+Meal R eservation S ystem P1 Zorunlu Part 3
+Event Management P1 Zorunlu Part 3
+Notification S ystem P1 Zorunlu Part 4
+Analy tics & R epor ting P2 Gerekli Part 4
+IoT Sensor Int egration P3 Bonus Part 4
+Not: P0 (kritik), P1 (yüksek), P2 (or ta), P3 (düşük)
+3. Teknik Ger eksinimler
+3.1 Zorunlu T eknolojiler
+Frontend (K esinlikle R eact)
+- React 18+ (Hooks kullanımı zorunlu) 
+- React Router v6 (client-side routing) 
+- State Management: Context API + useReducer VEYA Redux Toolkit 
+- HTTP Client: Axios 
+- Styling: Material-UI, Tailwind CSS, VEYA CSS Modules 
+- Form Handling: React Hook Form + Yup validation 
+- Charts: Chart.js, Recharts VEYA Victory 
+- QR Code: qrcode.react 
+- Maps: Leaflet VEYA Google Maps API
+Back end
+
+--- Page 10 ---
+- Node.js 18+ LTS 
+- Express.js 4+ 
+- PostgreSQL 14+ (zorunlu - SQLite kabul edilmez) 
+- ORM: Sequelize VEYA Prisma 
+- Authentication: JWT (jsonwebtoken) 
+- Password Hashing: bcrypt 
+- File Upload: Multer 
+- Email: NodeMailer 
+- Validation: Joi VEYA express-validator 
+- API Documentation: Swagger/OpenAPI
+Development T ools
+- Version Control: Git + GitHub (zorunlu) 
+- Package Manager: npm VEYA yarn 
+- Environment: dotenv 
+- Linting: ESLint 
+- Code Formatting: Prettier 
+- Testing: Jest + React Testing Library (backend & frontend)
+Deployment & DevOps
+- Containerization: Docker + Docker Compose (zorunlu) 
+- CI/CD: GitHub Actions (bonus) 
+- Database Migrations: Sequelize migrations VEYA Prisma migrate 
+- Logging: Winston VEYA Morgan
+3.2 V eritab anı Ger eksinimleri
+Minimum T ablolar (30+):
+users, students, faculty, admins, departments, courses,  
+course_sections, enrollments, attendance_sessions,  
+attendance_records, excuse_requests, classrooms, reservations,  
+schedules, meal_menus, meal_reservations, wallets, transactions,  
+events, event_registrations, notifications, notification_preferences, 
+iot_sensors, sensor_data, audit_logs, password_resets,  
+email_verifications, session_tokens, ve daha fazlası...
+Veritab anı T asarım Kuralları:
+Normalization: 3NF minimum
+
+--- Page 11 ---
+Foreign k eys: CASCADE v e RESTRICT uy gun kullanımı
+Index es: Performance için ger ekli alanlara index
+Constraints: CHECK , UNIQUE, NO T NULL constraints
+JSONB: Flexible data için kullanılabilir (schedule, metadata)
+Soft delet e: delet ed_at timestamp p attern (bazı tablolar da)
+3.3 API Ger eksinimleri
+REST ful API S tandar ds:
+Base URL: /api/v1/
+HTTP Methods: GE T, POST , PUT , PATCH, DELE TE (uy gun kullanım)
+Status Codes: 200, 201, 204, 400, 401, 403, 404, 409, 500
+Response For mat: JSON (consist ent structur e)
+Error Handling: S tandar dized err or responses
+Pagination: p age, limit, sor t paramet ers
+Filtering: Quer y paramet ers
+Rate Limiting: Expr ess-rat e-limit (bonus)
+Minimum 60+ Endpoints:  Tüm modüller için CRUD operations + özel endpoint'ler
+3.4 Güv enlik Ger eksinimleri
+Zorunlu Güv enlik Önlemleri:
+1. Authentication:
+JWT token-b ased auth
+Refresh t oken mechanism
+Token expiration handling
+Secur e passw ord storage (bcr ypt)
+2. Authorization:
+Role-b ased access contr ol (RBA C)
+Middlewar e authentication guar ds
+Route protection (fr ontend & b ackend)
+3. Input V alidation:
+Backend v alidation (Joi/expr ess-v alidat or)
+
+--- Page 12 ---
+Frontend v alidation (R eact Hook For m + Y up)
+SQL injection pr evention (ORM p aramet erized queries)
+XSS pr evention (input sanitization)
+4. CORS:
+Proper C ORS configuration
+Allow ed origins whit elist
+5. HTTPS:
+Development: self -signed cer tificat e (optional)
+Production: Let' s Encr ypt SSL (bonus)
+6. Envir onment V ariables:
+Sensitiv e data in .env
+.env.example pr ovided
+Never commit .env t o Git
+3.5 T esting Ger eksinimleri
+Zorunlu T estler :
+Unit T ests: Critical business logic (minimum 50+ t ests)
+Integration T ests: API endpoints (minimum 30+ t ests)
+E2E T ests: Critical user flows (minimum 5 scenarios - bonus)
+Test Cov erage:
+Backend: Minimum %85 code cov erage
+Frontend: Minimum %75 code cov erage
+Test Araçları:
+Backend: Jest + Super test
+Frontend: Jest + R eact T esting Librar y
+E2E: Cypr ess VEY A Playwright (bonus)
+3.6 P erformance Ger eksinimleri
+Hedef Metrikler :
+
+--- Page 13 ---
+Page lo ad time: < 3 saniy e (initial lo ad)
+API r esponse time: < 500ms (av erage)
+Datab ase quer y time: < 100ms (optimized queries)
+Concurr ent user s: 100+ kullanıcı dest eği
+Optimization T eknikler :
+Datab ase indexing
+Quer y optimization (E XPLAIN ANAL YZE)
+Lazy lo ading (R eact components)
+Code splitting (R eact.lazy)
+Image optimization
+Caching (R edis - bonus)
+CDN for static assets (bonus)
+4. Proje Zaman Çizelgesi v e Ara T eslimler
+4.1 Genel Zaman Çizelgesi
+Hafta 1: 5 Aralık - 8 Aralık (4 gün) 
+└─ Part 1: Authentication & User Management 
+Hafta 2: 9 Aralık - 15 Aralık (7 gün) 
+└─ Part 2: Academic Management + GPS Attendance 
+Hafta 3: 16 Aralık - 22 Aralık (7 gün) 
+└─ Part 3: Meal + Event + Scheduling 
+Hafta 4: 23 Aralık - 28 Aralık (6 gün) 
+└─ Part 4: Final Integration + Analytics + Polish 
+Hafta 4+: 29 Aralık 2025 
+└─ SUNUM GÜNÜ
+4.2 Ara T eslim T arihleri (Zorunlu)
+
+--- Page 14 ---
+Ara T eslim Tarih Saat İçerik
+Part 1 8 Aralık 2025 (P azar) 23:59 Auth + User Management + Docs
+Part 2 15 Aralık 2025 (P azar) 23:59 Academic + A ttendance + Docs
+Part 3 22 Aralık 2025 (P azar) 23:59 Meal + Ev ent + Schedule + Docs
+FINAL 28 Aralık 2025 (Cumar tesi) 23:59 Complet e Project + All Docs
+SUNUM 29 Aralık 2025 (P azar) TBA Live Demo + Q&A
+4.3 Ara T eslim Kuralları
+Önemli Notlar :
+1. Her ara t eslim ayrı ayrı değerlendirilecek tir
+2. Her ara t eslimde hem k od hem dokümantasy on olmalıdır
+3. Geç t eslimler her gün için %10 puan k esilir  (max 3 gün)
+4. Son iki güne bırakılan pr ojeler düşük sür eklilik puanı  alır
+5. GitHub commit hist ory kontrol edilecek tir
+6. Her p art, bir önceki p art'ı içermelidir  (incr emental)
+5. Part 1: Kimlik Doğrulama v e Kullanıcı Y önetimi
+Teslim T arihi:  8 Aralık 2025 (P azar), 23:59  
+Süre: 4 gün  
+Ağırlık : %20
+5.1 Part 1 Hedefleri
+Bu aşamada pr ojenin t emelini oluşturacaksınız:
+Proje yapısını kur mak
+Veritab anı şemasını tasarlamak
+Authentication sist emi
+Kullanıcı y önetimi
+Temel fr ontend yapısı
+5.2 P art 1 - Y apılacaklar List esi
+
+--- Page 15 ---
+5.2.1 Back end Gör evleri
+Proje Kurulumu:
+ Node.js pr ojesi oluştur ma (npm init)
+ Gerekli p aketleri yükleme (expr ess, pg, sequelize, bcr ypt, jwt, vs.)
+ Folder structur e oluştur ma:
+backend/ 
+├── src/ 
+│   ├── config/ 
+│   ├── controllers/ 
+│   ├── middleware/ 
+│   ├── models/ 
+│   ├── routes/ 
+│   ├── services/ 
+│   ├── utils/ 
+│   └── app.js 
+├── tests/ 
+├── .env.example 
+├── .gitignore 
+├── package.json 
+└── README.md
+Veritab anı:
+ PostgreSQL v eritab anı oluştur ma
+ Sequelize/Prisma kurulumu v e konfigürasy onu
+ User tablosu (id, email, p assw ord_hash, r ole, cr eated_at, updat ed_at)
+ Student tablosu (user_id, student_number , dep artment_id, gp a, cgp a)
+ Faculty tablosu (user_id, employ ee_number , title, dep artment_id)
+ Dep artment tablosu (id, name, code, faculty)
+ Migration dosyaları oluştur ma
+ Seed data (t est user s: 5 öğr enci, 2 öğr etim üy esi, 1 admin)
+Authentication Endpoints:
+ POST /api/v1/auth/register - Kullanıcı kay dı
+Email v alidation
+Passw ord strength check (min 8 char , upper case, number)
+Hash p assw ord with bcr ypt
+
+--- Page 16 ---
+Create verification t oken
+Send v erification email
+Return 201 Cr eated
+ POST /api/v1/auth/verify-email - Email doğrulama
+Validat e token
+Activ ate user account
+Return 200 OK
+ POST /api/v1/auth/login - Kullanıcı girişi
+Email/p assw ord validation
+Check if user exists and activ ated
+Verify passw ord
+Generat e JW T access t oken (15 min)
+Generat e refresh t oken (7 days)
+Return tokens + user info (without p assw ord)
+ POST /api/v1/auth/refresh - Token yenileme
+Validat e refresh t oken
+Generat e new access t oken
+Return new access t oken
+ POST /api/v1/auth/logout - Çıkış yapma
+Invalidat e refresh t oken
+Return 204 No Cont ent
+ POST /api/v1/auth/forgot-password - Şifr e sıfırlama ist eği
+Generat e reset t oken (24h expir y)
+Send r eset email
+Return 200 OK
+ POST /api/v1/auth/reset-password - Şifr e sıfırlama
+Validat e reset t oken
+Hash new p assw ord
+Updat e user p assw ord
+Invalidat e all sessions
+Return 200 OK
+User Management Endpoints:
+
+--- Page 17 ---
+ GET /api/v1/users/me - Profil görüntüleme
+Requir e authentication
+Return user info (no p assw ord)
+ PUT /api/v1/users/me - Profil güncelleme
+Validat e input (name, phone, et c.)
+Updat e user r ecord
+Return updat ed user info
+ POST /api/v1/users/me/profile-picture - Profil fot oğrafı yükleme
+Multer middlewar e (max 5MB, jpg/png)
+Save to uplo ads/ folder
+Updat e user pr ofile_pictur e_url
+Return new URL
+ GET /api/v1/users - Kullanıcı list esi (admin only)
+Pagination (p age, limit)
+Filtering (r ole, dep artment)
+Search (name, email)
+Return user list
+Middlewar e:
+ Authentication middlewar e (verify JW T)
+ Authorization middlewar e (role-b ased)
+ Error handling middlewar e
+ Request v alidation middlewar e
+ File uplo ad middlewar e (Mult er)
+Utilities:
+ JWT utilities (generat e, verify)
+ Email ser vice (NodeMailer)
+ Validation schemas (Joi)
+ Logger (Winst on - bonus)
+Testing:
+ Unit t ests: Auth ser vice (r egist er, login, t oken generation)
+
+--- Page 18 ---
+ Unit t ests: User ser vice
+ Integration t ests: Auth endpoints (minimum 10 t ests)
+ Integration t ests: User endpoints (minimum 5 t ests)
+5.2.2 Fr ontend Gör evleri
+Proje Kurulumu:
+ React pr ojesi oluştur ma (npx create-react-app veya Vit e)
+ Gerekli p aketleri yükleme (r eact-router-dom, axios, for mik, yup, vs.)
+ Folder structur e:
+frontend/ 
+├── public/ 
+├── src/ 
+│   ├── assets/ 
+│   ├── components/ 
+│   ├── context/ 
+│   ├── hooks/ 
+│   ├── pages/ 
+│   ├── services/ 
+│   ├── utils/ 
+│   ├── App.js 
+│   └── index.js 
+├── .env.example 
+├── package.json 
+└── README.md
+Pages:
+ Login P age (/login)
+Email input
+Passw ord input
+"Remember me " checkbo x (optional)
+"Forgot p assw ord?" link
+Form validation
+Error messages
+Loading stat e
+Redirect to dashbo ard on success
+
+--- Page 19 ---
+ Regist er Page (/register)
+Full name, email, p assw ord, confir m passw ord
+User type selection (student/faculty)
+Student number input (if student)
+Department selection
+Terms & conditions checkbo x
+Form validation
+Success message (email v erification r equir ed)
+ Email V erification P age (/verify-email/:token)
+Verify token on mount
+Show success/err or message
+Redirect to login af ter 3 seconds
+ Forgot P assw ord Page (/forgot-password)
+Email input
+Send r eset link butt on
+Success message
+ Reset P assw ord Page (/reset-password/:token)
+New p assw ord input
+Confir m passw ord input
+Form validation
+Success message
+Redirect to login
+ Dashbo ard Page (/dashboard)
+Requir e authentication
+Show w elcome message with user name
+Role-b ased navigation menu
+Placeholder for upcoming featur es
+ Profile P age (/profile)
+Display curr ent user info
+Edit for m (name, phone, et c.)
+Profile pictur e uplo ad
+Change p assw ord section
+
+--- Page 20 ---
+Save butt on
+Success/err or messages
+Components:
+ Navb ar (with user menu, logout butt on)
+ Sideb ar (navigation menu)
+ ProtectedRoute (auth guar d)
+ Loading spinner
+ Aler t/Toast notifications
+ Form input components (T extInput, Select, et c.)
+State Management:
+ Auth Cont ext (user stat e, login, logout functions)
+ API ser vice (axios instance, int erceptors)
+ Token management (localS torage or cookies)
+ Auto token refresh
+Routing:
+ React R outer setup
+ Public r outes (login, r egist er, forgot p assw ord)
+ Protected routes (dashbo ard, profile)
+ Role-b ased r outing (student/faculty/admin views)
+ 404 p age
+Styling:
+ Responsiv e design (mobile-fir st)
+ Consist ent theme (color s, typography)
+ Material-UI / T ailwind CSS int egration
+ Form styling
+ Butt on styles
+ Card lay outs
+Testing:
+ Component t ests: Login for m
+ Component t ests: R egist er for m
+ Integration t ests: Auth flow (bonus)
+
+--- Page 21 ---
+5.2.3 DevOps & Deployment
+ Dock er Compose dosyası (b ackend + post gres)
+version: '3.8' 
+services: 
+  postgres: 
+    image: postgres:14 
+    environment: 
+      POSTGRES_DB: campus_db 
+      POSTGRES_USER: admin 
+      POSTGRES_PASSWORD: password 
+    ports: 
+      - "5432:5432" 
+  backend: 
+    build: ./backend 
+    ports: 
+      - "5000:5000" 
+    depends_on: 
+      - postgres
+ .dock erignor e dosyası
+ README.md (setup instructions)
+5.3 P art 1 - T eslim Edilecekler
+Kod:
+1. ✅ Back end r eposit ory (GitHub link)
+Tüm kaynak k odlar
+.env.example dosyası
+README.md (setup, run, t est instructions)
+Migration v e seed dosyaları
+2. ✅ Frontend r eposit ory (GitHub link)
+Tüm kaynak k odlar
+.env.example dosyası
+README.md
+3. ✅ Dock er Compose dosyası
+
+--- Page 22 ---
+Tek komutla çalışır durumda ( docker-compose up)
+Dokümantasy on (Mark down formatında):
+1. ✅ PROJECT_OVERVIE W.md
+Proje tanımı
+Teknoloji stack'i
+Proje yapısı
+Grup üy eleri v e gör ev dağılımı
+2. ✅ API_DOCUMENT ATION.md  (Part 1 için)
+Authentication endpoints (8 adet)
+User management endpoints (4 adet)
+Request/r esponse examples
+Error codes
+3. ✅ DATABASE_SCHEMA.md
+ER diagram (draw .io, dbdiagram.io, v eya manuel)
+Tablo açıklamaları (user s, students, faculty , dep artments)
+İlişkiler (for eign k eys)
+Index es
+4. ✅ USER_MANU AL_P ART1.md
+Nasıl kayıt olunur?
+Nasıl giriş yapılır?
+Profil nasıl güncellenir?
+Ekran görüntüleri
+5. ✅ TEST_REPOR T_PART1.md
+Test cov erage raporu
+Test sonuçları (p assed/failed)
+Ekran görüntüleri
+Demo Video:  Projenizi anlatan bir video hazırlayıp y outube a yükleney eceksiniz puplic p aylaşım
+olmayacak mehmetsevri@gmail.com  ile p aylaşılacak .
+ 5-10 dakikalık video (Y ouTube unlist ed link)
+
+--- Page 23 ---
+ Kayıt olma
+ Email doğrulama (simüle edilebilir)
+ Giriş yapma
+ Profil görüntüleme v e güncelleme
+ Profil fot oğrafı yükleme
+5.4 P art 1 - Değerlendirme Krit erleri
+
+--- Page 24 ---
+Kriter Puan Açıklama
+Back end Implementasy on 40
+- Datab ase design 10 Normalization, r elations, index es
+- Auth endpoints 15 Regist er, login, t oken refresh, p assw ord reset
+- User management 10 Profile CRUD , file uplo ad
+- Code quality 5 Clean code, comments, err or handling
+Frontend Implementasy on 30
+- UI/UX design 10 Responsiv e, intuitiv e, consist ent
+- For ms & v alidation 10 Client -side v alidation, err or messages
+- State management 5 Cont ext API, t oken handling
+- Routing 5 Protected routes, redirects
+Testing 10
+- Unit t ests 5 Coverage, quality
+- Integration t ests 5 API endpoint t ests
+Dokümantasy on 15
+- API documentation 5 Complet e, clear examples
+- Datab ase schema 5 ER diagram, descriptions
+- User manual 5 Screenshots, st ep-by-st ep
+DevOps & Deployment 5
+- Dock er setup 3 Works with dock er-compose up
+- README quality 2 Clear instructions
+TOPLAM 100
+Bonus Puanlar (+10):
+ 2FA (Two-Factor Authentication) implementasy onu: +3
+ Email t emplat e'leri (HTML emails): +2
+ Passw ord strength met er: +1
+
+--- Page 25 ---
+ Account lock out (brut e-for ce pr otection): +2
+ User activity log: +2
+6. Part 2: Akademik Y önetim v e GPS Y oklama
+Teslim T arihi:  15 Aralık 2025 (P azar), 23:59  
+Süre: 7 gün  
+Ağırlık : %25
+6.1 Part 2 Hedefleri
+Bu aşamada pr ojenin kalbi olan akademik işlemler v e GPS tab anlı y oklama sist emini
+geliştir eceksiniz:
+Ders yönetimi v e kayıt sist emi
+GPS tab anlı y oklama
+Önkoşul v e çakışma k ontrolleri
+Not y önetimi
+Kompleks business logic
+6.2 P art 2 - Y apılacaklar List esi
+6.2.1 Back end Gör evleri
+Veritab anı (Y eni T ablolar):
+ courses (id, code, name, description, cr edits, ects, syllabus_url, dep artment_id)
+ course_sections  (id, cour se_id, section_number , semest er, year, instruct or_id, cap acity,
+enrolled_count, schedule_json)
+ course_pr erequisit es (cour se_id, pr erequisit e_cour se_id)
+ enrollments  (id, student_id, section_id, status, enr ollment_dat e, midt erm_grade, final_grade,
+letter_grade, grade_point)
+ attendance_sessions  (id, section_id, instruct or_id, dat e, star t_time, end_time, latitude,
+longitude, geo fence_radius, qr_code, status)
+ attendance_r ecords (id, session_id, student_id, check_in_time, latitude, longitude,
+distance_fr om_cent er, is_flagged, flag_r eason)
+ excuse_r equests  (id, student_id, session_id, r eason, document_url, status, r eview ed_by ,
+review ed_at, not es)
+
+--- Page 26 ---
+ classr ooms  (id, building, r oom_number , capacity, featur es_json)
+ Migration v e seed data
+Academic Management Endpoints:
+Cour ses:
+ GET /api/v1/courses - Der s listesi (p agination, filt ering, sear ch)
+ GET /api/v1/courses/:id - Der s detayları (pr erequisit es dahil)
+ POST /api/v1/courses - Yeni der s oluştur ma (admin only)
+ PUT /api/v1/courses/:id - Der s güncelleme (admin only)
+ DELETE /api/v1/courses/:id - Der s silme (so ft delet e, admin only)
+Cour se Sections:
+ GET /api/v1/sections - Section list esi (filt ering by semest er, instruct or)
+ GET /api/v1/sections/:id - Section detayları
+ POST /api/v1/sections - Section oluştur ma (admin)
+ PUT /api/v1/sections/:id - Section güncelleme (admin)
+Enrollments:
+ POST /api/v1/enrollments - Der se kayıt olma (student)
+Önkoşul k ontrolü: Recursive prerequisit e checking
+// Pseudocode 
+function checkPrerequisites(courseId, studentId) { 
+  prerequisites = getPrerequisites(courseId); 
+  for (prereq of prerequisites) { 
+    if (!hasCompletedCourse(studentId, prereq)) { 
+      throw new Error("Prerequisite not met"); 
+    } 
+    // Recursive check 
+    checkPrerequisites(prereq, studentId); 
+  } 
+}
+Çakışma k ontrolü: Time ov erlap det ection
+
+--- Page 27 ---
+function hasScheduleConflict(studentSchedule, newSectionSchedule) { 
+  for (existingClass of studentSchedule) { 
+    if (timeOverlap(existingClass, newSectionSchedule)) { 
+      return true; 
+    } 
+  } 
+  return false; 
+}
+Kapasite kontrolü: Atomic updat e
+UPDATE course_sections  
+SET enrolled_count = enrolled_count + 1  
+WHERE id = ? AND enrolled_count < capacity; 
+-- Check affected rows, if 0 then full
+Create enr ollment r ecord
+Send confir mation notification
+Return 201 Cr eated
+ DELETE /api/v1/enrollments/:id - Der si bırakma
+Check dr op period (fir st 4 w eeks)
+Updat e section cap acity
+Updat e enr ollment status
+Send notification
+ GET /api/v1/enrollments/my-courses - Kayıtlı der slerim (student)
+ GET /api/v1/enrollments/students/:sectionId - Der sin öğr enci list esi (faculty)
+Grades:
+ GET /api/v1/grades/my-grades - Notlarım (student)
+ GET /api/v1/grades/transcript - Transkript JSON (student)
+ GET /api/v1/grades/transcript/pdf - Transkript PDF (student)
+Generat e PDF with PDFKit or Puppet eer
+Include univ ersity lett erhead
+
+--- Page 28 ---
+List all cour ses, grades, C GPA
+Return PDF buffer
+ POST /api/v1/grades - Not girişi (faculty)
+Validat e instruct or teaches the section
+Updat e enr ollment r ecord (midt erm, final, lett er_grade)
+Calculat e grade_point aut omatically
+Calculat e GPA/CGPA
+Send notification t o student
+Attendance S ystem Endpoints:
+Sessions (F aculty):
+ POST /api/v1/attendance/sessions - Yoklama oturumu açma
+Get section info
+Get classr oom GPS coor dinat es from datab ase
+Set geo fence_radius (default 15m)
+Generat e unique QR code
+Set expir y (e.g., 30 minut es)
+Send push notification t o enr olled students
+Return session details
+ GET /api/v1/attendance/sessions/:id - Oturum detayları
+ PUT /api/v1/attendance/sessions/:id/close - Oturumu kap atma
+ GET /api/v1/attendance/sessions/my-sessions - Benim oturumlarım (faculty)
+ GET /api/v1/attendance/report/:sectionId - Yoklama raporu (faculty)
+Check -in (S tudent):
+ POST /api/v1/attendance/sessions/:id/checkin - Yoklama v erme
+Request body: { latitude, longitude, accuracy }
+Get session details (lat, lon, radius)
+Calculat e distance:  Haversine for mula
+
+--- Page 29 ---
+GPS Spoo fing Det ection:
+Validat e distance <= radius + accuracy buffer (e.g., radius + 5m)
+Check if alr eady check ed in
+Detect spoo fing
+Record attendance (with flag if suspicious)
+If flagged, notif y instruct or
+Return success message
+ GET /api/v1/attendance/my-attendance - Yoklama durumum (student)
+List all cour ses with att endance stats
+Calculat e attendance per centage
+Highlight war ning (>20% absence) and critical (>30%)
+Excuse R equests:
+ POST /api/v1/attendance/excuse-requests - Mazer et bildir me (student)
+Uplo ad document (Mult er)
+Create excuse r equest
+Notif y instruct or
+ GET /api/v1/attendance/excuse-requests - Mazer et list esi (faculty)
+ PUT /api/v1/attendance/excuse-requests/:id/approve - Mazer et onaylama (faculty)
+ PUT /api/v1/attendance/excuse-requests/:id/reject - Mazer et reddetme (faculty)
+Back ground Jobs:
+ Absence W arning Job  (runs daily via cr on)
+Calculat e attendance rat es for all students
+If >= 20%, send war ning email + push
+If >= 30%, send critical war ning email + SMS (optional) + push
+Notif y advisor
+Log war nings
+Business Logic Ser vices:
+
+--- Page 30 ---
+ Prerequisit eService (r ecursive checking)
+ ScheduleConflictSer vice (time ov erlap)
+ EnrollmentSer vice (or chestrat es checks)
+ AttendanceSer vice (distance calculation, spoo fing det ection)
+ GradeCalculationSer vice (GP A/CGPA)
+Testing:
+ Unit t ests: Pr erequisit eService (r ecursive scenarios)
+ Unit t ests: ScheduleConflictSer vice
+ Unit t ests: Hav ersine calculation
+ Unit t ests: Spoo fing det ection
+ Integration t ests: Enr ollment flow (15+ t ests)
+ Integration t ests: A ttendance flow (15+ t ests)
+6.2.2 Fr ontend Gör evleri
+Academic Management P ages:
+ Cour se Catalog P age (/courses)
+List all cour ses (car ds or table)
+Search by code or name
+Filter by dep artment
+Click t o view details
+ Cour se Detail P age (/courses/:id)
+Cour se info (code, name, cr edits, ECTS, description)
+Prerequisit es (with links t o prerequisit e cour ses)
+Available sections (instruct or, schedule, cap acity)
+"Enroll" butt on for each section
+Enrollment modal/confir mation
+ My Cour ses P age (/my-courses) - Student
+List enr olled cour ses
+Show section info, instruct or, schedule
+"Drop" butt on (with confir mation)
+Attendance per centage for each cour se
+Warning/critical indicat ors
+
+--- Page 31 ---
+ Grades P age (/grades) - Student
+List cour ses with grades (midt erm, final, lett er)
+Show GP A and C GPA
+"Downlo ad Transcript" butt on (PDF)
+Grade statistics (char t)
+ Gradebook P age (/gradebook/:sectionId) - Faculty
+List enr olled students
+Input fields for midt erm, final, homew ork grades
+Auto-calculat e lett er grade
+"Save Grades" butt on
+Bulk actions (expor t, send notifications)
+GPS A ttendance P ages:
+ Start Attendance P age (/attendance/start) - Faculty
+Select section
+Classr oom aut o-select ed (GPS fr om datab ase)
+Geofence radius input (default 15m)
+Session duration input
+"Start Session " butt on
+Display QR code (b ackup method)
+Real-time att endance count
+ Give Attendance P age (/attendance/give/:sessionId) - Student
+Show session info (cour se, time, location)
+"Give Attendance " butt on
+Request GPS per mission
+Show lo ading spinner (getting location...)
+Display curr ent location on mini map (Leaflet)
+Show distance fr om classr oom
+Submit t o backend
+Show success/err or message
+Alternativ e: "Scan QR Code " butt on (bonus)
+ My A ttendance P age (/my-attendance) - Student
+List cour ses with att endance stats
+
+--- Page 32 ---
+For each cour se:
+Total sessions
+Attended sessions
+Excused absences
+Attendance per centage
+Status b adge (OK/W arning/Critical)
+Button to "Request Ex cuse" for absences
+ Attendance R epor t Page (/attendance/report/:sectionId) - Faculty
+Student list with att endance counts
+Attendance per centage
+Flagged students (GPS spoo fing suspects)
+Expor t to Excel butt on
+Filter by dat e range
+ Excuse R equests P age (/excuse-requests) - Faculty
+List pending ex cuse r equests
+View student info, absence dat e, reason
+View uplo aded document
+"Appr ove" / "R eject" butt ons with not es
+GPS & Maps Components:
+ GPS per mission handler
+ Map component (Leaflet or Google Maps)
+ Distance calculat or (client -side pr eview)
+ Location accuracy indicat or
+Char ts & Visualizations:
+ Attendance char t (line char t over time)
+ Grade distribution char t (bar char t)
+ GPA trend char t (student)
+Testing:
+ Component t ests: Cour se list, enr ollment for m
+ Component t ests: A ttendance butt on, GPS handler
+ Integration t ests: Enr ollment flow (bonus)
+
+--- Page 33 ---
+6.3 P art 2 - T eslim Edilecekler
+Kod:
+1. ✅ Updat ed backend r eposit ory (GitHub link)
+New models, contr ollers, routes
+Business logic ser vices
+Tests
+2. ✅ Updat ed frontend r eposit ory (GitHub link)
+New p ages and components
+GPS int egration
+Maps int egration
+Dokümantasy on:
+1. ✅ API_DOCUMENT ATION_P ART2.md
+Academic endpoints (~15 adet)
+Attendance endpoints (~12 adet)
+Request/r esponse examples
+Algorithm explanations (Hav ersine, pr erequisit e checking)
+2. ✅ DATABASE_SCHEMA_UPD ATE.md
+Yeni tablolar (cour ses, sections, enr ollments, att endance_*, ex cuse_r equests)
+Updat ed ER diagram
+3. ✅ GPS_IMPLEMENT ATION_GUIDE.md
+GPS kullanımı
+Haversine for mula açıklaması
+Spoo fing det ection y öntemleri
+Test senar yoları
+4. ✅ USER_MANU AL_P ART2.md
+Derse kayıt nasıl olunur?
+GPS ile y oklama nasıl v erilir?
+Mazer et nasıl bildirilir?
+
+--- Page 34 ---
+Ekran görüntüleri
+5. ✅ TEST_REPOR T_PART2.md
+Test cov erage
+Test sonuçları
+Known issues
+Demo Video:
+ 10-15 dakikalık video
+ Ders listesi ve kayıt
+ Önk oşul k ontrolü (b aşarısız senar yo)
+ Başarılı kayıt
+ Öğretim üy esi yoklama açma
+ Öğrenci GPS ile y oklama v erme (b aşarılı)
+ GPS spoo fing senar yosu (r eddedilme)
+ Yoklama raporları
+6.4 P art 2 - Değerlendirme Krit erleri
+
+--- Page 35 ---
+Kriter Puan Açıklama
+Academic Management 35
+- Cour se management 10 CRUD , listing, filt ering
+- Enr ollment logic 15 Prerequisit e, conflict, cap acity checks
+- Grade management 10 Input, calculation, transcript PDF
+GPS A ttendance 40
+- Session management 10 Start, close, QR code
+- GPS check -in 15 Location accuracy , Hav ersine, v alidation
+- Spoo fing det ection 10 Multiple checks, flagging
+- Excuse syst em 5 Submit, appr ove/reject
+Frontend 15
+- Academic p ages 7 UI/UX , forms, v alidation
+- Attendance p ages 8 GPS int egration, maps, r eal-time
+Testing 5
+- Business logic t ests 3 Prerequisit e, conflict, distance
+- API t ests 2 Enrollment, att endance flows
+Dokümantasy on 5
+- API docs 2 Complet e, clear
+- GPS guide 2 Technical explanation
+- User manual 1 Screenshots, st eps
+TOPLAM 100
+Bonus Puanlar (+15):
+ QR code alt ernativ e (scan QR for att endance): +5
+ Real-time att endance dashbo ard (W ebSock et): +5
+ Advanced spoo fing det ection (device sensor s): +3
+ Attendance analy tics (tr ends, pr edictions): +2
+
+--- Page 36 ---
+7. Part 3: Y emek Ser visi, Etkinlik v e Çizelgeleme
+Teslim T arihi:  22 Aralık 2025 (P azar), 23:59  
+Süre: 7 gün  
+Ağırlık : %25
+7.1 Part 3 Hedefleri
+Bu aşamada kampüs yaşamını k olaylaştıran ser visler :
+Yemek r ezervasyon sist emi
+QR k od ile y emek kullanımı
+Ödeme ent egrasy onu
+Etkinlik y önetimi
+Otomatik der s programı oluştur ma
+7.2 P art 3 - Y apılacaklar List esi
+7.2.1 Back end Gör evleri
+Veritab anı (Y eni T ablolar):
+ cafet erias  (id, name, location, cap acity)
+ meal_menus  (id, cafet eria_id, dat e, meal_type, it ems_json, nutrition_json, is_published)
+ meal_r eservations  (id, user_id, menu_id, cafet eria_id, meal_type, dat e, amount, qr_code,
+status, used_at)
+ wallets  (id, user_id, b alance, curr ency, is_activ e)
+ transactions  (id, wallet_id, type, amount, b alance_af ter, reference_type, r eference_id,
+description)
+ events (id, title, description, cat egor y, date, star t_time, end_time, location, cap acity,
+regist ered_count, r egistration_deadline, is_p aid, price, status)
+ event_r egistrations  (id, ev ent_id, user_id, r egistration_dat e, qr_code, check ed_in,
+check ed_in_at, cust om_fields_json)
+ schedules  (id, section_id, day_o f_week, star t_time, end_time, classr oom_id)
+ reservations  (id, classr oom_id, user_id, dat e, star t_time, end_time, purpose, status,
+approved_by)
+ Migration v e seed data
+Meal Ser vice Endpoints:
+
+--- Page 37 ---
+Menus:
+ GET /api/v1/meals/menus - Menü list esi (dat e filter)
+ GET /api/v1/meals/menus/:id - Menü detayı
+ POST /api/v1/meals/menus - Menü oluştur ma (admin/cafet eria staff )
+ PUT /api/v1/meals/menus/:id - Menü güncelleme
+ DELETE /api/v1/meals/menus/:id - Menü silme
+Reservations:
+ POST /api/v1/meals/reservations - Yemek r ezervasyonu
+// Logic: 
+1. Get user type (scholarship vs paid) 
+2. If scholarship: 
+   - Check daily quota (max 2 meals/day)
+   - If quota exceeded, return 400 
+3. If paid: 
+   - Check wallet balance 
+   - If insufficient, return 400 
+4. Create reservation with status='reserved' 
+5. Generate unique QR code (e.g., UUID) 
+6. If paid: 
+   - Create pending transaction (debit) 
+   - Don't deduct yet (will deduct on use) 
+7. Send confirmation notification (email + push) 
+8. Return reservation with QR code
+ DELETE /api/v1/meals/reservations/:id - Rezervasyon iptali
+Check if >= 2 hour s befor e meal time
+If paid, r efund t o wallet
+Updat e reservation status='cancelled'
+Send notification
+ GET /api/v1/meals/reservations/my-reservations - Rezervasyonlarım
+ POST /api/v1/meals/reservations/:id/use - Yemek kullanımı (cafet eria staff )
+Validat e QR code
+Check if t oday 's dat e mat ches
+Check if alr eady used
+Mark as used (used_at = now , status='used')
+If paid, complet e transaction (deduct fr om wallet)
+
+--- Page 38 ---
+Return success
+Wallet:
+ GET /api/v1/wallet/balance - Bakiy e sor gulama
+ POST /api/v1/wallet/topup - Para yükleme
+Minimum amount check (e.g., 50 TR Y)
+Payment gat eway int egration (S tripe t est mode / P ayTR sandbo x)
+Create payment session
+Return payment URL
+Handle w ebhook callb ack:
+POST /api/v1/wallet/topup/webhook 
+// Verify signature 
+// If payment successful: 
+//   - Create transaction (type='credit') 
+//   - Update wallet balance (atomic) 
+//   - Send confirmation email
+ GET /api/v1/wallet/transactions - İşlem geçmişi (p agination)
+Event Management Endpoints:
+Events:
+ GET /api/v1/events - Etkinlik list esi (filt er by cat egor y, date)
+ GET /api/v1/events/:id - Etkinlik detayı
+ POST /api/v1/events - Etkinlik oluştur ma (admin/ev ent manager)
+ PUT /api/v1/events/:id - Etkinlik güncelleme
+ DELETE /api/v1/events/:id - Etkinlik silme
+Registrations:
+ POST /api/v1/events/:id/register - Etkinliğe kayıt
+Check cap acity
+If full, add t o waitlist (bonus)
+
+--- Page 39 ---
+Generat e QR code
+Updat e regist ered_count (at omic)
+Send confir mation email with QR code
+Return registration
+ DELETE /api/v1/events/:eventId/registrations/:regId - Kayıt iptali
+Updat e regist ered_count
+If waitlist exists, notif y next per son
+Send cancellation email
+ GET /api/v1/events/:id/registrations - Kayıtlı kullanıcılar (ev ent manager)
+ POST /api/v1/events/:eventId/registrations/:regId/checkin - QR ile giriş
+Validat e QR code
+Mark as check ed_in
+Updat e check ed_in_at
+Return user info
+Cour se Scheduling Endpoints:
+ POST /api/v1/scheduling/generate - Otomatik pr ogram oluştur ma (admin)
+
+--- Page 40 ---
+// Constraint Satisfaction Problem (CSP) 
+// Input: 
+- sections (course, instructor, capacity) 
+- classrooms (capacity, features) 
+- time_slots (Monday-Friday, 09:00-17:00) 
+- instructor_preferences (optional) 
+// Hard Constraints: 
+1. No instructor double-booking 
+2. No classroom double-booking 
+3. No student schedule conflict (based on enrollments) 
+4. Classroom capacity >= section capacity 
+5. Classroom features match course requirements 
+// Soft Constraints (optimize): 
+1. Respect instructor time preferences 
+2. Minimize gaps in student schedules 
+3. Distribute courses evenly across week 
+4. Prefer morning slots for required courses 
+// Algorithm: Backtracking with heuristics 
+en iyi ders planı heuristiklere dayalı  backtracking yaklaşımları  
+ile oluşturmalı ve tüm hard maksimum soft koşullar sağlanmalı.  
+koşullar dinamik değiştirebilimeedir
+Return generat ed schedule
+Store in datab ase
+ GET /api/v1/scheduling/:scheduleId - Program görüntüleme
+ GET /api/v1/scheduling/my-schedule - Benim pr ogramım (öğr enci/öğr etim üy esi)
+Return weekly schedule (JSON)
+ GET /api/v1/scheduling/my-schedule/ical - iCal expor t
+Generat e .ics file
+Return file downlo ad
+Classr oom R eservations:
+ POST /api/v1/reservations - Der slik rezerve etme
+Check classr oom av ailability
+Check user per missions
+Create reservation (status='pending' if needs appr oval)
+
+--- Page 41 ---
+Notif y admin for appr oval
+Return reservation
+ GET /api/v1/reservations - Rezervasyon list esi (filt er by dat e, classr oom, user)
+ PUT /api/v1/reservations/:id/approve - Rezervasyon onaylama (admin)
+ PUT /api/v1/reservations/:id/reject - Rezervasyon reddetme (admin)
+Business Logic Ser vices:
+ PaymentSer vice (S tripe/P ayTR int egration, w ebhook handling)
+ QRCodeSer vice (generation, v alidation)
+ SchedulingSer vice (CSP algorithm)
+ NotificationSer vice (email, push, SMS)
+Testing:
+ Unit t ests: P ayment ser vice
+ Unit t ests: QR code generation/v alidation
+ Unit t ests: Scheduling algorithm (small example)
+ Integration t ests: Meal r eservation flow (10+ t ests)
+ Integration t ests: Ev ent registration flow (8+ t ests)
+ Integration t ests: Classr oom r eservation (5+ t ests)
+7.2.2 Fr ontend Gör evleri
+Meal Ser vice P ages:
+ Menu P age (/meals/menu)
+Calendar view (select dat e)
+Show lunch and dinner menus
+Nutritional info (calories, pr otein, et c.)
+Vegan/v egetarian b adges
+"Reserve" butt on for each meal
+Reservation modal (confir m details)
+ My R eservations P age (/meals/reservations)
+List upcoming and p ast reservations
+Display QR code for upcoming meals (full scr een on click)
+
+--- Page 42 ---
+"Cancel" butt on (if >= 2 hour s befor e)
+Status b adges (r eserved, used, cancelled)
+ Wallet P age (/wallet)
+Display curr ent b alance
+"Add Money " butt on
+Payment amount input
+Payment method selection
+Redirect to payment gat eway
+Transaction hist ory table (with p agination)
+ QR Scanner P age (/meals/scan) - Cafet eria staff
+QR code scanner (w ebcam or input field)
+Validat e QR code via API
+Display user info and meal type
+"Confir m Use " butt on
+Success/err or feedb ack
+Event Management P ages:
+ Events P age (/events)
+List upcoming ev ents (car ds)
+Filter by cat egor y (confer ence, w orkshop, social, spor ts)
+Search by title
+Click t o view details
+ Event Detail P age (/events/:id)
+Event info (title, description, dat e, location, cap acity)
+Remaining spots
+Registration deadline
+Price (if p aid)
+"Regist er" butt on
+Registration for m (if cust om fields r equir ed)
+ My Ev ents P age (/my-events)
+List r egist ered ev ents
+Display QR code for each ev ent
+
+--- Page 43 ---
+"Cancel R egistration " butt on
+Past ev ents with check -in status
+ Event Check -in P age (/events/checkin) - Ev ent manager
+QR scanner
+Validat e registration
+Mark as check ed in
+Display att endee count
+Scheduling P ages:
+ My Schedule P age (/schedule)
+Weekly calendar view (FullCalendar or cust om)
+Color -coded cour ses
+Show cour se code, instruct or, room
+Click t o view cour se details
+"Expor t to iCal" butt on
+ Generat e Schedule P age (/admin/scheduling/generate) - Admin
+Input: semest er, year
+Select sections t o schedule
+"Generat e Schedule " butt on (lo ading stat e)
+Display generat ed schedule alt ernativ es
+Select and sav e one
+Preview befor e publishing
+ Classr oom R eservations P age (/reservations)
+List av ailable classr ooms
+Filter by building, cap acity
+Select classr oom, dat e, time
+Enter purpose
+"Reserve" butt on
+Appr oval status (pending/appr oved/reject ed)
+Components:
+ QR code display component (with full-scr een modal)
+ QR code scanner component (r eact-qr-reader)
+
+--- Page 44 ---
+ Calendar component (FullCalendar or cust om)
+ Payment for m component
+ Event car d component
+Testing:
+ Component t ests: Meal r eservation for m
+ Component t ests: QR scanner
+ Component t ests: Ev ent registration
+7.3 P art 3 - T eslim Edilecekler
+Kod:
+1. ✅ Updat ed backend r eposit ory
+Meal, ev ent, scheduling modules
+Payment int egration
+QR code functionality
+2. ✅ Updat ed frontend r eposit ory
+Meal ser vice p ages
+Event management p ages
+Scheduling p ages
+QR code scanner
+Dokümantasy on:
+1. ✅ API_DOCUMENT ATION_P ART3.md
+Meal endpoints (~10 adet)
+Event endpoints (~8 adet)
+Scheduling endpoints (~6 adet)
+Payment w ebhook
+2. ✅ PAYMENT_INTEGRA TION_GUIDE.md
+Payment flow diagram
+Stripe/P ayTR setup
+Webhook implementation
+Test car ds
+
+--- Page 45 ---
+3. ✅ SCHEDULING_AL GORITHM.md
+CSP pr oblem definition
+Algorithm explanation
+Pseudocode
+Example solution
+4. ✅ USER_MANU AL_P ART3.md
+Yemek r ezervasyonu nasıl yapılır?
+Para nasıl yüklenir?
+Etkinliğe nasıl kayıt olunur?
+QR k od nasıl kullanılır?
+Ekran görüntüleri
+5. ✅ TEST_REPOR T_PART3.md
+Demo Video:
+ 10-15 dakikalık video
+ Menü görüntüleme v e rezervasyon
+ Para yükleme (t est mode)
+ QR k od ile y emek kullanımı
+ Etkinlik list esi ve kayıt
+ QR k od ile etkinlik girişi
+ Program görüntüleme
+7.4 P art 3 - Değerlendirme Krit erleri
+
+--- Page 46 ---
+Kriter Puan Açıklama
+Meal Ser vice 30
+- Menu management 5 CRUD , display
+- Reservation syst em 10 Quota, wallet, QR generation
+- QR code usage 8 Scanning, v alidation, marking
+- Wallet & p ayment 7 Balance, t op-up, w ebhook
+Event Management 25
+- Event CRUD 10 Create, list, detail
+- Registration syst em 10 Capacity, QR, notifications
+- Check -in syst em 5 QR scanning, v alidation
+Cour se Scheduling 25
+- Scheduling algorithm 15 CSP, constraints, optimization
+- Schedule display 5 Calendar view , expor t
+- Classr oom r eservation 5 Availability check , appr oval
+Frontend 12
+- Meal p ages 5 UI/UX , QR display
+- Event p ages 4 Listing, r egistration
+- Schedule p ages 3 Calendar , expor t
+Testing 5
+- Payment t ests 2 Webhook , transaction
+- QR code t ests 2 Generation, v alidation
+- Scheduling t ests 1 Algorithm corr ectness
+Dokümantasy on 3
+- API docs 1 Complet e
+- Payment guide 1 Clear instructions
+- Algorithm explanation 1 Detailed
+
+--- Page 47 ---
+Kriter Puan Açıklama
+TOPLAM 100
+Bonus Puanlar (+12):
+ Waitlist syst em for ev ents: +3
+ Advanced scheduling (genetic algorithm): +5
+ SMS notifications: +2
+ Web push notifications: +2
+8. Part 4: Final T eslim v e Ent egrasy on
+Teslim T arihi:  28 Aralık 2025 (Cumar tesi), 23:59  
+Süre: 6 gün  
+Ağırlık : %30
+8.1 Part 4 Hedefleri
+Final aşamada:
+Tüm modülleri birleştir mek
+Analy tics v e raporlama
+IoT sensör ent egrasy onu (bonus)
+Notification sist emi
+Polish v e optimizasy on
+Compr ehensiv e testing
+Final dokümantasy on
+Deployment
+8.2 P art 4 - Y apılacaklar List esi
+8.2.1 Back end Gör evleri
+Analy tics & R epor ting:
+ GET /api/v1/analytics/dashboard - Admin dashbo ard istatistikleri
+
+--- Page 48 ---
+{ 
+  "totalUsers": 1250, 
+  "activeUsersToday": 456, 
+  "totalCourses": 120, 
+  "totalEnrollments": 3450, 
+  "attendanceRate": 87.5, 
+  "mealReservationsToday": 890, 
+  "upcomingEvents": 12, 
+  "systemHealth": "healthy" 
+}
+ GET /api/v1/analytics/academic-performance - Akademik per formans
+Average GP A by dep artment
+Grade distribution (A , B, C, D , F per centages)
+Pass/fail rat es
+Top per forming students
+At-risk students (low GP A)
+ GET /api/v1/analytics/attendance - Yoklama analitiği
+Attendance rat e by cour se
+Attendance tr ends ov er time
+Students with critical absence rat es
+Cour ses with low att endance
+ GET /api/v1/analytics/meal-usage - Yemek kullanım raporları
+Daily meal counts
+Cafet eria utilization
+Peak hour s
+Revenue (for p aid user s)
+ GET /api/v1/analytics/events - Etkinlik raporları
+Most popular ev ents
+Registration rat es
+Check -in rat es
+Categor y breakdown
+ GET /api/v1/analytics/export/:type - Rapor dışa ak tarma
+Types: academic, att endance, meal, ev ent
+Formats: Ex cel, PDF , CSV
+
+--- Page 49 ---
+Generat e and r eturn file
+Notification S ystem (Enhanced):
+ GET /api/v1/notifications - Bildirim list esi (p agination)
+Filter by cat egor y, read/unr ead
+Sort by dat e
+ PUT /api/v1/notifications/:id/read - Okundu işar etle
+ PUT /api/v1/notifications/mark-all-read - Hepsini okundu işar etle
+ DELETE /api/v1/notifications/:id - Bildirimi sil
+ GET /api/v1/notifications/preferences - Bildirim t ercihleri
+ PUT /api/v1/notifications/preferences - Tercihleri güncelle
+{ 
+  "email": { 
+    "academic": true, 
+    "attendance": true, 
+    "meal": false, 
+    "event": true, 
+    "payment": true, 
+    "system": true 
+  }, 
+  "push": { 
+    "academic": true, 
+    "attendance": true, 
+    "meal": true, 
+    "event": true, 
+    "payment": true, 
+    "system": false 
+  }, 
+  "sms": { 
+    "attendance": true, // critical only 
+    "payment": false 
+  } 
+}
+WebSock et Implementation:
+ Sock et.io ser ver setup
+ Authentication for W ebSock et
+ Real-time notification br oadcasting
+
+--- Page 50 ---
+ Real-time att endance updat es (for faculty dashbo ard)
+ Real-time sensor data str eaming (bonus)
+IoT Sensor Int egration (Bonus):
+ sensor_data  table (id, sensor_id, timestamp, v alue, unit)
+ GET /api/v1/sensors - Sensör list esi
+ GET /api/v1/sensors/:id/data - Sensör v erisi
+Time range filt er
+Aggr egation (av g, min, max per hour/day)
+ WS /api/v1/sensors/:id/stream - Real-time v eri akışı
+WebSock et endpoint
+Stream lat est sensor r eadings
+ Simulat ed sensor s for demo (t emperatur e, occup ancy, ener gy)
+Back ground Jobs & Aut omation:
+ Daily absence war nings (cr on)
+ Event reminder s (1 day befor e, 1 hour befor e)
+ Meal r eservation r eminder s
+ Datab ase b ackup (daily)
+ Log cleanup (w eekly)
+ Analy tics data aggr egation (daily)
+Security & Optimization:
+ Rate limiting (expr ess-rat e-limit)
+ Request logging (Mor gan)
+ Error logging (Winst on)
+ Input sanitization
+ SQL injection pr evention check
+ CORS har dening
+ Datab ase quer y optimization (E XPLAIN ANAL YZE)
+ Index cr eation for slow queries
+ Caching (R edis - optional)
+Testing:
+ Complet e unit t est cov erage (>60%)
+ Complet e integration t est cov erage (>60%)
+
+--- Page 51 ---
+ E2E t ests for critical flows (5+ scenarios - bonus)
+ Load testing (bonus)
+8.2.2 Fr ontend Gör evleri
+Analy tics & R epor ting P ages:
+ Admin Dashbo ard (/admin/dashboard)
+Key metrics car ds (user s, enr ollments, att endance rat e)
+Char ts (line char ts for tr ends, b ar char ts for distributions)
+Recent activity feed
+System health status
+ Academic P erformance P age (/admin/analytics/academic)
+GPA statistics by dep artment
+Grade distribution char ts
+Student per formance table
+Expor t butt on
+ Attendance Analy tics P age (/admin/analytics/attendance)
+Attendance rat e char t (by cour se)
+Time series char t (att endance ov er time)
+At-risk students table
+Expor t butt on
+ Meal Analy tics P age (/admin/analytics/meal)
+Daily usage char t
+Revenue char t (if applicable)
+Peak hour s heatmap
+Expor t butt on
+Notification Cent er:
+ Notification Bell  (component in navb ar)
+Badge with unr ead count
+Dropdown with r ecent notifications
+Click t o view all
+ Notifications P age (/notifications)
+
+--- Page 52 ---
+List all notifications
+Filter by cat egor y
+Filter by r ead/unr ead
+Mark as r ead/unr ead
+Delet e individual notifications
+Mark all as r ead butt on
+ Notification Settings P age (/settings/notifications)
+Toggle swit ches for each cat egor y and channel
+Email, Push, SMS columns
+Save butt on
+IoT Dashbo ard (Bonus):
+ IoT Dashbo ard Page (/admin/iot)
+List all sensor s with curr ent readings
+Real-time updat es (W ebSock et)
+Historical data char ts
+Alerts/anomalies section
+Polish & UX Impr ovements:
+ Loading stat es (sk eletons, spinner s)
+ Empty stat es (no data messages)
+ Error boundaries (R eact err or handling)
+ Toast notifications (success, err or, info)
+ Confir mation dialogs (befor e delet e/cancel actions)
+ Form validation feedb ack
+ Accessibility (a11y) impr ovements
+ARIA labels
+Keybo ard navigation
+Focus management
+Screen r eader suppor t
+ Dark mode (bonus)
+ Internationalization (i18n) - T urkish/English (bonus)
+Performance Optimization:
+ Code splitting (R eact.lazy)
+
+--- Page 53 ---
+ Lazy lo ading images
+ Memoization (R eact.memo, useMemo, useCallb ack)
+ Debouncing (sear ch inputs)
+ Pagination (infinit e scroll or traditional)
+ Reduce bundle size (analyze with w ebpack-bundle-analyzer)
+Testing:
+ Component t ests (>40% cov erage)
+ Integration t ests (k ey user flows)
+ E2E t ests (Cypr ess/Playwright - bonus)
+8.2.3 DevOps & Deployment
+Dock er:
+ Multi-stage Dock erfile (b ackend)
+ Dock erfile (fr ontend)
+ Dock er Compose (b ackend + fr ontend + post gres + r edis)
+ Envir onment configuration (.env files)
+ Health checks
+CI/CD (Bonus):
+ GitHub Actions w orkflow
+Run t ests on push
+Build Dock er images
+Deploy t o cloud (Her oku, A WS, GCP , DigitalOcean)
+Datab ase:
+ All migrations t ested
+ Seed data for demo
+ Backup script
+Monit oring & Logging (Bonus):
+ Application logs (Winst on)
+ Error tracking (Sentr y - bonus)
+ Performance monit oring (New R elic - bonus)
+
+--- Page 54 ---
+8.3 P art 4 - T eslim Edilecekler
+Kod:
+1. ✅ Complet e backend r eposit ory (GitHub link)
+All modules implement ed
+Tests p assing
+Deployment r eady
+2. ✅ Complet e frontend r eposit ory (GitHub link)
+All pages implement ed
+Tests p assing
+Production build
+3. ✅ Dock er Compose setup
+Single command t o run entir e application
+README with instructions
+Dokümantasy on (T üm Dökümanlar):
+1. ✅ README.md  (Main pr oject RE ADME)
+Project ov erview
+Tech stack
+Featur es
+Installation guide
+Usage guide
+Contribut ors
+2. ✅ ARCHITECTURE.md
+System ar chitectur e diagram
+Technology choices
+Design p atterns
+Data flow
+3. ✅ API_DOCUMENT ATION.md  (Complet e)
+All endpoints (60+ endpoints)
+
+--- Page 55 ---
+Authentication
+Error codes
+Examples
+4. ✅ DATABASE_SCHEMA.md  (Complet e)
+Complet e ER diagram
+All tables (30+ tables)
+Index es
+Relationships
+5. ✅ DEPL OYMENT_GUIDE.md
+Dock er setup
+Envir onment v ariables
+Datab ase migrations
+Production deployment st eps
+Troubleshooting
+6. ✅ USER_MANU AL.md  (Complet e)
+For students
+For faculty
+For admins
+Screenshots and tut orials
+7. ✅ DEVEL OPER_GUIDE.md
+Project structur e
+Coding conv entions
+How t o contribut e
+Testing guide
+8. ✅ TEST_REPOR T.md (Complet e)
+Total t est cov erage
+Test results
+Known issues
+Performance benchmarks
+9. ✅ ANAL YTICS_GUIDE.md
+
+--- Page 56 ---
+Available r epor ts
+How t o interpret data
+Expor t options
+10. ✅ PROJECT_RE TROSPECTIVE.md
+What w ent w ell
+Challenges faced
+Lessons lear ned
+Futur e impr ovements
+Team collaboration r eflection
+Demo Video (Final):
+ 20-30 dakikalık compr ehensiv e demo
+ User r egistration t o graduation (full jour ney)
+ All major featur es
+ Admin dashbo ards
+ Mobile r esponsiv e demo
+Live Deployment (Bonus):
+ Deploy ed to cloud (Her oku, A WS, GCP , DigitalOcean)
+ Public URL pr ovided
+ Demo cr edentials shar ed
+8.4 P art 4 - Değerlendirme Krit erleri
+
+--- Page 57 ---
+Kriter Puan Açıklama
+Analy tics & R epor ting 20
+- Dashbo ard metrics 8 Data accuracy , char ts, real-time
+- Repor ts 8 Academic, att endance, meal, ev ent
+- Expor t functionality 4 Excel, PDF , CSV
+Notification S ystem 15
+- In-app notifications 5 List, r ead/unr ead, r eal-time
+- Email notifications 5 Templat es, deliv ery
+- Notification pr eferences 5 User contr ol, respect settings
+Integration & P olish 25
+- Module int egration 10 All parts work together seamlessly
+- UI/UX polish 10 Loading stat es, err or handling, consist ency
+- Performance 5 Load times, optimization
+Testing 15
+- Back end cov erage 8 Unit + int egration (>60%)
+- Frontend cov erage 5 Component + int egration (>40%)
+- E2E t ests 2 Critical flows (bonus)
+Deployment 10
+- Dock er setup 5 Works with one command
+- Deployment guide 3 Clear instructions
+- Live deployment 2 Bonus
+Documentation 10
+- Complet eness 5 All requir ed docs pr esent
+- Quality 3 Clear , detailed, for matted
+- Project r etrospectiv e 2 Reflectiv e, insightful
+Code Quality 5
+
+--- Page 58 ---
+Kriter Puan Açıklama
+- Clean code 2 Readable, maintainable
+- Best practices 2 Security , performance, conv entions
+- Git hist ory 1 Meaningful commits, branching
+TOPLAM 100
+Bonus Puanlar (+20):
+ WebSock et real-time featur es: +5
+ IoT sensor int egration: +5
+ CI/CD pipeline: +3
+ Live cloud deployment: +3
+ Dark mode: +2
+ Internationalization: +2, t ğrkçe oalcak zat en ingilizce olmak üzer e en az bir dil daha
+9. Dokümantasy on Ger eksinimleri
+9.1 Genel Dokümantasy on Kuralları
+Format:
+Tüm dökümanlar Mark down (.md)  formatında olmalıdır
+README.md her r eposit ory'de bulunmalıdır
+Tüm dökümanlar docs/ klasöründe or ganize edilmelidir
+İçerik S tandar tları:
+Başlıklar net v e hiy erarşik (#, ##, ###)
+Code blocks uy gun syntax highlighting ile ( javascript, sql)
+Tablolar düzenli for matlanmalı
+Screenshots v e diagrams kullanılmalı
+Örnekler eksiksiz v e çalışır durumda olmalı
+Referanslar v e linkler açık olmalı
+Görsel Mat eryal:
+
+--- Page 59 ---
+ER diagram (draw .io, dbdiagram.io, Lucidchar t)
+System ar chitectur e diagram
+User flow diagrams
+Screenshots (en az 20 adet tüm pr oje için)
+9.2 Zorunlu Dökümanlar
+Part 1 için:
+1. PROJECT_OVERVIE W.md
+2. API_DOCUMENT ATION.md (P art 1)
+3. DATABASE_SCHEMA.md (initial)
+4. USER_MANU AL_PART1.md
+5. TEST_REPOR T_PART1.md
+Part 2 için:  6. API_DOCUMENT ATION_P ART2.md 7. D ATABASE_SCHEMA_UPD ATE.md 8.
+GPS_IMPLEMENT ATION_GUIDE.md 9. USER_MANU AL_PART2.md 10. TEST_REPOR T_PART2.md
+Part 3 için:  11. API_DOCUMENT ATION_P ART3.md 12. P AYMENT_INTEGRA TION_GUIDE.md 13.
+SCHEDULING_AL GORITHM.md 14. USER_MANU AL_PART3.md 15. TEST_REPOR T_PART3.md
+Part 4 için:  16. RE ADME.md (main) 17. AR CHITECTURE.md 18. API_DOCUMENT ATION.md
+(complet e, consolidat ed) 19. D ATABASE_SCHEMA.md (complet e, consolidat ed) 20.
+DEPL OYMENT_GUIDE.md 21. USER_MANU AL.md (complet e) 22. DEVEL OPER_GUIDE.md 23.
+TEST_REPOR T.md (complet e) 24. ANAL YTICS_GUIDE.md 25. PR OJECT_RE TROSPECTIVE.md
+Toplam:  Minimum 25 Mark down dökümanı
+9.3 API Dokümantasy on Formatı
+Her endpoint için:
+
+--- Page 60 ---
+### Endpoint Name 
+**URL:** `POST /api/v1/resource` 
+**Authentication:** Required (JWT) 
+**Authorization:** Student, Faculty 
+**Description:** Brief description of what this endpoint does. 
+**Request Headers:** 
+| Header | Type | Required | Description | 
+|--------|------|----------|-------------| 
+| Authorization | String | Yes | Bearer {token} | 
+**Request Body:** 
+| Field | Type | Required | Description | 
+|-------|------|----------|-------------| 
+| name | String | Yes | User's full name | 
+| email | String | Yes | Valid email address | 
+**Example Request:** 
+```json 
+{ 
+  "name": "Ahmet Yılmaz", 
+  "email": "ahmet@example.com" 
+}
+Success R esponse (201 Cr eated):
+{ 
+  "success": true, 
+  "data": { 
+    "id": "123e4567-e89b-12d3-a456-426614174000", 
+    "name": "Ahmet Yılmaz", 
+    "email": "ahmet@example.com", 
+    "createdAt": "2025-12-05T10:30:00Z" 
+  } 
+}
+Error Responses:
+400 Bad R equest:
+
+--- Page 61 ---
+{ 
+  "success": false, 
+  "error": { 
+    "code": "VALIDATION_ERROR", 
+    "message": "Invalid email format" 
+  } 
+}
+401 Unauthorized:
+{ 
+  "success": false, 
+  "error": { 
+    "code": "UNAUTHORIZED", 
+    "message": "Invalid or expired token" 
+  } 
+}
+
+--- Page 62 ---
+--- 
+## 10. Değerlendirme Kriterleri 
+### 10.1 Genel Değerlendirme Dağılımı 
+| Bileşen | Toplam Puan | Açıklama | 
+|---------|-------------|----------| 
+| **Part 1** | 20 puan | Auth + User Management | 
+| **Part 2** | 25 puan | Academic + GPS Attendance | 
+| **Part 3** | 25 puan | Meal + Event + Scheduling | 
+| **Part 4** | 30 puan | Analytics + Integration + Final | 
+| **GENEL TOPLAM** | **100 puan** | | 
+**Bonus:** Maximum +50 puan (toplam 150 üzerinden) 
+### 10.2 Değerlendirme Boyutları 
+Her part için değerlendirme kriterleri: 
+#### 10.2.1 Teknik Implementasyon (40-50%) 
+**Backend:** 
+- API endpoint'lerin doğru çalışması 
+- Business logic doğruluğu 
+- Error handling kalitesi 
+- Security best practices 
+- Database design ve query optimization 
+- Code organization ve clean code 
+**Frontend:** 
+- UI/UX kalitesi 
+- Responsive design 
+- State management 
+- Form validation 
+- Error handling 
+- Performance optimization 
+#### 10.2.2 Dokümantasyon (10-15%) 
+- Eksiksizlik (tüm gerekli dökümanlar mevcut) 
+- Kalite (açık, detaylı, örnekli) 
+- Format (düzgün markdown, görsellerle zenginleştirilmiş) 
+- Güncellik (kod ile uyumlu) 
+#### 10.2.3 Testing (5-15%) 
+- Test coverage (unit + integration) 
+- Test quality (meaningful tests) 
+- Edge cases covered 
+
+--- Page 63 ---
+- E2E tests (bonus) 
+#### 10.2.4 DevOps & Deployment (5-10%) 
+- Docker setup çalışır durumda 
+- README instructions açık 
+- Environment configuration 
+- Migration scripts 
+- Live deployment (bonus) 
+#### 10.2.5 Code Quality & Best Practices (5-10%) 
+- Clean code principles 
+- Consistent naming conventions 
+- Comments (where needed) 
+- No code smells 
+- Git commit quality 
+- Branching strategy 
+#### 10.2.6 Innovation & Extras (0-15%, bonus) 
+- Extra features beyond requirements 
+- Creative solutions 
+- Advanced algorithms 
+- Outstanding UI/UX 
+- Exceptional performance 
+### 10.3 Süreklilik ve İlerleme Değerlendirmesi 
+**GitHub Commit History (10 bonus puan):** 
+- Düzenli commit'ler (her gün en az 2-3 commit) 
+- Meaningful commit messages 
+- İyi branching strategy 
+- Code review evidence (pull requests) 
+**Ara Teslim Performansı:** 
+- Her ara teslim zamanında teslim edilirse: +2 puan 
+- Geç teslimlerde her gün için: -10% (max 3 gün) 
+**Proje Süreci:** 
+- Projeyi son 2 güne bırakmamak önemli 
+- Commit history'de sürekli geliştirme görülmeli 
+- Last-minute rush belirtileri: Puan kesintisi 
+### 10.4 Ekip Çalışması Değerlendirmesi 
+**Bireysel Katkı:** 
+- Her öğrencinin GitHub contribution'ları incelenecek 
+- Eşit dağılmamış iş yükü: Bireysel puan düzenlemesi 
+- Peer evaluation (opsiyonel) 
+
+--- Page 64 ---
+**Ekip Organizasyonu:** 
+- Task distribution evidence 
+- Communication (Slack, Discord, meetings) 
+- Documentation of responsibilities 
+### 10.5 Sunum Değerlendirmesi (29 Aralık) 
+**Sunum Formatı (15-20 dakika + Q&A):** 
+**İçerik (60%):** 
+- [ ] Proje tanıtımı (2 min) 
+- [ ] Teknik mimari açıklaması (3 min) 
+- [ ] Live demo - tüm modüller (10-12 min) 
+- [ ] Challenges & solutions (2 min) 
+- [ ] Q&A (5 min) 
+**Sunum Becerileri (20%):** 
+- Akıcı anlatım 
+- Zaman yönetimi 
+- Visual aids (slides) kalitesi 
+- Ekip koordinasyonu 
+**Demo Kalitesi (20%):** 
+- Çalışır durumda gösterim 
+- Tüm major features 
+- Error handling 
+- Edge cases 
+**Sunum Puanı:** Toplam 20 puan (nihai nota eklenir) 
+--- 
+## 11. Teslim Formatı ve Kurallar 
+### 11.1 GitHub Repository Yapısı 
+**Backend Repository:**
+smar t-campus-b ackend/ ├──  .github/ │  └──  workflows/ # CI/CD (bonus) ├──  docs/ # Tüm
+dökümanlar │  ├──  API_DOCUMENT ATION.md │  ├──  DATABASE_SCHEMA.md │  ├──
+DEPL OYMENT_GUIDE.md │  └──  ... ├──  src/ │  ├──  config/ │  ├──  contr ollers/ │  ├──
+middlewar e/ │  ├──  models/ │  ├──  routes/ │  ├──  services/ │  ├──  utils/ │  └──  app.js ├──
+tests/ │  ├──  unit/ │  └──  integration/ ├──  migrations/ ├──  seeder s/ ├──  .env.example ├──
+.gitignor e ├──  Dock erfile ├──  dock er-compose.yml ├──  package.json └──  README.md
+**Frontend Repository:**
+
+--- Page 65 ---
+smar t-campus-fr ontend/ ├──  docs/ # User manual, guides ├──  public/ ├──  src/ │  ├──
+assets/ │  ├──  components/ │  ├──  cont ext/ │  ├──  hooks/ │  ├──  pages/ │  ├──  services/ │
+├──  utils/ │  ├──  App.js │  └──  index.js ├──  tests/ ├──  .env.example ├──  .gitignor e ├──
+Dock erfile ├──  package.json └──  README.md
+### 11.2 Teslim Checklist 
+**Her Ara Teslim İçin:** 
+- [ ] GitHub repository link (public veya private with access) 
+- [ ] README.md güncel ve detaylı 
+- [ ] .env.example dosyası eksiksiz 
+- [ ] Docker setup çalışır durumda 
+- [ ] Tests çalışır durumda (npm test) 
+- [ ] Linting hatası yok (npm run lint) 
+- [ ] Build başarılı (npm run build) 
+- [ ] Dökümanlar eksiksiz (ilgili part için)
+- [ ] Demo video linki (YouTube/Drive) 
+**Final Teslim İçin (Part 4):** 
+- [ ] Yukarıdaki tüm maddeler 
+- [ ] 25 döküman tamamlanmış 
+- [ ] Tüm testler passing 
+- [ ] Test coverage raporları (coverage/) 
+- [ ] Live deployment URL (bonus) 
+- [ ] Sunum slides (PDF) 
+### 11.3 Teslim Yöntemi 
+**Platform:** LMS (öğrenim yönetim sistemi) + GitHub 
+**LMS'ye Yüklenecekler:** 
+1. **submission_partX.txt** dosyası (X = 1, 2, 3, 4):
+Group Name: [Grup Adınız] Member s:
+[Öğrenci 1 - Numara]
+[Öğrenci 2 - Numara]
+[Öğrenci 3 - Numara]
+[Öğrenci 4 - Numara]
+GitHub R eposit ories:
+Backend: [URL]
+
+--- Page 66 ---
+Frontend: [URL]
+Dock er Compose:
+Instructions: See RE ADME.md
+Command: dock er-compose up
+Demo Video: [Y ouTube/Driv e URL]
+Live Deployment (if any): [URL]
+Notes: [Özel notlar v arsa]
+2. demo_video_p artX.mp4  (veya link)
+3. docs.zip  (tüm dökümanlar ZIP'lenmiş)
+11.4 Geç T eslim P olitikası
+0-24 saat geç:  -10%
+24-48 saat geç:  -20%
+48-72 saat geç:  -30%
+72+ saat geç:  Kabul edilmez (0 puan)
+İstisnalar :
+Sağlık raporu (r esmi belgeli)
+Teknik sorunlar (kanıt ger ekli, GitHub/LMS downtime)
+12. Akademik Dürüstlük
+12.1 Kabul Edilebilir Kaynaklar
+İzin V erilen:
+✅ Resmi dokümantasy on (R eact, Node.js, P ostgreSQL, vs.)
+✅ StackOv erflow, GitHub discussions (genel sorular için)
+✅ Tutorial'lar (t emel kavramlar için)
+✅ ChatGPT/AI araçları (sadece yar dımcı olarak , anlayarak)
+
+--- Page 67 ---
+✅ Open-sour ce libraries (lisansa uy gun)
+✅ Kendi önceki pr ojeleriniz
+İzin V erilmey en:
+❌ Başka grupların k odu (tamamını v eya büyük bölümlerini)
+❌ GitHub'da bulunan benzer pr ojeleri k opyalamak
+❌ Code generation t ools kullanıp anlamadan yapıştır mak
+❌ Freelancer'lar dan k od satın almak
+❌ Arkadaşlarınızın k odunu k opyalamak
+12.2 Benzerlik K ontrolü
+Tüm k od submission 'ları plagiarism det ection t ool ile kontrol edilecek
+GitHub public pr ojeleri ile kar şılaştır ma yapılacak
+Gruplar arası k od benzerliği k ontrol edilecek
+Tespit Edilir se:
+İlk ihlal: Uyarı + tüm pr oje ödevinden 0 puan
+İkinci ihlal: T üm pr ojeden 0 puan + disiplin işlemi
+12.3 AI Kullanımı R ehberi
+Doğru Kullanım:
+❓ "How to implement JWT authentication in Express?" 
+✅ AI açıklar, siz anlayıp kendi kodunuzu yazarsınız 
+❓ "What's wrong with this Haversine formula?" 
+✅ AI debug yapar, siz düzeltirsiniz
+Yanlış Kullanım:
+❌ "Write complete authentication system for me" 
+❌ "Generate entire GPS attendance module code"
+Genel Pr ensip:  AI'yı öğretmen  olarak kullanın, kod yazıcı  olarak değil. Y azdığınız her satır k odu
+anlayın  ve açıklayabilecek  durumda olun.
+12.4 Kaynak Belir tme
+
+--- Page 68 ---
+Eğer bir k od snippet'i v eya algoritma alıy orsanız:
+// Source: https://stackoverflow.com/questions/... 
+// Adapted from: [Author name] - [URL] 
+function haversineDistance(lat1, lon1, lat2, lon2) { 
+  // implementation 
+}
+13. Ekstra Notlar v e İpuçları
+13.1 Önerilen Çalışma Akışı
+Günlük Rutin:
+1. Stand-up meeting  (15 dakika)
+Dün ne yaptım?
+Bugün ne yap acağım?
+2. Kod yazma
+Featur e dev elopment
+Bug fixing
+Testing
+3. Code r eview  (30 dakika)
+Birbirinizin k odunu inceleyin
+Pull r equest appr oval
+4. Git commit  (günde en az 2-3 commit)
+Meaningful commit messages
+Atomic commits
+Haftalık:
+Sprint planning (P azartesi)
+Sprint r eview (P azar - ara t eslim)
+Retrospectiv e (ne iyi gitti, ne geliştirilebilir?)
+
+--- Page 69 ---
+13.2 Y aygın Hatalar v e Nasıl Önlenir
+Hata 1: Son güne bırakma
+❌ "28 Aralık'ta b aşlarız"
+✅ İlk günden b aşla, her gün ilerleme kay det
+Hata 2: Planlamadan k od yazmaya b aşlamak
+❌ "Hemen k od yazalım"
+✅ Önce datab ase schema, sonra API design, sonra implementation
+Hata 3: T est yazmamak
+❌ "Sonra yazarız"
+✅ Her featur e ile birlik te test yaz (TDD - bonus)
+Hata 4: Dokümantasy on gecik tirmek
+❌ "Proje bitince yazarız"
+✅ Her featur e ile birlik te dokümant e et
+Hata 5: Mer ge conflict'ler den kaçınmamak
+❌ Herk es main branch'de çalışsın
+✅ Featur e branches + pull r equests
+13.3 Zaman Y önetimi Önerileri
+Part 1 (4 gün):
+Gün 1: Datab ase + Back end setup
+Gün 2: Auth endpoints
+Gün 3: Fr ontend (login, r egist er, profile)
+Gün 4: T esting + Docs + P olish
+Part 2 (7 gün):
+Gün 1-2: Academic management b ackend
+Gün 3-4: GPS att endance b ackend (en kritik!)
+Gün 5-6: Fr ontend p ages
+Gün 7: T esting + Docs + P olish
+
+--- Page 70 ---
+Part 3 (7 gün):
+Gün 1-2: Meal ser vice (b ackend + p ayment)
+Gün 3-4: Ev ent management
+Gün 5-6: Scheduling (algorithm - zor!)
+Gün 7: T esting + Docs + P olish
+Part 4 (6 gün):
+Gün 1-2: Analy tics + Notifications
+Gün 3-4: Int egration + Bug fix es
+Gün 5: Final docs + Deployment
+Gün 6: Sunum hazırlığı + R ehear sal
+13.4 Y ardım Alma
+İlk Kaynak :
+1. Resmi dokümantasy on
+2. Google / S tackOv erflow
+3. ChatGPT (anlayarak kullan)
+4. Grup arkadaşların
+Office Hour s:
+[Gün v e Saat] - İnstruct or office hour s
+Email: [Email adr esi]
+LMS Forum: Genel sorular için
+Soru Sorark en:
+Spesifik ol ("K od çalışmıy or" y erine "JW T token expir e olmuy or, kod: ...")
+Hata mesajlarını p aylaş
+Denediğin çözümleri açıkla
+Minimal r eproducible example v er
+13.5 Motiv asyon ve Ekip Çalışması
+Ekip Dinamikleri:
+Herk es eşit katkı sağlamalı
+
+--- Page 71 ---
+Sorumlulukları net belirleyin
+Düzenli iletişim (daily standups)
+Conflict'leri erk en çözün
+Birbirinizi dest ekleyin
+Tükenmişlik Önleme:
+Düzenli molalar (P omodor o: 25 min çalış, 5 min mola)
+Uyku düzeninizi bozmayın
+Günlük hedefler belirleyin (ov erwhelming olmasın)
+Başarıları kutlayın (küçük de olsa)
+Son Söz:  Gerçek dünya deneyimi kazanacaksınız. Yıllar sonra por tfolio 'nuzda göst erebileceğiniz
+bir pr oje olacak . Başarılar!  🚀
+14. Sık Sorulan Sorular (F AQ)
+*
+Q: React zorunlu mu? V ue kullanabilir miyiz?  A: Ev et, React zorunlu. Framew ork
+standar dizasy onu için.
+Q: PostgreSQL y erine MongoDB kullanabilir miyiz?  A: Hayır , ilişkisel v eritab anı (P ostgreSQL)
+zorunlu.
+Q: Payment int egration için ger çek API k ey ger ekli mi?  A: Hayır , test/sandbo x mode y eterli
+(Stripe t est mode, P ayTR sandbo x).
+Q: GPS için ger çek cihaz ger ekli mi?  A: Ev et, tarayıcı GPS API' si ger çek cihazda t est edilmeli.
+Desk top'ta simüle edilebilir (Chr ome DevT ools).
+Q: Dokümantasy onda İngilizce mi T ürkçe mi kullanmalıyız?  A: Türkçe, ancak t eknik t erimler
+İngilizce olmalı.
+Q: Ara t eslim yapmayı unuttuk , ne olur?  A: O p art'tan 0 puan alır sınız. Mutlaka ara t eslimleri
+yapın!
+Q: Liv e deployment zorunlu mu?  A: Ev et, not açıklanan kadar sür ekli açık kalacak t est
+edilebilecek yapılan kısımlar . Dock er ile local deployment da zorunlu.
+
+--- Page 72 ---
+Q: ChatGPT vb. ile k od yazsak sorun olur mu?  A: Yardımcı olarak kullanabilir siniz ama k odu
+anlamalısınız. K ör kopya yasak .
+Q: Bonus featur e'ları yapmak zorunda mıyız?  A: Hayır , ama extra puan ist er ve vakit v arsa yapın.
+15. Değerlendirme Rubric Özeti
+Part Deadline Ağırlık Ana Özellikler Bonus Maks
+Part 1 8 Ara P azar 23:59 20% Auth + User Mgmt +10
+Part 2 15 Ara P azar 23:59 25% Academic + GPS A ttendance +15
+Part 3 22 Ara P azar 23:59 25% Meal + Ev ent + Schedule +12
+Part 4 28 Ara Cmt 23:59 30% Analy tics + Int egration +20
+Sunum 29 Ara P azar +20 Live Demo + Q&A -
+TOPLAM 100% + Sunum 20 +57 bonus
+Maximum Pr oje Puanı:  100 + 20 (sunum) + 57 (bonus) = 177 puan  Passing Scor e: 60/10
+🎓 Başarılar dileriz! Bu pr ojeyi tamamladığınızda, yap ay zeka ile dahi olsa :) ger çek dünya
+senar yolarında modern w eb uy gulaması geliştir ebilecek deneyime sahip olacaksınız.
+📅 Önemli T arihler :
+5 Aralık : Proje b aşlangıç
+8 Aralık : Part 1 teslim
+15 Aralık : Part 2 teslim
+22 Aralık : Part 3 teslim
+28 Aralık : Final t eslim
+29 Aralık : Sunumlar
+Good luck and happy coding! 💻 🚀
+*Dr. Öğr etim Mehmet Sevri
