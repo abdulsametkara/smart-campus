@@ -11,7 +11,19 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminLogsPage from './pages/AdminLogsPage';
+// import AdminAcademicPage from './pages/AdminAcademicPage'; // TODO: Create this page
+import SectionsListPage from './pages/SectionsListPage';
+import SectionDetailPage from './pages/SectionDetailPage';
+import SectionFormPage from './pages/SectionFormPage';
+
 import NotFoundPage from './pages/NotFoundPage';
+// Attendance pages - TODO: Create these pages if they don't exist
+// import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
+// import StudentAttendancePage from './pages/attendance/StudentAttendancePage';
+// import MyAttendancePage from './pages/attendance/MyAttendancePage';
+// import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
+// import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
+// import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
 import './App.css';
 
 function Header() {
@@ -22,9 +34,10 @@ function Header() {
       <Link to="/" className="app-brand">
         Campy
       </Link>
-      {user && (
+          {user && (
         <nav className="app-nav">
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          <Link to="/sections" className="nav-link">Ders Bölümleri</Link>
           <Link to="/profile" className="nav-link">Profil</Link>
           {user.role === 'admin' && (
             <>
@@ -85,6 +98,103 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+
+          {/* TODO: Uncomment when AdminAcademicPage is created
+          <Route
+            path="/admin/academic"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminAcademicPage />
+              </ProtectedRoute>
+            }
+          />
+          */}
+
+          {/* Sections Routes */}
+          <Route
+            path="/sections"
+            element={
+              <ProtectedRoute>
+                <SectionsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/new"
+            element={
+              <ProtectedRoute roles={['admin', 'faculty']}>
+                <SectionFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/:id"
+            element={
+              <ProtectedRoute>
+                <SectionDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'faculty']}>
+                <SectionFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Attendance Routes - TODO: Uncomment when attendance pages are created
+          <Route
+            path="/attendance/instructor"
+            element={
+              <ProtectedRoute roles={['faculty']}>
+                <InstructorAttendancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/report"
+            element={
+              <ProtectedRoute roles={['faculty']}>
+                <AttendanceReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/student"
+            element={
+              <ProtectedRoute roles={['student']}>
+                <StudentAttendancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/my-stats"
+            element={
+              <ProtectedRoute roles={['student']}>
+                <MyAttendancePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/attendance/excuses/new"
+            element={
+              <ProtectedRoute roles={['student']}>
+                <ExcuseRequestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/excuses/manage"
+            element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <ExcuseManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          */}
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFoundPage />} />
