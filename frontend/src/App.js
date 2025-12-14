@@ -11,19 +11,18 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminLogsPage from './pages/AdminLogsPage';
-// import AdminAcademicPage from './pages/AdminAcademicPage'; // TODO: Create this page
+import AdminAcademicPage from './pages/AdminAcademicPage';
 import SectionsListPage from './pages/SectionsListPage';
 import SectionDetailPage from './pages/SectionDetailPage';
 import SectionFormPage from './pages/SectionFormPage';
 
 import NotFoundPage from './pages/NotFoundPage';
-// Attendance pages - TODO: Create these pages if they don't exist
-// import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
-// import StudentAttendancePage from './pages/attendance/StudentAttendancePage';
-// import MyAttendancePage from './pages/attendance/MyAttendancePage';
-// import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
-// import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
-// import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
+import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
+import StudentAttendancePage from './pages/attendance/StudentAttendancePage';
+import MyAttendancePage from './pages/attendance/MyAttendancePage';
+import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
+import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
+import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
 import './App.css';
 
 function Header() {
@@ -43,6 +42,7 @@ function Header() {
             <>
               <Link to="/admin/users" className="nav-link">Kullanıcılar</Link>
               <Link to="/admin/logs" className="nav-link">Loglar</Link>
+              <Link to="/admin/academic" className="nav-link">Akademik</Link>
             </>
           )}
           <button className="btn secondary btn-sm" onClick={logout} style={{ marginLeft: 8 }}>
@@ -99,7 +99,6 @@ function AppContent() {
             }
           />
 
-          {/* TODO: Uncomment when AdminAcademicPage is created
           <Route
             path="/admin/academic"
             element={
@@ -108,7 +107,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          */}
 
           {/* Sections Routes */}
           <Route
@@ -144,7 +142,7 @@ function AppContent() {
             }
           />
 
-          {/* Attendance Routes - TODO: Uncomment when attendance pages are created
+          {/* Attendance Routes */}
           <Route
             path="/attendance/instructor"
             element={
@@ -194,7 +192,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          */}
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFoundPage />} />

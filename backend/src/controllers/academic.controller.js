@@ -1,3 +1,4 @@
+'use strict';
 const { Course, CourseSection, User, Enrollment, Department, Classroom, AttendanceSession, AttendanceRecord } = require('../../models');
 const { Op } = require('sequelize');
 const sequelize = require('../../models').sequelize;
@@ -244,10 +245,6 @@ exports.createSection = async (req, res) => {
         if (!instructor) {
             return res.status(400).json({ message: 'Invalid instructor. User must be a faculty member' });
         }
-
-        // If faculty, check if they can create sections for this course
-        // (This is optional - you might want to allow faculty to create sections for any course)
-        // For now, only admin can create sections
 
         // Check for duplicate section (same course_id, section_number, semester)
         const existing = await CourseSection.findOne({
@@ -812,7 +809,7 @@ exports.getAllCourses = async (req, res) => {
             order: [['code', 'ASC']],
             limit: limitNum,
             offset: offset,
-            paranoid: true // Only get non-deleted courses
+            paranoid: true
         });
 
         res.json({
@@ -893,7 +890,7 @@ exports.createCourse = async (req, res) => {
         // Check if course code already exists
         const existing = await Course.findOne({
             where: { code },
-            paranoid: false // Check even deleted courses
+            paranoid: false
         });
         if (existing) {
             return res.status(409).json({ message: `Course with code ${code} already exists` });
@@ -912,7 +909,6 @@ exports.createCourse = async (req, res) => {
 
         // Add prerequisites if provided
         if (prerequisites && Array.isArray(prerequisites) && prerequisites.length > 0) {
-            // Validate prerequisite course IDs exist
             const prereqCourses = await Course.findAll({
                 where: { id: { [Op.in]: prerequisites } }
             });
@@ -921,7 +917,6 @@ exports.createCourse = async (req, res) => {
                 return res.status(400).json({ message: 'Some prerequisite courses not found' });
             }
 
-            // Add prerequisites
             await course.setPrerequisites(prereqCourses);
         }
 
@@ -991,7 +986,6 @@ exports.updateCourse = async (req, res) => {
 
                 await course.setPrerequisites(prereqCourses);
             } else {
-                // Remove all prerequisites
                 await course.setPrerequisites([]);
             }
         }

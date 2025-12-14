@@ -25,5 +25,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/departments', departmentRoutes);
 app.use('/api/v1/admin', require('./routes/admin.routes'));
+app.use('/api/v1/attendance', require('../routes/attendance.routes'));
+app.use('/api/v1/academic', require('./routes/academic.routes'));
 
 module.exports = app;

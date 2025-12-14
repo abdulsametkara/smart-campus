@@ -116,7 +116,7 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* Attendance Module Quick Access - TODO: Uncomment when attendance pages are created
+      {/* Attendance Module Quick Access */}
       <section className="attendance-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
         <h2 style={{ marginBottom: '1rem' }}>Yoklama İşlemleri</h2>
         <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -167,7 +167,6 @@ const DashboardPage = () => {
 
         </div>
       </section>
-      */}
     </div>
   );
 };

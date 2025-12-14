@@ -12,10 +12,6 @@ module.exports = {
             { name: 'Architecture', code: 'ARCH', faculty_name: 'Architecture', created_at: new Date(), updated_at: new Date() }
         ];
 
-        // Check if departments exist to avoid duplicates (optional but good practice)
-        // For simplicity in seed, we use bulkInsert with ignoreDuplicates if possible or just insert
-        // Postgres doesn't support ignoreDuplicates in standard bulkInsert easily without specific dialect options.
-        // We'll proceed with bulkInsert. If it fails due to unique constraint, it means it's already seeded.
         try {
             await queryInterface.bulkInsert('departments', departments, {});
         } catch (e) {
@@ -134,7 +130,7 @@ module.exports = {
                 instructor_id: facultyId,
                 capacity: 50,
                 enrolled_count: 1,
-                schedule: [{ day: "Monday", start: "09:00", end: "12:00", room_id: classroomId }],
+                schedule: JSON.stringify([{ day: "Monday", start: "09:00", end: "12:00", room_id: classroomId }]),
                 created_at: new Date(),
                 updated_at: new Date()
             }
@@ -174,7 +170,7 @@ module.exports = {
                 section_id: sectionId,
                 instructor_id: facultyId,
                 start_time: new Date(),
-                end_time: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
+                end_time: new Date(new Date().getTime() + 60 * 60 * 1000),
                 latitude: 41.0082,
                 longitude: 28.9784,
                 radius: 20,
@@ -197,6 +193,5 @@ module.exports = {
         await queryInterface.bulkDelete('course_sections', null, {});
         await queryInterface.bulkDelete('classrooms', null, {});
         await queryInterface.bulkDelete('courses', null, {});
-        // Be careful deleting users/departments as they might be used elsewhere
     }
 };
