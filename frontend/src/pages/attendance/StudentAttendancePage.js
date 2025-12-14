@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent, Button, Box, CircularProgress, Alert, TextField } from '@mui/material';
-import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from 'react-leaflet';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Circle, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import L from 'leaflet';
+import Swal from 'sweetalert2';
+import '../../styles/attendance.css';
 
 // Fix for default marker icon in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -15,18 +16,20 @@ L.Icon.Default.mergeOptions({
 
 const StudentAttendancePage = () => {
     const [location, setLocation] = useState(null);
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [session, setSession] = useState(null); // Active session data
-    const [qrCode, setQrCode] = useState(''); // Would come from QR Scanner or Input
+    const [qrCode, setQrCode] = useState('');
+    const [status, setStatus] = useState({ type: 'info', msg: 'Lütfen derse katılmak için konumunuzu doğrulayın.' });
 
-    // Session will be set when user gets their location (for demo purposes)
+    // Dummy session coords for visualization before actual check-in data is known
+    // In a real app, you might fetch active session coordinates first, or just show user location map
+    const [mapCenter, setMapCenter] = useState(null);
 
     const getLocation = () => {
         setLoading(true);
-        setError(null);
+        setStatus({ type: 'info', msg: 'Konum alınıyor...' });
+
         if (!navigator.geolocation) {
-            setError("Geolocation is not supported by your browser");
+            setStatus({ type: 'error', msg: 'Tarayıcınız GPS desteklemiyor.' });
             setLoading(false);
             return;
         }
@@ -35,19 +38,12 @@ const StudentAttendancePage = () => {
             (position) => {
                 const { latitude, longitude, accuracy } = position.coords;
                 setLocation({ latitude, longitude, accuracy });
-
-                // For demo: Set session center to user's location so they can test check-in
-                setSession({
-                    id: 1,
-                    latitude: latitude,
-                    longitude: longitude,
-                    radius: 50 // 50 meter radius for testing
-                });
-
+                setMapCenter([latitude, longitude]);
+                setStatus({ type: 'success', msg: `Konum başarıyla alındı! (Doğruluk: ${accuracy.toFixed(1)}m)` });
                 setLoading(false);
             },
             (err) => {
-                setError("Unable to retrieve your location. Please ensure GPS is enabled.");
+                setStatus({ type: 'error', msg: 'Konum alınamadı. Lütfen GPS izni verin.' });
                 setLoading(false);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -55,90 +51,129 @@ const StudentAttendancePage = () => {
     };
 
     const handleCheckIn = async () => {
-        if (!location || !session) return;
+        if (!location || !qrCode) {
+            Swal.fire('Eksik Bilgi', 'Lütfen konum alın ve QR kodunu girin.', 'warning');
+            return;
+        }
 
         try {
             const token = localStorage.getItem('accessToken');
             await axios.post('http://localhost:5000/api/v1/attendance/checkin', {
                 latitude: location.latitude,
                 longitude: location.longitude,
-                qr_code: qrCode // Session will be found by QR code
+                accuracy: location.accuracy,
+                qr_code: qrCode
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('Check-in Successful!');
+            Swal.fire({
+                title: 'Yoklama Başarılı! 🎉',
+                text: 'Derse katılımınız onaylandı.',
+                icon: 'success',
+                confirmButtonColor: '#22c55e'
+            });
+            setQrCode('');
         } catch (err) {
-            alert('Check-in Failed: ' + (err.response?.data?.message || err.message));
+            Swal.fire({
+                title: 'Yoklama Başarısız ❌',
+                text: err.response?.data?.message || err.message,
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            });
         }
     };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>Yoklamaya Katıl</Typography>
+        <div className="attendance-page">
+            <div className="page-title">
+                <span className="icon">📍</span>
+                <h1>Yoklamaya Katıl</h1>
+            </div>
 
-            <Card sx={{ mb: 3 }}>
-                <CardContent>
-                    <Typography variant="h6">1. Konum Al</Typography>
-                    <Box sx={{ mt: 2, mb: 2 }}>
-                        <Button variant="contained" onClick={getLocation} disabled={loading}>
-                            {loading ? <CircularProgress size={24} /> : 'Konumumu Al'}
-                        </Button>
-                    </Box>
-                    {error && <Alert severity="error">{error}</Alert>}
-                    {location && (
-                        <Alert severity="success">
-                            Konum alındı! (Enlem: {location.latitude.toFixed(4)}, Boylam: {location.longitude.toFixed(4)})
-                            <br />Doğruluk: {location.accuracy.toFixed(1)}m
-                        </Alert>
-                    )}
-                </CardContent>
-            </Card>
+            <div className="attendance-stats-grid" style={{ gridTemplateColumns: '1fr' }}>
+                <div className="course-attendance-card">
+                    <div className="card-header" style={{ marginBottom: '1rem', borderBottom: '1px solid #f0f0f0', paddingBottom: '1rem' }}>
+                        <h3 style={{ margin: 0, color: '#1a1a2e' }}>1. Adım: Konum Doğrulama</h3>
+                    </div>
 
-            {location && session && (
-                <Card>
-                    <CardContent>
-                        <Typography variant="h6">2. Doğrula ve Katıl</Typography>
-                        <Box sx={{ height: 300, mt: 2, mb: 2 }}>
-                            <MapContainer center={[session.latitude, session.longitude]} zoom={18} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <p style={{ color: '#666', fontSize: '0.95rem' }}>
+                            Derse katılım için kampüs içinde olduğunuzu doğrulamanız gerekmektedir.
+                        </p>
+
+                        <button
+                            className={`action-button ${location ? 'success' : 'primary'}`}
+                            onClick={getLocation}
+                            disabled={loading}
+                            style={{ justifyContent: 'center', width: '100%', padding: '1rem' }}
+                        >
+                            {loading ? 'Konum Alınıyor...' : location ? 'Konumu Güncelle' : '📍 Konumumu Al'}
+                        </button>
+
+                        {status.msg && (
+                            <div className={`custom-alert ${status.type === 'error' ? 'danger' : status.type === 'success' ? 'success' : 'info'}`}>
+                                <span>{status.type === 'error' ? '❌' : status.type === 'success' ? '✅' : 'ℹ️'}</span>
+                                {status.msg}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {location && (
+                    <div className="course-attendance-card" style={{ animation: 'slideIn 0.3s ease-out' }}>
+                        <div className="card-header" style={{ marginBottom: '1rem', borderBottom: '1px solid #f0f0f0', paddingBottom: '1rem' }}>
+                            <h3 style={{ margin: 0, color: '#1a1a2e' }}>2. Adım: QR Kod ve Onay</h3>
+                        </div>
+
+                        {/* Map Preview */}
+                        <div className="map-container" style={{ height: '250px', marginBottom: '1.5rem', borderRadius: '12px', border: '2px solid #eef2f7' }}>
+                            <MapContainer center={mapCenter} zoom={18} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
                                 <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
-                                <Circle
-                                    center={[session.latitude, session.longitude]}
-                                    radius={session.radius}
-                                    pathOptions={{ color: 'green', fillColor: 'green' }}
-                                />
                                 <Marker position={[location.latitude, location.longitude]}>
-                                    <Popup>Buradasınız</Popup>
+                                    <Popup>Şu an buradasınız</Popup>
                                 </Marker>
+                                {/* Circle representing simplified range visualization */}
+                                <Circle
+                                    center={[location.latitude, location.longitude]}
+                                    radius={20}
+                                    pathOptions={{ color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.2 }}
+                                />
                             </MapContainer>
-                        </Box>
+                        </div>
 
-                        <TextField
-                            fullWidth
-                            label="Oturum Kodu / QR Metni"
-                            variant="outlined"
-                            value={qrCode}
-                            onChange={(e) => setQrCode(e.target.value)}
-                            placeholder="Öğretmenin ekranındaki kodu girin"
-                            sx={{ mb: 2 }}
-                        />
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label className="stat-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Oturum Kodu / QR</label>
+                            <input
+                                type="text"
+                                className="action-input"
+                                value={qrCode}
+                                onChange={(e) => setQrCode(e.target.value)}
+                                placeholder="Tahtadaki kodu girin..."
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    borderRadius: '12px',
+                                    border: '2px solid #eef2f7',
+                                    fontSize: '1.1rem',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            />
+                        </div>
 
-                        <Button
-                            variant="contained"
-                            color="success"
-                            fullWidth
-                            size="large"
+                        <button
+                            className="action-button success"
                             onClick={handleCheckIn}
-                            disabled={!qrCode}
+                            style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1.1rem' }}
                         >
-                            Yoklamayı Onayla
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
-        </Container>
+                            ✅ YOKLAMAYI ONAYLA
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
