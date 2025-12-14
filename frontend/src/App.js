@@ -12,6 +12,9 @@ import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminLogsPage from './pages/AdminLogsPage';
 import AdminAcademicPage from './pages/AdminAcademicPage';
+import SectionsListPage from './pages/SectionsListPage';
+import SectionDetailPage from './pages/SectionDetailPage';
+import SectionFormPage from './pages/SectionFormPage';
 
 import NotFoundPage from './pages/NotFoundPage';
 import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
@@ -35,6 +38,7 @@ function Header() {
       {user && (
         <nav className="app-nav">
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          <Link to="/sections" className="nav-link">Ders Bölümleri</Link>
 
           {/* Öğrenci Menüsü */}
           {user.role === 'student' && (
@@ -120,13 +124,45 @@ function AppContent() {
             }
           />
 
-
-
           <Route
             path="/admin/academic"
             element={
               <ProtectedRoute roles={['admin']}>
                 <AdminAcademicPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Sections Routes */}
+          <Route
+            path="/sections"
+            element={
+              <ProtectedRoute>
+                <SectionsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/new"
+            element={
+              <ProtectedRoute roles={['admin', 'faculty']}>
+                <SectionFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/:id"
+            element={
+              <ProtectedRoute>
+                <SectionDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sections/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'faculty']}>
+                <SectionFormPage />
               </ProtectedRoute>
             }
           />
