@@ -104,6 +104,18 @@ const DashboardPage = () => {
         </div>
       </section>
 
+      {/* Academic Module Quick Access */}
+      <section className="academic-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
+        <h2 style={{ marginBottom: '1rem' }}>Akademik İşlemler</h2>
+        <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+          <Link to="/sections" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📚</div>
+            <h3>Ders Bölümleri</h3>
+            <p style={{ fontSize: '0.9rem', color: '#666' }}>Tüm ders bölümlerini görüntüle</p>
+          </Link>
+        </div>
+      </section>
+
       {/* Attendance Module Quick Access */}
       <section className="attendance-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
         <h2 style={{ marginBottom: '1rem' }}>Yoklama İşlemleri</h2>
