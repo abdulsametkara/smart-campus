@@ -15,22 +15,59 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="navbar-container">
                 <Link to="/dashboard" className="navbar-brand">
-                    🎓 Smart Campus
+                    Campy
                 </Link>
 
                 {user && (
                     <div className="navbar-menu">
-                        <span className="navbar-user">
-                            {user.full_name || user.email}
-                        </span>
+                        {/* Öğrenci Menüsü */}
+                        {user.role === 'student' && (
+                            <>
+                                <Link to="/attendance/student" className="navbar-link">
+                                    Yoklama
+                                </Link>
+                                <Link to="/attendance/my" className="navbar-link">
+                                    Devamsızlığım
+                                </Link>
+                                <Link to="/excuse/request" className="navbar-link">
+                                    Mazeret
+                                </Link>
+                            </>
+                        )}
+
+                        {/* Hoca (Faculty) Menüsü */}
+                        {user.role === 'faculty' && (
+                            <>
+                                <Link to="/attendance/instructor" className="navbar-link">
+                                    Yoklama
+                                </Link>
+                                <Link to="/attendance/report" className="navbar-link">
+                                    Rapor
+                                </Link>
+                                <Link to="/excuse/manage" className="navbar-link">
+                                    Mazeretler
+                                </Link>
+                            </>
+                        )}
+
+                        {/* Admin Menüsü */}
+                        {user.role === 'admin' && (
+                            <>
+                                <Link to="/admin/users" className="navbar-link">
+                                    Kullanıcılar
+                                </Link>
+                                <Link to="/admin/academic" className="navbar-link">
+                                    Akademik
+                                </Link>
+                            </>
+                        )}
+
+                        <Link to="/dashboard" className="navbar-link">
+                            Dashboard
+                        </Link>
                         <Link to="/profile" className="navbar-link">
                             Profil
                         </Link>
-                        {user.role === 'admin' && (
-                            <Link to="/admin/users" className="navbar-link">
-                                Kullanıcılar
-                            </Link>
-                        )}
                         <button onClick={handleLogout} className="navbar-logout">
                             Çıkış
                         </button>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent, Button, TextField, Box, Grid, Table, TableBody, TableCell, TableHead, TableRow, Chip, Paper } from '@mui/material';
 import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import '../../styles/attendance.css';
 
 const InstructorAttendancePage = () => {
     const [sections, setSections] = useState([]);
@@ -14,6 +14,7 @@ const InstructorAttendancePage = () => {
     const [longitude, setLongitude] = useState(null);
     const [report, setReport] = useState([]);
     const [sessionInfo, setSessionInfo] = useState(null);
+    const [locationStatus, setLocationStatus] = useState({ text: 'Konum Bekleniyor', class: '' });
 
     useEffect(() => {
         setSections([
@@ -21,7 +22,6 @@ const InstructorAttendancePage = () => {
             { id: 2, name: 'CENG101 - Şube 2' }
         ]);
 
-        // Fetch active session on page load
         const fetchActiveSession = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
@@ -45,6 +45,34 @@ const InstructorAttendancePage = () => {
 
     const getToken = () => localStorage.getItem('accessToken');
 
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            Swal.fire('Hata', 'GPS desteklenmiyor', 'error');
+            return;
+        }
+        setLocationStatus({ text: 'Konum aranıyor...', class: 'warning' });
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setLatitude(pos.coords.latitude);
+                setLongitude(pos.coords.longitude);
+                setLocationStatus({ text: 'Konum Alındı ✅', class: 'success' });
+                Swal.fire({
+                    title: 'Konum Başarılı',
+                    text: `Enlem: ${pos.coords.latitude.toFixed(4)}, Boylam: ${pos.coords.longitude.toFixed(4)}`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            },
+            (err) => {
+                setLocationStatus({ text: 'Konum Hatası ❌', class: 'danger' });
+                alert('Konum hatası: ' + err.message);
+            },
+            { enableHighAccuracy: true }
+        );
+    };
+
     const handleStartSession = async () => {
         try {
             const response = await axios.post('http://localhost:5000/api/v1/attendance/sessions', {
@@ -59,21 +87,24 @@ const InstructorAttendancePage = () => {
 
             setActiveSession(response.data);
             Swal.fire('Başarılı', 'Yoklama oturumu başlatıldı!', 'success');
+
+            // Auto fetch report
+            handleFetchReport(response.data.session_id);
         } catch (error) {
             Swal.fire('Hata', error.response?.data?.message || 'Oturum başlatılamadı', 'error');
         }
     };
 
-    const handleFetchReport = async () => {
-        if (!activeSession) return;
+    const handleFetchReport = async (sessionId = activeSession?.session_id) => {
+        if (!sessionId) return;
         try {
-            const response = await axios.get(`http://localhost:5000/api/v1/attendance/sessions/${activeSession.session_id}/report`, {
+            const response = await axios.get(`http://localhost:5000/api/v1/attendance/sessions/${sessionId}/report`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             setReport(response.data.report);
             setSessionInfo(response.data.session);
         } catch (error) {
-            Swal.fire('Hata', 'Rapor alınamadı: ' + (error.response?.data?.message || error.message), 'error');
+            console.error('Report fetch error:', error);
         }
     };
 
@@ -85,7 +116,8 @@ const InstructorAttendancePage = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Evet, Bitir',
-            cancelButtonText: 'İptal'
+            cancelButtonText: 'İptal',
+            confirmButtonColor: '#ef4444'
         });
 
         if (result.isConfirmed) {
@@ -93,160 +125,176 @@ const InstructorAttendancePage = () => {
                 const response = await axios.post(`http://localhost:5000/api/v1/attendance/sessions/${activeSession.session_id}/end`, {}, {
                     headers: { Authorization: `Bearer ${getToken()}` }
                 });
-                Swal.fire('Tamamlandı', `Oturum bitirildi. ${response.data.absent_count} kişi devamsız işaretlendi (${response.data.hours_deducted} saat).`, 'success');
+                Swal.fire('Tamamlandı', `Oturum bitirildi. ${response.data.absent_count} kişi devamsız işaretlendi.`, 'success');
                 setActiveSession(null);
                 setReport([]);
+                setSessionInfo(null);
             } catch (error) {
                 Swal.fire('Hata', error.response?.data?.message || 'Oturum bitirilemedi', 'error');
             }
         }
     };
 
-    const getStatusChip = (status) => {
+    const getStatusBadge = (status) => {
         switch (status) {
-            case 'PRESENT': return <Chip label="Geldi" color="success" size="small" />;
-            case 'ABSENT': return <Chip label="Gelmedi" color="error" size="small" />;
-            case 'NOT_CHECKED_IN': return <Chip label="Henüz Katılmadı" color="warning" size="small" />;
-            default: return <Chip label={status} size="small" />;
+            case 'PRESENT': return { text: 'Geldi', class: 'success' };
+            case 'ABSENT': return { text: 'Gelmedi', class: 'danger' };
+            case 'NOT_CHECKED_IN': return { text: 'Henüz Katılmadı', class: 'warning' };
+            default: return { text: status, class: '' };
         }
     };
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>Yoklama Yönetimi (Öğretmen)</Typography>
+        <div className="attendance-page">
+            <div className="page-title">
+                <span className="icon">🎓</span>
+                <h1>Yoklama Yönetimi</h1>
+            </div>
 
-            <Grid container spacing={3}>
-                {/* Sol: Oturum Başlat */}
-                <Grid item xs={12} md={5}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6">Yeni Yoklama Oturumu</Typography>
-                            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <Button
-                                    variant="outlined"
-                                    onClick={() => {
-                                        if (!navigator.geolocation) return alert('GPS desteklenmiyor');
-                                        navigator.geolocation.getCurrentPosition(
-                                            (pos) => {
-                                                setLatitude(pos.coords.latitude);
-                                                setLongitude(pos.coords.longitude);
-                                                Swal.fire('Konum Alındı', `Enlem: ${pos.coords.latitude.toFixed(4)}, Boylam: ${pos.coords.longitude.toFixed(4)}`, 'info');
-                                            },
-                                            (err) => alert('Konum hatası: ' + err.message),
-                                            { enableHighAccuracy: true }
-                                        );
-                                    }}
-                                >
-                                    📍 Sınıf Konumumu Al
-                                </Button>
+            <div className="attendance-stats-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                {/* Sol: Oturum Başlatma Kartı */}
+                <div className="course-attendance-card">
+                    <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+                        Yeni Yoklama Oturumu
+                    </h3>
 
-                                <TextField
-                                    select
-                                    label="Ders Şubesi"
-                                    value={selectedSection}
-                                    onChange={(e) => setSelectedSection(e.target.value)}
-                                    SelectProps={{ native: true }}
-                                >
-                                    <option value="">Şube seçin</option>
-                                    {sections.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </TextField>
+                    <button
+                        className={`action-button ${locationStatus.class === 'success' ? 'success' : ''}`}
+                        onClick={handleGetLocation}
+                        style={{ width: '100%', marginBottom: '1.5rem', justifyContent: 'center' }}
+                    >
+                        <span>📍</span> {latitude ? 'Konum Güncelle' : 'SINIF KONUMUMU AL'}
+                    </button>
 
-                                <TextField
-                                    label="Süre (Dakika)"
+                    {latitude && (
+                        <div className="custom-alert success" style={{ marginBottom: '1.5rem' }}>
+                            <span>✅</span> Konum Alındı (Enlem: {latitude.toFixed(4)})
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                            <label className="stat-label">Ders Şubesi</label>
+                            <select
+                                value={selectedSection}
+                                onChange={(e) => setSelectedSection(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '0.75rem', borderRadius: '8px',
+                                    border: '1px solid #ccc', marginTop: '0.25rem'
+                                }}
+                            >
+                                <option value="">Şube seçin</option>
+                                {sections.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div>
+                                <label className="stat-label">Süre (Dk)</label>
+                                <input
                                     type="number"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ccc' }}
                                 />
-
-                                <TextField
-                                    label="Geofence Yarıçapı (Metre)"
+                            </div>
+                            <div>
+                                <label className="stat-label">Yarıçap (m)</label>
+                                <input
                                     type="number"
                                     value={radius}
                                     onChange={(e) => setRadius(e.target.value)}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ccc' }}
                                 />
+                            </div>
+                        </div>
 
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleStartSession}
-                                    disabled={!selectedSection || !latitude}
-                                >
-                                    Oturumu Başlat
-                                </Button>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                        <button
+                            className="action-button"
+                            onClick={handleStartSession}
+                            disabled={!selectedSection || !latitude}
+                            style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}
+                        >
+                            OTURUMU BAŞLAT
+                        </button>
+                    </div>
+                </div>
 
-                {/* Sağ: Aktif Oturum & QR */}
-                <Grid item xs={12} md={7}>
-                    {activeSession && (
-                        <Card sx={{ bgcolor: '#e8f5e9' }}>
-                            <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Typography variant="h5" color="success.main">Oturum Aktif</Typography>
-                                <Typography variant="body2" gutterBottom>Öğrenciler bu kodu tarayarak katılabilir</Typography>
+                {/* Sağ: Aktif Oturum Kartı */}
+                {activeSession ? (
+                    <div className="qr-container" style={{ border: '2px solid #22c55e' }}>
+                        <h3 style={{ color: '#166534' }}>Oturum Aktif</h3>
+                        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>Öğrenciler bu kodu tarayarak katılabilir</p>
 
-                                <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, my: 2 }}>
-                                    <QRCodeSVG value={activeSession.qr_code} size={180} />
-                                </Box>
+                        <div style={{ background: 'white', padding: '1rem', display: 'inline-block', borderRadius: '12px', border: '1px solid #eee' }}>
+                            <QRCodeSVG value={activeSession.qr_code} size={180} />
+                        </div>
 
-                                <Typography variant="body2" sx={{ wordBreak: 'break-all', textAlign: 'center' }}>
-                                    Kod: <strong>{activeSession.qr_code}</strong>
-                                </Typography>
+                        <div className="custom-alert info" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
+                            Kod: <strong>{activeSession.qr_code.substring(0, 8)}...</strong>
+                        </div>
 
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    Bitiş: {new Date(activeSession.expires_at).toLocaleTimeString('tr-TR')}
-                                </Typography>
+                        <div style={{ marginTop: '1rem', color: '#ef4444', fontWeight: 600 }}>
+                            Bitiş: {new Date(activeSession.expires_at).toLocaleTimeString('tr-TR')}
+                        </div>
 
-                                <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-                                    <Button variant="outlined" onClick={handleFetchReport}>
-                                        Raporu Göster
-                                    </Button>
-                                    <Button variant="contained" color="error" onClick={handleEndSession}>
-                                        Oturumu Bitir
-                                    </Button>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    )}
-                </Grid>
-            </Grid>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                            <button className="action-button" style={{ flex: 1, background: '#fff', color: '#333', border: '1px solid #ccc' }} onClick={() => handleFetchReport()}>
+                                RAPORU GÖSTER
+                            </button>
+                            <button className="action-button" style={{ flex: 1, background: '#ef4444' }} onClick={handleEndSession}>
+                                OTURUMU BİTİR
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="course-attendance-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#9ca3af' }}>
+                        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>💤</div>
+                        <p>Henüz aktif bir oturum yok.</p>
+                    </div>
+                )}
+            </div>
 
-            {/* Yoklama Raporu Tablosu */}
+            {/* Rapor Tablosu */}
             {report.length > 0 && (
-                <Paper sx={{ mt: 4, p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                <div className="course-attendance-card" style={{ marginTop: '2rem' }}>
+                    <h3 style={{ marginBottom: '1rem' }}>
                         Yoklama Raporu - {sessionInfo?.course_code} {sessionInfo?.course_name}
-                    </Typography>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Öğrenci</TableCell>
-                                <TableCell>E-posta</TableCell>
-                                <TableCell>Durum</TableCell>
-                                <TableCell>Giriş Saati</TableCell>
-                                <TableCell>Mesafe (m)</TableCell>
-                                <TableCell>Devamsızlık</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {report.map(r => (
-                                <TableRow key={r.student_id}>
-                                    <TableCell>{r.student_name}</TableCell>
-                                    <TableCell>{r.student_email}</TableCell>
-                                    <TableCell>{getStatusChip(r.status)}</TableCell>
-                                    <TableCell>{r.check_in_time ? new Date(r.check_in_time).toLocaleTimeString('tr-TR') : '-'}</TableCell>
-                                    <TableCell>{r.distance ? r.distance.toFixed(1) : '-'}</TableCell>
-                                    <TableCell>{r.absence_hours_used} / {r.absence_limit} saat</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </Paper>
+                    </h3>
+                    <table className="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Öğrenci</th>
+                                <th>E-posta</th>
+                                <th>Durum</th>
+                                <th>Giriş Saati</th>
+                                <th>Mesafe (m)</th>
+                                <th>Devamsızlık</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {report.map(r => {
+                                const status = getStatusBadge(r.status);
+                                return (
+                                    <tr key={r.student_id}>
+                                        <td>{r.student_name}</td>
+                                        <td>{r.student_email}</td>
+                                        <td>
+                                            <span className={`status-badge ${status.class}`}>{status.text}</span>
+                                        </td>
+                                        <td>{r.check_in_time ? new Date(r.check_in_time).toLocaleTimeString('tr-TR') : '-'}</td>
+                                        <td>{r.distance ? r.distance.toFixed(1) : '-'}</td>
+                                        <td>{r.absence_hours_used} / {r.absence_limit} saat</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             )}
-        </Container>
+        </div>
     );
 };
 

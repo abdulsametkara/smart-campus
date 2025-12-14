@@ -23,31 +23,31 @@ class AttendanceService {
     }
 
     /**
-     * Validate student check-in
+     * Validate student check-in with enhanced spoofing detection
      */
-    async validateCheckIn(session, studentId, userLat, userLon, userQrCode) {
+    async validateCheckIn(session, studentId, userLat, userLon, userQrCode, accuracy = 10) {
         const result = { valid: false, reason: null, distance: 0, isFlagged: false, flagReason: null };
 
-        // 1. QR Code Check
-        if (session.qr_code && session.qr_code !== userQrCode) {
-            result.reason = 'Invalid QR Code';
+        // 1. QR Code Check (if required)
+        if (session.qr_code && userQrCode && session.qr_code !== userQrCode) {
+            result.reason = 'Geçersiz QR Kod';
             return result;
         }
 
         // 2. Session Status
         if (session.status !== 'ACTIVE') {
-            result.reason = 'Session is closed';
+            result.reason = 'Yoklama oturumu kapalı';
             return result;
         }
 
-        // 3. Time Check (Optional buffer)
+        // 3. Time Check
         const now = new Date();
         if (now < new Date(session.start_time) || (session.end_time && now > new Date(session.end_time))) {
-            result.reason = 'Session expired';
+            result.reason = 'Yoklama süresi dolmuş';
             return result;
         }
 
-        // 4. Enrollment Check (Is student in this section?)
+        // 4. Enrollment Check
         const enrollment = await Enrollment.findOne({
             where: {
                 student_id: studentId,
@@ -57,11 +57,19 @@ class AttendanceService {
         });
 
         if (!enrollment) {
-            result.reason = 'Student not enrolled in this section';
+            result.reason = 'Bu derse kayıtlı değilsiniz';
             return result;
         }
 
-        // 5. Distance Check (Haversine)
+        // 5. GPS Accuracy Spoofing Check
+        if (accuracy > 100) {
+            result.reason = 'GPS doğruluğu çok düşük. Lütfen açık alanda deneyin.';
+            result.isFlagged = true;
+            result.flagReason = 'Düşük GPS doğruluğu (accuracy > 100m)';
+            return result;
+        }
+
+        // 6. Distance Check (Haversine)
         if (session.latitude && session.longitude) {
             const distance = this.calculateDistance(
                 parseFloat(session.latitude),
@@ -71,20 +79,25 @@ class AttendanceService {
             );
             result.distance = distance;
 
-            // Allow 5m extra accuracy buffer
-            const maxDistance = (session.radius || 15) + 5;
+            // Add accuracy buffer to allowed radius
+            const accuracyBuffer = Math.min(accuracy, 20); // Max 20m buffer
+            const maxDistance = (session.radius || 15) + accuracyBuffer;
 
             if (distance > maxDistance) {
-                // SPOOFING SUSPICION: User is too far but tried to check in
-                // Ideally we block them, or we flag them. Requirement says "Validate distance <= radius".
-                result.reason = `Too far from classroom (${distance.toFixed(1)}m > ${maxDistance}m)`;
-                result.isFlagged = true; // Use this to log a failed attempt or flagged record
-                result.flagReason = 'Distance mismatch';
+                result.reason = `Sınıfa çok uzaksınız (${distance.toFixed(0)}m > ${maxDistance.toFixed(0)}m)`;
+                result.isFlagged = true;
+                result.flagReason = `Mesafe aşımı: ${distance.toFixed(1)}m`;
                 return result;
+            }
+
+            // Warning: Suspicious if exactly at boundary (possible spoofing)
+            if (distance > maxDistance * 0.9 && accuracy < 5) {
+                result.isFlagged = true;
+                result.flagReason = 'Sınır bölgesi + düşük accuracy (şüpheli)';
             }
         }
 
-        // 6. Duplicate Check (Already checked in?)
+        // 7. Duplicate Check
         const existingRecord = await AttendanceRecord.findOne({
             where: {
                 session_id: session.id,
@@ -93,7 +106,7 @@ class AttendanceService {
         });
 
         if (existingRecord) {
-            result.reason = 'Already checking in';
+            result.reason = 'Bu oturumda zaten yoklama verdiniz';
             return result;
         }
 
@@ -103,3 +116,4 @@ class AttendanceService {
 }
 
 module.exports = new AttendanceService();
+

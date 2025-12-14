@@ -8,4 +8,8 @@ app.listen(PORT, () => {
   // Start Background Jobs
   const absenceJob = require('../jobs/absenceWarning.job');
   absenceJob.start();
+
+  // Start session auto-closer
+  const { startSessionCloser } = require('../jobs/sessionCloser.job');
+  startSessionCloser();
 });

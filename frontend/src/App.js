@@ -20,6 +20,8 @@ import MyAttendancePage from './pages/attendance/MyAttendancePage';
 import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
 import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
 import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
+import AttendanceHistoryPage from './pages/attendance/AttendanceHistoryPage';
+import SessionHistoryPage from './pages/attendance/SessionHistoryPage';
 import './App.css';
 
 function Header() {
@@ -33,7 +35,28 @@ function Header() {
       {user && (
         <nav className="app-nav">
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
-          <Link to="/profile" className="nav-link">Profil</Link>
+
+          {/* Öğrenci Menüsü */}
+          {user.role === 'student' && (
+            <>
+              <Link to="/attendance/student" className="nav-link">Yoklama</Link>
+              <Link to="/attendance/my-stats" className="nav-link">Devamsızlığım</Link>
+              <Link to="/attendance/history" className="nav-link">Geçmiş</Link>
+              <Link to="/attendance/excuses/new" className="nav-link">Mazeret</Link>
+            </>
+          )}
+
+          {/* Hoca Menüsü */}
+          {user.role === 'faculty' && (
+            <>
+              <Link to="/attendance/instructor" className="nav-link">Yoklama</Link>
+              <Link to="/attendance/report" className="nav-link">Rapor</Link>
+              <Link to="/attendance/sessions" className="nav-link">Geçmiş</Link>
+              <Link to="/attendance/excuses/manage" className="nav-link">Mazeretler</Link>
+            </>
+          )}
+
+          {/* Admin Menüsü */}
           {user.role === 'admin' && (
             <>
               <Link to="/admin/users" className="nav-link">Kullanıcılar</Link>
@@ -41,6 +64,8 @@ function Header() {
               <Link to="/admin/academic" className="nav-link">Akademik</Link>
             </>
           )}
+
+          <Link to="/profile" className="nav-link">Profil</Link>
           <button className="btn secondary btn-sm" onClick={logout} style={{ marginLeft: 8 }}>
             Çıkış
           </button>
@@ -153,6 +178,22 @@ function AppContent() {
             element={
               <ProtectedRoute roles={['faculty', 'admin']}>
                 <ExcuseManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/history"
+            element={
+              <ProtectedRoute roles={['student']}>
+                <AttendanceHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance/sessions"
+            element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <SessionHistoryPage />
               </ProtectedRoute>
             }
           />

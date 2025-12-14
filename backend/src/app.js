@@ -27,5 +27,6 @@ app.use('/api/v1/departments', departmentRoutes);
 app.use('/api/v1/admin', require('./routes/admin.routes'));
 app.use('/api/v1/attendance', require('../routes/attendance.routes'));
 app.use('/api/v1/academic', require('./routes/academic.routes'));
+app.use('/api/v1/excuses', require('./routes/excuse.routes'));
 
 module.exports = app;
