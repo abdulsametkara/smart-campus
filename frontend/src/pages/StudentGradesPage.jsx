@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import gradingService from '../services/gradingService';
 import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './StudentGradesPage.css';
 
 const StudentGradesPage = () => {
@@ -29,7 +30,7 @@ const StudentGradesPage = () => {
         window.print();
     };
 
-    if (loading) return <div className="loading-spinner">Yükleniyor...</div>;
+    if (loading) return <LoadingSpinner size="large" message="Notlar yükleniyor..." />;
     if (error) return <div className="error-message">{error}</div>;
 
     return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { coursesService } from '../services/academicService';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './CoursesListPage.css';
 
 const CoursesListPage = () => {
@@ -52,7 +53,7 @@ const CoursesListPage = () => {
                 <div className="page-header">
                     <h1>Dersler</h1>
                 </div>
-                <div className="loading-spinner">Yükleniyor...</div>
+                <LoadingSpinner size="large" message="Dersler yükleniyor..." />
             </div>
         );
     }

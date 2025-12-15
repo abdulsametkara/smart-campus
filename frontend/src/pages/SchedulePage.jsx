@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { sectionsService, enrollmentsService } from '../services/academicService';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './SchedulePage.css';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -139,7 +140,7 @@ const SchedulePage = () => {
     if (loading) {
         return (
             <div className="page schedule-page">
-                <div className="loading-spinner">Yükleniyor...</div>
+                <LoadingSpinner size="large" message="Ders programı yükleniyor..." />
             </div>
         );
     }
