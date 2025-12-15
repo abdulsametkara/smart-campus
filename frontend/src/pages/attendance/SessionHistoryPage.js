@@ -43,11 +43,22 @@ const SessionHistoryPage = () => {
     };
 
     const formatDate = (dateStr) => {
+        if (!dateStr) return 'Tarih Yok';
         const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return 'Geçersiz Tarih';
         return date.toLocaleDateString('tr-TR', {
-            weekday: 'short',
+            weekday: 'long',
             day: 'numeric',
-            month: 'short',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const formatTime = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+        return date.toLocaleTimeString('tr-TR', {
             hour: '2-digit',
             minute: '2-digit'
         });
@@ -55,8 +66,14 @@ const SessionHistoryPage = () => {
 
     const getStatusBadge = (status) => {
         return status === 'ACTIVE'
-            ? { text: '🟢 Aktif', class: 'safe' }
-            : { text: '⚫ Bitti', class: 'warning' };
+            ? { text: 'Aktif', class: 'safe', icon: '🟢' }
+            : { text: 'Tamamlandı', class: 'completed', icon: '✅' };
+    };
+
+    const getRateColor = (rate) => {
+        if (rate >= 80) return { color: '#22c55e', bg: 'rgba(34, 197, 94, 0.1)' };
+        if (rate >= 60) return { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
+        return { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
     };
 
     return (
@@ -121,36 +138,93 @@ const SessionHistoryPage = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {history.sessions?.map((session, index) => {
                                 const statusInfo = getStatusBadge(session.status);
-                                const rate = session.attendance_rate;
-                                const rateClass = rate >= 70 ? 'success' : rate >= 50 ? 'warning' : 'danger';
+                                const rate = session.attendance_rate || 0;
+                                const rateStyle = getRateColor(rate);
 
                                 return (
                                     <div
                                         className="course-attendance-card"
                                         key={session.id}
-                                        style={{ animationDelay: `${index * 0.05}s` }}
+                                        style={{
+                                            animationDelay: `${index * 0.05}s`,
+                                            borderLeft: `4px solid ${rateStyle.color}`,
+                                            transition: 'all 0.3s ease'
+                                        }}
                                     >
-                                        <div className="course-header">
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            {/* Left Side - Date & Status */}
                                             <div>
-                                                <div className="course-code">{formatDate(session.start_time)}</div>
-                                                <span className={`status-badge ${statusInfo.class}`} style={{ marginTop: '0.5rem', display: 'inline-block' }}>
-                                                    {statusInfo.text}
-                                                </span>
+                                                <div style={{
+                                                    fontSize: '1.1rem',
+                                                    fontWeight: 600,
+                                                    color: '#1f2937',
+                                                    marginBottom: '0.5rem'
+                                                }}>
+                                                    📅 {formatDate(session.date)}
+                                                </div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.75rem',
+                                                    flexWrap: 'wrap'
+                                                }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: 500,
+                                                        background: statusInfo.class === 'safe' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                                                        color: statusInfo.class === 'safe' ? '#16a34a' : '#2563eb'
+                                                    }}>
+                                                        {statusInfo.icon} {statusInfo.text}
+                                                    </span>
+                                                    {session.end_time && (
+                                                        <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                                            🕐 {formatTime(session.date)} - {formatTime(session.end_time)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div style={{ textAlign: 'right' }}>
-                                                <div style={{ fontSize: '2rem', fontWeight: 700, color: rateClass === 'success' ? '#22c55e' : rateClass === 'warning' ? '#f59e0b' : '#ef4444' }}>
+
+                                            {/* Right Side - Rate */}
+                                            <div style={{
+                                                textAlign: 'center',
+                                                padding: '0.75rem 1.25rem',
+                                                borderRadius: '12px',
+                                                background: rateStyle.bg
+                                            }}>
+                                                <div style={{
+                                                    fontSize: '2rem',
+                                                    fontWeight: 700,
+                                                    color: rateStyle.color,
+                                                    lineHeight: 1
+                                                }}>
                                                     %{rate}
                                                 </div>
-                                                <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                                <div style={{
+                                                    fontSize: '0.8rem',
+                                                    color: '#6b7280',
+                                                    marginTop: '0.25rem'
+                                                }}>
                                                     {session.present_count}/{session.total_students} öğrenci
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="custom-progress">
-                                            <div
-                                                className={`progress-fill ${rateClass}`}
-                                                style={{ width: `${rate}%` }}
-                                            ></div>
+
+                                        {/* Progress Bar */}
+                                        <div style={{
+                                            height: '8px',
+                                            background: '#e5e7eb',
+                                            borderRadius: '4px',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                width: `${rate}%`,
+                                                height: '100%',
+                                                background: `linear-gradient(90deg, ${rateStyle.color}, ${rateStyle.color}dd)`,
+                                                borderRadius: '4px',
+                                                transition: 'width 0.5s ease'
+                                            }}></div>
                                         </div>
                                     </div>
                                 );
@@ -171,3 +245,4 @@ const SessionHistoryPage = () => {
 };
 
 export default SessionHistoryPage;
+

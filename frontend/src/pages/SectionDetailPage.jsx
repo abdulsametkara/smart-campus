@@ -9,12 +9,12 @@ const SectionDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [enrollmentStatus, setEnrollmentStatus] = useState(null); // 'ACTIVE', 'PENDING', 'REJECTED', or null
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
-  const [isEnrolled, setIsEnrolled] = useState(false);
 
   useEffect(() => {
     fetchSection();
@@ -26,12 +26,14 @@ const SectionDetailPage = () => {
       const data = await sectionsService.getById(id);
       setSection(data);
 
-      // Check if current user is enrolled
+      // Check user enrollment status
       if (user?.role === 'student' && data.enrollments) {
-        const enrolled = data.enrollments.some(
-          e => e.student_id === user.id && e.status === 'ACTIVE'
-        );
-        setIsEnrolled(enrolled);
+        const myEnrollment = data.enrollments.find(e => e.student_id == user.id);
+        if (myEnrollment) {
+          setEnrollmentStatus(myEnrollment.status);
+        } else {
+          setEnrollmentStatus(null);
+        }
       }
 
       setError(null);
@@ -61,12 +63,11 @@ const SectionDetailPage = () => {
   const handleEnroll = async () => {
     if (!section) return;
 
-    // Check if section is full
     if (section.is_full) {
       Swal.fire({
         icon: 'warning',
         title: 'Kontenjan Dolu',
-        text: 'Bu bölümün kontenjanı dolmuş. Başka bir bölüm seçebilirsiniz.',
+        text: 'Bu bölümün kontenjanı dolmuş.',
         confirmButtonColor: '#10b981'
       });
       return;
@@ -77,7 +78,6 @@ const SectionDetailPage = () => {
       html: `
         <p><strong>${section.course?.code} - ${section.course?.name}</strong></p>
         <p>Section: ${section.section_number}</p>
-        <p>Dönem: ${section.semester}</p>
         <p>Bu derse kayıt olmak istediğinizden emin misiniz?</p>
       `,
       icon: 'question',
@@ -96,10 +96,13 @@ const SectionDetailPage = () => {
 
       Swal.fire({
         icon: 'success',
-        title: 'Kayıt Başarılı! 🎉',
-        text: 'Derse başarıyla kayıt oldunuz.',
-        confirmButtonColor: '#10b981'
+        title: 'Talep Alındı ✅',
+        text: 'Kayıt talebiniz oluşturuldu ve danışman onayına gönderildi.',
+        confirmButtonColor: '#3b82f6'
       });
+
+      // Explicitly set pending status to update UI immediately
+      setEnrollmentStatus('PENDING');
 
       // Refresh section data
       await fetchSection();
@@ -141,33 +144,15 @@ const SectionDetailPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="page section-detail-page">
-        <div className="loading-spinner">Yükleniyor...</div>
-      </div>
-    );
-  }
-
-  if (error || !section) {
-    return (
-      <div className="page section-detail-page">
-        <div className="alert alert-error">
-          {error || 'Section bulunamadı'}
-        </div>
-        <Link to="/sections" className="btn">Geri Dön</Link>
-      </div>
-    );
-  }
+  if (loading) { return <div className="page section-detail-page"><div className="loading-spinner">Yükleniyor...</div></div>; }
+  if (error || !section) { return <div className="page section-detail-page"><div className="alert alert-error">{error || 'Section bulunamadı'}</div><Link to="/sections" className="btn">Geri Dön</Link></div>; }
 
   return (
     <div className="page section-detail-page">
       <div className="page-header">
         <div>
           <Link to="/sections" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            {/* ... svg ... */}
             Sections
           </Link>
           <h1>
@@ -176,28 +161,40 @@ const SectionDetailPage = () => {
           </h1>
         </div>
         <div className="action-buttons">
-          {/* Student: Enroll button */}
-          {user?.role === 'student' && !isEnrolled && (
-            <button
-              className="btn primary"
-              onClick={handleEnroll}
-              disabled={enrolling || section.is_full}
-            >
-              {enrolling ? 'Kayıt Olunuyor...' : section.is_full ? 'Kontenjan Dolu' : 'Kayıt Ol'}
-            </button>
-          )}
+          {/* Student Actions */}
+          {user?.role === 'student' && (
+            <>
+              {!enrollmentStatus && (
+                <button
+                  className="btn primary"
+                  onClick={handleEnroll}
+                  disabled={enrolling || section.is_full}
+                >
+                  {enrolling ? 'İşlem Sürüyor...' : section.is_full ? 'Kontenjan Dolu' : 'Kayıt Ol'}
+                </button>
+              )}
 
-          {/* Student: Already enrolled message */}
-          {user?.role === 'student' && isEnrolled && (
-            <div className="enrolled-badge" style={{
-              padding: '0.5rem 1rem',
-              background: '#10b981',
-              color: 'white',
-              borderRadius: '8px',
-              fontWeight: '500'
-            }}>
-              ✓ Kayıtlısınız
-            </div>
+              {enrollmentStatus === 'PENDING' && (
+                <div className="enrolled-badge" style={{ background: '#f59e0b', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                  ⏳ Danışman Onayı Bekliyor
+                </div>
+              )}
+
+              {enrollmentStatus === 'ACTIVE' && (
+                <div className="enrolled-badge" style={{ background: '#10b981', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                  ✅ Derse Kayıtlısınız
+                </div>
+              )}
+
+              {enrollmentStatus === 'REJECTED' && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: '0.5rem' }}>
+                  <div className="enrolled-badge" style={{ background: '#ef4444', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                    ❌ Kaydınız Reddedildi
+                  </div>
+                  <button className="btn primary small" onClick={handleEnroll}>Tekrar Dene</button>
+                </div>
+              )}
+            </>
           )}
 
           {/* Admin/Faculty: Edit and Delete buttons */}

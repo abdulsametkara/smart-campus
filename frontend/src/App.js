@@ -47,7 +47,10 @@ function Header() {
         <nav className="app-nav">
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
           <Link to="/courses" className="nav-link">Dersler</Link>
-          <Link to="/sections" className="nav-link">Sections</Link>
+
+          {user.role !== 'student' && <Link to="/sections" className="nav-link">Sections</Link>}
+          {user.role === 'student' && <Link to="/sections" className="nav-link">Derse Kayıt</Link>}
+
           {user.role !== 'admin' && <Link to="/schedule" className="nav-link">Ders Programı</Link>}
 
           {/* Öğrenci Menüsü */}

@@ -1325,8 +1325,8 @@ exports.approveEnrollment = async (req, res) => {
             return res.status(403).json({ message: 'You are not the advisor for this student' });
         }
 
-        // Approve enrollment
-        enrollment.status = 'APPROVED';
+        // Approve enrollment - set to ACTIVE for system compatibility
+        enrollment.status = 'ACTIVE';
         enrollment.approved_by = advisorUserId;
         enrollment.approved_at = new Date();
         await enrollment.save();

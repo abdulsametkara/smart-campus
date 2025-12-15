@@ -38,13 +38,13 @@ const SchedulePage = () => {
             let sectionsArray = [];
 
             if (user?.role === 'student') {
-                // For students: Get only APPROVED/ACTIVE enrolled sections
+                // For students: Get only ACTIVE enrolled sections
                 const response = await enrollmentsService.getMyEnrollments();
                 // Handle different response formats
                 const enrollments = Array.isArray(response) ? response : (response?.enrollments || response?.data || []);
-                // Filter only ACTIVE/APPROVED enrollments and extract sections
+                // Filter only ACTIVE enrollments and extract sections
                 sectionsArray = enrollments
-                    .filter(e => e.status === 'ACTIVE' || e.status === 'APPROVED')
+                    .filter(e => e.status === 'ACTIVE')
                     .map(e => e.section || e.CourseSection)
                     .filter(s => s);
             } else if (user?.role === 'faculty') {
