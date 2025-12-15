@@ -9,16 +9,29 @@
 }
 
 .back-link {
-  display: inline-block;
-  margin-bottom: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface-glass);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-full);
   color: var(--primary);
   text-decoration: none;
   font-weight: 600;
+  font-size: 0.9rem;
   transition: var(--transition);
 }
 
 .back-link:hover {
-  color: var(--primary-hover);
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.back-link svg {
+  flex-shrink: 0;
 }
 
 .section-detail-page .page-header h1 {
@@ -29,6 +42,19 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-badge {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .section-number {
@@ -204,6 +230,32 @@
   color: white;
 }
 
+.section-detail-page .loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.section-detail-page .loading-spinner::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  margin-right: 12px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .section-detail-page {
     padding: 1rem;
@@ -217,4 +269,3 @@
     flex-direction: column;
   }
 }
-

@@ -59,8 +59,8 @@ const SectionFormPage = () => {
         semester: section.semester || '',
         instructor_id: section.instructor_id || '',
         capacity: section.capacity || '',
-        schedule: section.schedule && section.schedule.length > 0 
-          ? section.schedule 
+        schedule: section.schedule && section.schedule.length > 0
+          ? section.schedule
           : [{ day: 'Monday', start: '09:00', end: '12:00', room_id: '' }]
       });
     } catch (err) {
@@ -158,7 +158,7 @@ const SectionFormPage = () => {
   return (
     <div className="page section-form-page">
       <div className="page-header">
-        <h1>{isEdit ? 'Bölüm Düzenle' : 'Yeni Bölüm Oluştur'}</h1>
+        <h1>{isEdit ? 'Section Düzenle' : 'Yeni Section Ekle'}</h1>
         <button className="btn secondary" onClick={() => navigate('/sections')}>
           İptal
         </button>
@@ -190,7 +190,7 @@ const SectionFormPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Şube Numarası *</label>
+            <label>Section Number *</label>
             <input
               type="number"
               name="section_number"
@@ -203,16 +203,20 @@ const SectionFormPage = () => {
 
           <div className="form-group">
             <label>Dönem *</label>
-            <input
-              type="text"
+            <select
               name="semester"
               value={formData.semester}
               onChange={handleChange}
-              placeholder="örn: 2024-FALL"
-              pattern="\d{4}-(FALL|SPRING|SUMMER)"
               required
-            />
-            <small>Format: YYYY-FALL, YYYY-SPRING, veya YYYY-SUMMER</small>
+            >
+              <option value="">Dönem Seçin</option>
+              <option value="2024-FALL">2024-FALL (Güz)</option>
+              <option value="2024-SPRING">2024-SPRING (Bahar)</option>
+              <option value="2024-SUMMER">2024-SUMMER (Yaz)</option>
+              <option value="2025-FALL">2025-FALL (Güz)</option>
+              <option value="2025-SPRING">2025-SPRING (Bahar)</option>
+              <option value="2025-SUMMER">2025-SUMMER (Yaz)</option>
+            </select>
           </div>
 
           <div className="form-group">

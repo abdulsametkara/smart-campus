@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    // Dynamic import to avoid circular dependencies if any, or just standard import
+    // Using standard fetch logic or service
+    const fetchAnnouncements = async () => {
+      try {
+        // Dynamically import service to ensure it's loaded only when needed or use standard import at top
+        // Let's rely on standard import at top, but since I am overwriting, I should check if service exists.
+        // It does exist.
+        const { default: announcementService } = await import('../services/announcementService');
+        const response = await announcementService.getAll();
+        setAnnouncements(response.data || response || []);
+      } catch (error) {
+        console.error('Duyurular yüklenemedi', error);
+      }
+    };
+    fetchAnnouncements();
+  }, []);
 
   const getRoleLabel = (role) => {
     const labels = { student: 'Öğrenci', faculty: 'Akademisyen', admin: 'Yönetici' };
@@ -104,69 +123,55 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* Academic Module Quick Access */}
-      <section className="academic-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
-        <h2 style={{ marginBottom: '1rem' }}>Akademik İşlemler</h2>
-        <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-          <Link to="/sections" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📚</div>
-            <h3>Ders Bölümleri</h3>
-            <p style={{ fontSize: '0.9rem', color: '#666' }}>Tüm ders bölümlerini görüntüle</p>
-          </Link>
+      {/* DUYURU PANOSU WIDGET */}
+      <section className="announcements-widget">
+        <div className="widget-header">
+          <h2>📢 Duyurular</h2>
+          {(user?.role === 'admin' || user?.role === 'faculty') && (
+            <Link to="/announcements/manage" className="widget-action-link">
+              Yönet →
+            </Link>
+          )}
+        </div>
+
+        <div className="announcements-feed">
+          {Array.isArray(announcements) && announcements.length > 0 ? (
+            announcements.slice(0, 5).map(ann => (
+              <div key={ann.id} className={`announcement-item ${ann.priority === 'HIGH' ? 'priority-high' : ''}`}>
+                <div className="announcement-icon">
+                  {ann.priority === 'HIGH' ? '🔴' : ann.priority === 'LOW' ? '🟢' : '🔵'}
+                </div>
+                <div className="announcement-body">
+                  <div className="announcement-top">
+                    <h4>{ann.title}</h4>
+                    <span className="announcement-date">
+                      {ann.created_at ? new Date(ann.created_at).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'short'
+                      }) : ''}
+                    </span>
+                  </div>
+                  <p className="announcement-text">{ann.content}</p>
+                  <div className="announcement-meta">
+                    <span className="announcement-source">
+                      {ann.course ? `📚 ${ann.course.code}` : '📌 Genel Duyuru'}
+                    </span>
+                    <span className="announcement-author">
+                      👤 {ann.author?.full_name || 'Sistem Yöneticisi'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="empty-announcements">
+              <span className="empty-icon">📭</span>
+              <p>Henüz duyuru bulunmuyor</p>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Attendance Module Quick Access */}
-      <section className="attendance-actions" style={{ marginTop: '2rem', padding: '0 1rem' }}>
-        <h2 style={{ marginBottom: '1rem' }}>Yoklama İşlemleri</h2>
-        <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-
-          {user?.role === 'student' && (
-            <>
-              <Link to="/attendance/student" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📍</div>
-                <h3>Yoklamaya Katıl</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>GPS ile derse giriş yap</p>
-              </Link>
-
-              <Link to="/attendance/my-stats" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
-                <h3>Devamsızlık Durumu</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>Katılım oranlarını incele</p>
-              </Link>
-
-              <Link to="/attendance/excuses/new" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
-                <h3>Mazeret Bildir</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>Rapor veya izin yükle</p>
-              </Link>
-            </>
-          )}
-
-          {user?.role === 'faculty' && (
-            <>
-              <Link to="/attendance/instructor" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎓</div>
-                <h3>Yoklama Başlat</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>QR kod ve oturum aç</p>
-              </Link>
-
-              <Link to="/attendance/report" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📈</div>
-                <h3>Yoklama Raporu</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>Sınıf listesini gör</p>
-              </Link>
-
-              <Link to="/attendance/excuses/manage" className="stat-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '1.5rem', border: '1px solid #eee', borderRadius: '12px', background: 'white' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚖️</div>
-                <h3>Mazeret Yönetimi</h3>
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>Talepleri onayla/reddet</p>
-              </Link>
-            </>
-          )}
-
-        </div>
-      </section>
     </div>
   );
 };

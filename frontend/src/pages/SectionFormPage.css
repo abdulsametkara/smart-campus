@@ -115,6 +115,32 @@
   font-size: 0.9rem;
 }
 
+.section-form-page .loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.section-form-page .loading-spinner::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  margin-right: 12px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .section-form-page {
     padding: 1rem;
@@ -134,4 +160,3 @@
     gap: 1rem;
   }
 }
-

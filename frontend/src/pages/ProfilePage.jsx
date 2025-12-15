@@ -35,6 +35,7 @@ const ProfilePage = () => {
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
   const [loading, setLoading] = useState(true);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [advisor, setAdvisor] = useState(null);
 
   useEffect(() => {
     const loadMe = async () => {
@@ -45,6 +46,16 @@ const ProfilePage = () => {
           phone_number: res.data.phone_number || '',
         });
         setUser(res.data);
+
+        // Fetch advisor if student
+        if (res.data.role === 'student') {
+          try {
+            const advisorRes = await api.get('/academic/my-advisor');
+            setAdvisor(advisorRes.data?.advisor);
+          } catch (e) {
+            console.log('No advisor data');
+          }
+        }
       } catch (err) {
         Swal.fire({ icon: 'error', title: 'Hata', text: 'Profil bilgileri yüklenemedi' });
       } finally {
@@ -388,6 +399,41 @@ const ProfilePage = () => {
               </div>
             )}
           </div>
+
+          {/* Danışman Kartı - Sadece Öğrenciler için */}
+          {user?.role === 'student' && (
+            <div className="card" style={{ marginTop: '1.5rem' }}>
+              <h2>👨‍🏫 Danışmanım</h2>
+              {advisor ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {advisor.name?.[0] || '?'}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, color: '#1e293b' }}>{advisor.title} {advisor.name}</h3>
+                    <p style={{ margin: '0.25rem 0', color: '#64748b', fontSize: '0.9rem' }}>{advisor.department}</p>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
+                      📧 {advisor.email}
+                      {advisor.office && <span> | 🏢 {advisor.office}</span>}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="muted">Henüz bir danışman atanmamış.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

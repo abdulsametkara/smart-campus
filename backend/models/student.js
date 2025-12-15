@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Student.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
       Student.belongsTo(models.Department, { foreignKey: 'department_id', as: 'department' });
+      Student.belongsTo(models.Faculty, { foreignKey: 'advisor_id', as: 'advisor' });
     }
   }
 
@@ -24,6 +25,14 @@ module.exports = (sequelize, DataTypes) => {
       department_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      advisor_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'faculty',
+          key: 'id'
+        }
       },
       gpa: {
         type: DataTypes.DECIMAL(3, 2),

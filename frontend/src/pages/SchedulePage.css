@@ -1,0 +1,322 @@
+.schedule-page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.schedule-page .page-header {
+    margin-bottom: 2rem;
+}
+
+.schedule-page .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem;
+}
+
+/* Conflict Warnings */
+.conflict-warnings {
+    margin-bottom: 2rem;
+}
+
+.conflict-warnings .alert-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: var(--radius-md);
+    color: #92400e;
+    margin-bottom: 1rem;
+}
+
+.conflict-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.conflict-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #fbbf24;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+}
+
+.conflict-course {
+    font-weight: 600;
+    color: #dc2626;
+}
+
+.conflict-vs {
+    color: #f59e0b;
+}
+
+.conflict-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Empty State */
+.empty-state-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.empty-state-card svg {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-card h3 {
+    font-size: 1.25rem;
+    color: var(--text-main);
+    margin: 0 0 0.5rem;
+}
+
+.empty-state-card p {
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+}
+
+/* Timetable Container */
+.timetable-container {
+    overflow-x: auto;
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.timetable {
+    display: flex;
+    min-width: 900px;
+    gap: 2px;
+}
+
+/* Time Column */
+.time-column {
+    width: 70px;
+    flex-shrink: 0;
+}
+
+.time-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: var(--radius-sm) 0 0 0;
+}
+
+.time-slot {
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    padding-top: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Day Columns */
+.day-column {
+    flex: 1;
+    min-width: 150px;
+}
+
+.day-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+}
+
+.day-slots {
+    position: relative;
+    height: calc(60px * 10);
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+}
+
+.hour-slot {
+    height: 60px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.hour-slot:first-child {
+    border-top: none;
+}
+
+/* Schedule Items */
+.schedule-item {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    color: white;
+    text-decoration: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 1;
+}
+
+.schedule-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.schedule-item-code {
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-item-name {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-item-time {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    margin-top: auto;
+}
+
+.schedule-item-room {
+    font-size: 0.65rem;
+    opacity: 0.8;
+}
+
+/* Legend */
+.schedule-legend {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+}
+
+.schedule-legend h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 1rem;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-code {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.legend-name {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Loading Spinner */
+.schedule-page .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    gap: 1rem;
+}
+
+.schedule-page .loading-spinner::before {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .schedule-page {
+        padding: 1rem;
+    }
+
+    .timetable {
+        min-width: 700px;
+    }
+
+    .day-column {
+        min-width: 120px;
+    }
+}

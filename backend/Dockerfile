@@ -41,13 +41,8 @@ COPY --from=builder /usr/src/app/config ./config
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
-
 # Expose port
 EXPOSE 5000
 
-# Use entrypoint script
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Start the application directly
 CMD ["npm", "start"]

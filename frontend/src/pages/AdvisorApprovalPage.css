@@ -1,0 +1,197 @@
+.advisor-approval-page {
+    padding: 2rem;
+}
+
+.advisor-approval-page .page-header {
+    margin-bottom: 2rem;
+}
+
+.advisor-approval-page .page-header h1 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.advisor-approval-page .page-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.empty-state-card {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.empty-state-card .empty-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.empty-state-card h3 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-card p {
+    color: #64748b;
+}
+
+.enrollment-cards {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+}
+
+.enrollment-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.enrollment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.enrollment-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.student-avatar {
+    font-size: 2rem;
+    background: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.student-info h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.student-number {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.pending-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.enrollment-card .card-body {
+    padding: 1.25rem;
+}
+
+.course-info {
+    margin-bottom: 1rem;
+}
+
+.course-code {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-right: 0.75rem;
+}
+
+.course-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.section-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.enrollment-date {
+    font-size: 0.85rem;
+    color: #64748b;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.enrollment-card .card-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-approve {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-reject {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: white;
+    color: #ef4444;
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reject:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+@media (max-width: 768px) {
+    .enrollment-cards {
+        grid-template-columns: 1fr;
+    }
+}
