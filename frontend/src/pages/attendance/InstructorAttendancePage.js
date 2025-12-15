@@ -228,7 +228,7 @@ const InstructorAttendancePage = () => {
                         </div>
 
                         <div className="custom-alert info" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
-                            Kod: <strong>{activeSession.qr_code.substring(0, 8)}...</strong>
+                            Kod: <strong>{activeSession.qr_code}</strong>
                         </div>
 
                         <div style={{ marginTop: '1rem', color: '#ef4444', fontWeight: 600 }}>
