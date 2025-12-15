@@ -625,18 +625,24 @@ exports.enrollToSection = async (req, res) => {
         }
 
         // 1. Check if already enrolled
+        // 1. Check if already enrolled
         const existingEnrollment = await Enrollment.findOne({
             where: {
                 student_id: studentId,
-                section_id: section_id,
-                status: 'ACTIVE'
+                section_id: section_id
             },
             transaction
         });
 
         if (existingEnrollment) {
-            await transaction.rollback();
-            return res.status(400).json({ message: 'You are already enrolled in this section' });
+            if (existingEnrollment.status === 'ACTIVE') {
+                await transaction.rollback();
+                return res.status(400).json({ message: 'You are already enrolled in this section' });
+            }
+            if (existingEnrollment.status === 'PENDING') {
+                await transaction.rollback();
+                return res.status(400).json({ message: 'Enrollment is already pending approval' });
+            }
         }
 
         // 2. Check prerequisites
@@ -677,12 +683,24 @@ exports.enrollToSection = async (req, res) => {
         }
 
         // 5. Create enrollment (PENDING for advisor approval)
-        const enrollment = await Enrollment.create({
-            student_id: studentId,
-            section_id: section_id,
-            status: 'PENDING',
-            enrollment_date: new Date()
-        }, { transaction });
+        // 5. Create or Update enrollment (PENDING for advisor approval)
+        let enrollment;
+        if (existingEnrollment) {
+            enrollment = await existingEnrollment.update({
+                status: 'PENDING',
+                enrollment_date: new Date(),
+                rejection_reason: null,
+                approved_by: null,
+                approved_at: null
+            }, { transaction });
+        } else {
+            enrollment = await Enrollment.create({
+                student_id: studentId,
+                section_id: section_id,
+                status: 'PENDING',
+                enrollment_date: new Date()
+            }, { transaction });
+        }
 
         await transaction.commit();
 
