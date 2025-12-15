@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { io } from 'socket.io-client';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
@@ -15,6 +16,62 @@ const InstructorAttendancePage = () => {
     const [report, setReport] = useState([]);
     const [sessionInfo, setSessionInfo] = useState(null);
     const [locationStatus, setLocationStatus] = useState({ text: 'Konum Bekleniyor', class: '' });
+
+    // Real-time WebSocket state
+    const [realtimeStudents, setRealtimeStudents] = useState([]);
+    const [isConnected, setIsConnected] = useState(false);
+    const socketRef = useRef(null);
+
+    // WebSocket connection effect
+    useEffect(() => {
+        const SOCKET_URL = process.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+        socketRef.current = io(SOCKET_URL, {
+            transports: ['websocket', 'polling']
+        });
+
+        socketRef.current.on('connect', () => {
+            console.log('[WebSocket] Connected');
+            setIsConnected(true);
+        });
+
+        socketRef.current.on('disconnect', () => {
+            console.log('[WebSocket] Disconnected');
+            setIsConnected(false);
+        });
+
+        socketRef.current.on('student-checked-in', (data) => {
+            console.log('[WebSocket] Student checked in:', data);
+            setRealtimeStudents(prev => [
+                { ...data.student, checkedInAt: data.checkedInAt, distance: data.distance },
+                ...prev
+            ]);
+
+            // Show notification
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `${data.student.name} katıldı!`,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, []);
+
+    // Join session room when active session changes
+    useEffect(() => {
+        if (activeSession?.session_id && socketRef.current) {
+            socketRef.current.emit('join-session', activeSession.session_id);
+            setRealtimeStudents([]); // Reset list for new session
+        }
+    }, [activeSession?.session_id]);
 
     useEffect(() => {
         // Fetch sections from API
@@ -242,6 +299,58 @@ const InstructorAttendancePage = () => {
                             <button className="action-button" style={{ flex: 1, background: '#ef4444' }} onClick={handleEndSession}>
                                 OTURUMU BİTİR
                             </button>
+                        </div>
+
+                        {/* Real-time Students List */}
+                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                <h4 style={{ margin: 0, color: '#374151' }}>
+                                    🔴 Canlı Katılım ({realtimeStudents.length})
+                                </h4>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '20px',
+                                    background: isConnected ? '#dcfce7' : '#fef2f2',
+                                    color: isConnected ? '#166534' : '#dc2626'
+                                }}>
+                                    {isConnected ? '● Bağlı' : '○ Bağlantı Yok'}
+                                </span>
+                            </div>
+
+                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                {realtimeStudents.length === 0 ? (
+                                    <p style={{ color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center', margin: '1rem 0' }}>
+                                        Henüz katılım yok...
+                                    </p>
+                                ) : (
+                                    realtimeStudents.map((student, idx) => (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '0.5rem 0.75rem',
+                                                background: idx === 0 ? '#ecfdf5' : 'transparent',
+                                                borderRadius: '8px',
+                                                marginBottom: '0.25rem',
+                                                animation: idx === 0 ? 'fadeIn 0.5s ease' : 'none'
+                                            }}
+                                        >
+                                            <div>
+                                                <span style={{ fontWeight: 600, color: '#1f2937' }}>{student.name}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                                                    {student.studentNumber}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
+                                                {new Date(student.checkedInAt).toLocaleTimeString('tr-TR')}
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
                 ) : (

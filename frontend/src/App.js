@@ -19,6 +19,7 @@ import SectionsListPage from './pages/SectionsListPage';
 import SectionDetailPage from './pages/SectionDetailPage';
 import SectionFormPage from './pages/SectionFormPage';
 import SchedulePage from './pages/SchedulePage';
+import AcademicCalendarPage from './pages/AcademicCalendarPage';
 
 import NotFoundPage from './pages/NotFoundPage';
 import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
@@ -29,6 +30,7 @@ import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
 import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
 import AttendanceHistoryPage from './pages/attendance/AttendanceHistoryPage';
 import SessionHistoryPage from './pages/attendance/SessionHistoryPage';
+import AttendanceAnalyticsPage from './pages/attendance/AttendanceAnalyticsPage';
 import StudentGradesPage from './pages/StudentGradesPage';
 import InstructorGradesPage from './pages/InstructorGradesPage';
 import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
@@ -177,11 +179,21 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+
+
             <Route
               path="/schedule"
               element={
                 <ProtectedRoute>
                   <SchedulePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academic/calendar"
+              element={
+                <ProtectedRoute>
+                  <AcademicCalendarPage />
                 </ProtectedRoute>
               }
             />
@@ -314,6 +326,14 @@ function AppContent() {
               element={
                 <ProtectedRoute roles={['faculty', 'admin']}>
                   <SessionHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance/analytics"
+              element={
+                <ProtectedRoute roles={['faculty', 'admin']}>
+                  <AttendanceAnalyticsPage />
                 </ProtectedRoute>
               }
             />

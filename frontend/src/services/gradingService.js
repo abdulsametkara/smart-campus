@@ -12,7 +12,8 @@ const gradingService = {
     getExamGrades: (examId) => api.get(`/grading/grades/exam/${examId}`),
 
     // Student
-    getMyGrades: () => api.get('/grading/my-grades')
+    getMyGrades: () => api.get('/grading/my-grades'),
+    downloadTranscript: () => api.get('/grading/transcript/pdf', { responseType: 'blob' })
 };
 
 export default gradingService;

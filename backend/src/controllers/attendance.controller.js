@@ -78,7 +78,7 @@ exports.checkIn = async (req, res) => {
         }
 
         // Create Successful Record
-        await AttendanceRecord.create({
+        const record = await AttendanceRecord.create({
             session_id: session.id,
             student_id,
             latitude,
@@ -87,6 +87,31 @@ exports.checkIn = async (req, res) => {
             status: 'PRESENT',
             is_flagged: false
         });
+
+        // Emit real-time update via WebSocket
+        const io = req.app.get('io');
+        if (io) {
+            // Get student info for display
+            const { User } = require('../../models');
+            const student = await User.findByPk(student_id, { attributes: ['id', 'full_name', 'student_number'] });
+
+            io.to(`session-${session.id}`).emit('student-checked-in', {
+                sessionId: session.id,
+                student: {
+                    id: student.id,
+                    name: student.full_name,
+                    studentNumber: student.student_number
+                },
+                checkedInAt: new Date(),
+                distance: validation.distance
+            });
+
+            // Also emit to instructor dashboard
+            io.to(`instructor-${session.instructor_id}`).emit('attendance-update', {
+                sessionId: session.id,
+                totalCheckedIn: await AttendanceRecord.count({ where: { session_id: session.id, status: 'PRESENT' } })
+            });
+        }
 
         res.status(200).json({ message: 'Check-in successful' });
 

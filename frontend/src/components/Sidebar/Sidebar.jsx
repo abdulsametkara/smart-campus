@@ -39,7 +39,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 { path: '/courses', label: 'Dersler' },
                 user?.role === 'student'
                     ? { path: '/sections', label: 'Derse Kayıt' }
-                    : { path: '/sections', label: 'Sections' }
+                    : { path: '/sections', label: 'Sections' },
+                { path: '/academic/calendar', label: 'Akademik Takvim' }
             ]
         });
 
@@ -65,6 +66,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     { path: '/attendance/instructor', label: 'Yoklama Al' },
                     { path: '/attendance/report', label: 'Dönemlik Rapor' },
                     { path: '/attendance/sessions', label: 'Oturum Geçmişi' },
+                    { path: '/attendance/analytics', label: '📊 Analitik' },
                     { path: '/attendance/excuses/manage', label: 'Mazeret Yönetimi' }
                 ]
             });
