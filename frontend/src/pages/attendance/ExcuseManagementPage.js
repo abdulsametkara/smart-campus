@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
 
@@ -10,17 +10,13 @@ const ExcuseManagementPage = () => {
     const [selectedExcuse, setSelectedExcuse] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
 
-    const getToken = () => localStorage.getItem('accessToken');
-
     useEffect(() => {
         fetchPendingExcuses();
     }, []);
 
     const fetchPendingExcuses = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/v1/excuses/pending', {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get('/excuses/pending');
             setRequests(response.data);
             setLoading(false);
         } catch (error) {
@@ -31,9 +27,7 @@ const ExcuseManagementPage = () => {
 
     const handleApprove = async (excuseId) => {
         try {
-            await axios.put(`http://localhost:5000/api/v1/excuses/${excuseId}/approve`, {}, {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            await api.put(`/excuses/${excuseId}/approve`, {});
             Swal.fire('Onaylandı', 'Mazeret onaylandı ve devamsızlık iade edildi', 'success');
             fetchPendingExcuses();
         } catch (error) {
@@ -49,10 +43,8 @@ const ExcuseManagementPage = () => {
 
     const handleRejectConfirm = async () => {
         try {
-            await axios.put(`http://localhost:5000/api/v1/excuses/${selectedExcuse.id}/reject`, {
+            await api.put(`/excuses/${selectedExcuse.id}/reject`, {
                 rejection_reason: rejectReason
-            }, {
-                headers: { Authorization: `Bearer ${getToken()}` }
             });
             Swal.fire('Reddedildi', 'Mazeret talebi reddedildi', 'info');
             setRejectDialog(false);
@@ -116,7 +108,7 @@ const ExcuseManagementPage = () => {
                                         </p>
                                         {req.document_url && (
                                             <a
-                                                href={`http://localhost:5000${req.document_url}`}
+                                                href={`${process.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${req.document_url}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="status-chip excused"

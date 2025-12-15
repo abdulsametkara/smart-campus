@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import '../../styles/attendance.css';
 
 const SessionHistoryPage = () => {
@@ -8,18 +8,13 @@ const SessionHistoryPage = () => {
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const API_URL = 'http://localhost:5000';
-
     useEffect(() => {
         fetchSections();
     }, []);
 
     const fetchSections = async () => {
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`${API_URL}/api/v1/attendance/sections/my`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/attendance/sections/my');
             setSections(response.data);
         } catch (err) {
             console.error('Sections fetch error:', err);
@@ -29,10 +24,7 @@ const SessionHistoryPage = () => {
     const fetchHistory = async (sectionId) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`${API_URL}/api/v1/attendance/sections/${sectionId}/history`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/attendance/sections/${sectionId}/history`);
             setHistory(response.data);
         } catch (err) {
             console.error('History fetch error:', err);

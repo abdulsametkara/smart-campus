@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import '../../styles/attendance.css';
 
 const AttendanceReportPage = () => {
@@ -8,17 +8,13 @@ const AttendanceReportPage = () => {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const getToken = () => localStorage.getItem('accessToken');
-
     useEffect(() => {
         fetchSections();
     }, []);
 
     const fetchSections = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/v1/attendance/sections/my', {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get('/attendance/sections/my');
             setSections(response.data);
         } catch (error) {
             console.error(error);
@@ -28,9 +24,7 @@ const AttendanceReportPage = () => {
     const fetchReport = async (sectionId) => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:5000/api/v1/attendance/sections/${sectionId}/summary`, {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get(`/attendance/sections/${sectionId}/summary`);
             setReport(response.data);
             setLoading(false);
         } catch (error) {

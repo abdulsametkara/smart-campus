@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import axios from 'axios';
+import api from '../../services/api';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
 
@@ -20,10 +20,7 @@ const InstructorAttendancePage = () => {
         // Fetch sections from API
         const fetchSections = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const response = await axios.get('http://localhost:5000/api/v1/attendance/sections/my', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await api.get('/attendance/sections/my');
                 setSections(response.data);
             } catch (error) {
                 console.error('Error fetching sections', error);
@@ -33,10 +30,7 @@ const InstructorAttendancePage = () => {
 
         const fetchActiveSession = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const response = await axios.get('http://localhost:5000/api/v1/attendance/sessions/active', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await api.get('/attendance/sessions/active');
                 if (response.data.active) {
                     setActiveSession({
                         session_id: response.data.session_id,
@@ -51,8 +45,6 @@ const InstructorAttendancePage = () => {
         };
         fetchActiveSession();
     }, []);
-
-    const getToken = () => localStorage.getItem('accessToken');
 
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
@@ -84,14 +76,12 @@ const InstructorAttendancePage = () => {
 
     const handleStartSession = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/v1/attendance/sessions', {
+            const response = await api.post('/attendance/sessions', {
                 section_id: selectedSection,
                 duration_minutes: duration,
                 radius: radius,
                 latitude: latitude,
                 longitude: longitude
-            }, {
-                headers: { Authorization: `Bearer ${getToken()}` }
             });
 
             setActiveSession(response.data);
@@ -107,9 +97,7 @@ const InstructorAttendancePage = () => {
     const handleFetchReport = async (sessionId = activeSession?.session_id) => {
         if (!sessionId) return;
         try {
-            const response = await axios.get(`http://localhost:5000/api/v1/attendance/sessions/${sessionId}/report`, {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get(`/attendance/sessions/${sessionId}/report`);
             setReport(response.data.report);
             setSessionInfo(response.data.session);
         } catch (error) {
@@ -131,9 +119,7 @@ const InstructorAttendancePage = () => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`http://localhost:5000/api/v1/attendance/sessions/${activeSession.session_id}/end`, {}, {
-                    headers: { Authorization: `Bearer ${getToken()}` }
-                });
+                const response = await api.post(`/attendance/sessions/${activeSession.session_id}/end`, {});
                 Swal.fire('Tamamlandı', `Oturum bitirildi. ${response.data.absent_count} kişi devamsız işaretlendi.`, 'success');
                 setActiveSession(null);
                 setReport([]);

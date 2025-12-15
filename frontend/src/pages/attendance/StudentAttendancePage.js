@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Circle, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
+import api from '../../services/api';
 import L from 'leaflet';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
@@ -57,14 +57,11 @@ const StudentAttendancePage = () => {
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            await axios.post('http://localhost:5000/api/v1/attendance/checkin', {
+            await api.post('/attendance/checkin', {
                 latitude: location.latitude,
                 longitude: location.longitude,
                 accuracy: location.accuracy,
                 qr_code: qrCode
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             Swal.fire({
                 title: 'Yoklama Başarılı! 🎉',

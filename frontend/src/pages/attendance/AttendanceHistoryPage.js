@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import '../../styles/attendance.css';
 
 const AttendanceHistoryPage = () => {
@@ -13,10 +13,7 @@ const AttendanceHistoryPage = () => {
 
     const fetchHistory = async () => {
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.get('http://localhost:5000/api/v1/attendance/my-history', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/attendance/my-history');
             setHistory(response.data);
             setLoading(false);
         } catch (err) {
