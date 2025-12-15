@@ -176,7 +176,13 @@ exports.getSectionById = async (req, res) => {
                     model: Course,
                     as: 'course',
                     include: [
-                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] }
+                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] },
+                        {
+                            model: Course,
+                            as: 'Prerequisites',
+                            attributes: ['id', 'code', 'name', 'credits'],
+                            through: { attributes: [] }
+                        }
                     ]
                 },
                 {
@@ -1325,8 +1331,8 @@ exports.approveEnrollment = async (req, res) => {
             return res.status(403).json({ message: 'You are not the advisor for this student' });
         }
 
-        // Approve enrollment
-        enrollment.status = 'APPROVED';
+        // Approve enrollment - set to ACTIVE for system compatibility
+        enrollment.status = 'ACTIVE';
         enrollment.approved_by = advisorUserId;
         enrollment.approved_at = new Date();
         await enrollment.save();

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Circle, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../../services/api';
 import L from 'leaflet';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
 
@@ -18,7 +19,47 @@ const StudentAttendancePage = () => {
     const [location, setLocation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [qrCode, setQrCode] = useState('');
+    const [showScanner, setShowScanner] = useState(false);
     const [status, setStatus] = useState({ type: 'info', msg: 'Lütfen derse katılmak için konumunuzu doğrulayın.' });
+
+    // Effect to handle scanner cleanup/init
+    React.useEffect(() => {
+        let scanner = null;
+        if (showScanner) {
+            scanner = new Html5QrcodeScanner(
+                "reader",
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                /* verbose= */ false
+            );
+            scanner.render(onScanSuccess, onScanFailure);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            setQrCode(decodedText);
+            setShowScanner(false);
+            scanner.clear();
+            Swal.fire({
+                title: 'QR Kod Okundu! ✅',
+                text: `Kod: ${decodedText}`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning.
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        return () => {
+            if (scanner) {
+                scanner.clear().catch(error => {
+                    console.error("Failed to clear html5-qrcode scanner. ", error);
+                });
+            }
+        };
+    }, [showScanner]);
 
     // Dummy session coords for visualization before actual check-in data is known
     // In a real app, you might fetch active session coordinates first, or just show user location map
@@ -143,6 +184,31 @@ const StudentAttendancePage = () => {
 
                         <div style={{ marginBottom: '1.5rem' }}>
                             <label className="stat-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Oturum Kodu / QR</label>
+
+                            {!showScanner ? (
+                                <>
+                                    <button
+                                        className="action-button primary"
+                                        onClick={() => setShowScanner(true)}
+                                        style={{ width: '100%', marginBottom: '1rem', justifyContent: 'center' }}
+                                    >
+                                        📷 QR KOD TARA
+                                    </button>
+                                    <div style={{ textAlign: 'center', margin: '0.5rem', color: '#888' }}>- VEYA -</div>
+                                </>
+                            ) : (
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <div id="reader" width="100%"></div>
+                                    <button
+                                        className="action-button danger"
+                                        onClick={() => setShowScanner(false)}
+                                        style={{ width: '100%', marginTop: '0.5rem', justifyContent: 'center' }}
+                                    >
+                                        İPTAL
+                                    </button>
+                                </div>
+                            )}
+
                             <input
                                 type="text"
                                 className="action-input"

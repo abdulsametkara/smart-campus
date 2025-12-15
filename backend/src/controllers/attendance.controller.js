@@ -501,6 +501,7 @@ exports.getMySections = async (req, res) => {
             course_code: s.course?.code,
             course_name: s.course?.name,
             section_number: s.section_number,
+            schedule: s.schedule || [], // Include schedule for timetable
             course: s.course // Include full course object for frontend compatibility
         })));
 
