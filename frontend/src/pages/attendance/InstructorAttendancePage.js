@@ -17,10 +17,19 @@ const InstructorAttendancePage = () => {
     const [locationStatus, setLocationStatus] = useState({ text: 'Konum Bekleniyor', class: '' });
 
     useEffect(() => {
-        setSections([
-            { id: 1, name: 'CENG101 - Şube 1' },
-            { id: 2, name: 'CENG101 - Şube 2' }
-        ]);
+        // Fetch sections from API
+        const fetchSections = async () => {
+            try {
+                const token = localStorage.getItem('accessToken');
+                const response = await axios.get('http://localhost:5000/api/v1/attendance/sections/my', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setSections(response.data);
+            } catch (error) {
+                console.error('Error fetching sections', error);
+            }
+        };
+        fetchSections();
 
         const fetchActiveSession = async () => {
             try {
@@ -174,7 +183,7 @@ const InstructorAttendancePage = () => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
-                            <label className="stat-label">Ders Şubesi</label>
+                            <label className="stat-label">Ders Section</label>
                             <select
                                 value={selectedSection}
                                 onChange={(e) => setSelectedSection(e.target.value)}
@@ -183,7 +192,7 @@ const InstructorAttendancePage = () => {
                                     border: '1px solid #ccc', marginTop: '0.25rem'
                                 }}
                             >
-                                <option value="">Şube seçin</option>
+                                <option value="">Section seçin</option>
                                 {sections.map(s => (
                                     <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}

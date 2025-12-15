@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: true,
       },
+      student_number: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
       profile_picture_url: {
         type: DataTypes.STRING(255),
         allowNull: true,

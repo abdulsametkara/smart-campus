@@ -1,5 +1,5 @@
 'use strict';
-const { Course, CourseSection, User, Enrollment, Department, Classroom, AttendanceSession, AttendanceRecord } = require('../../models');
+const { Course, CourseSection, User, Enrollment, Department, Classroom, AttendanceSession, AttendanceRecord, Student, Faculty, SystemSetting } = require('../../models');
 const { Op } = require('sequelize');
 const sequelize = require('../../models').sequelize;
 const prerequisiteService = require('../services/prerequisite.service');
@@ -9,12 +9,42 @@ const scheduleConflictService = require('../services/scheduleConflict.service');
 exports.getAllSections = async (req, res) => {
     try {
         const { course_id, semester, instructor_id, page = 1, limit = 20 } = req.query;
-        
+        const userRole = req.user?.role;
+        const userId = req.user?.id;
+
         // Build where clause
         const where = {};
         if (course_id) where.course_id = course_id;
         if (semester) where.semester = semester;
         if (instructor_id) where.instructor_id = instructor_id;
+
+        // Role-based filtering by DEPARTMENT
+        // Students: see all sections from their department's courses
+        if (userRole === 'student') {
+            const studentProfile = await Student.findOne({ where: { user_id: userId } });
+            if (studentProfile) {
+                // Get all courses from student's department
+                const deptCourses = await Course.findAll({
+                    where: { department_id: studentProfile.department_id },
+                    attributes: ['id']
+                });
+                const deptCourseIds = deptCourses.map(c => c.id);
+                where.course_id = { [Op.in]: deptCourseIds.length > 0 ? deptCourseIds : [0] };
+            }
+        }
+
+        // Faculty: see all sections from their department's courses
+        if (userRole === 'faculty') {
+            const facultyProfile = await Faculty.findOne({ where: { user_id: userId } });
+            if (facultyProfile) {
+                const deptCourses = await Course.findAll({
+                    where: { department_id: facultyProfile.department_id },
+                    attributes: ['id']
+                });
+                const deptCourseIds = deptCourses.map(c => c.id);
+                where.course_id = { [Op.in]: deptCourseIds.length > 0 ? deptCourseIds : [0] };
+            }
+        }
 
         // Pagination
         const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -24,18 +54,18 @@ exports.getAllSections = async (req, res) => {
         const { count, rows: sections } = await CourseSection.findAndCountAll({
             where,
             include: [
-                { 
-                    model: Course, 
-                    as: 'course', 
+                {
+                    model: Course,
+                    as: 'course',
                     attributes: ['id', 'code', 'name', 'credits', 'ects', 'department_id'],
                     include: [
                         { model: Department, as: 'department', attributes: ['id', 'name', 'code'] }
                     ]
                 },
-                { 
-                    model: User, 
-                    as: 'instructor', 
-                    attributes: ['id', 'full_name', 'email'] 
+                {
+                    model: User,
+                    as: 'instructor',
+                    attributes: ['id', 'full_name', 'email']
                 }
             ],
             order: [['section_number', 'ASC']],
@@ -71,12 +101,20 @@ exports.assignInstructor = async (req, res) => {
         const { sectionId } = req.params;
         const { instructorId } = req.body;
 
-        const section = await CourseSection.findByPk(sectionId);
+        const section = await CourseSection.findByPk(sectionId, {
+            include: [{ model: Course, as: 'course', attributes: ['department_id'] }]
+        });
         if (!section) return res.status(404).json({ message: 'Section not found' });
 
         // Verify user is faculty
         const instructor = await User.findOne({ where: { id: instructorId, role: 'faculty' } });
         if (!instructor) return res.status(400).json({ message: 'User is not a faculty member' });
+
+        // Verify faculty belongs to the same department as the course
+        const facultyProfile = await Faculty.findOne({ where: { user_id: instructorId } });
+        if (facultyProfile && section.course && facultyProfile.department_id !== section.course.department_id) {
+            return res.status(403).json({ message: 'Bu öğretim üyesi bu bölümün dersine atanamaz. Öğretim üyesi sadece kendi bölümündeki derslere atanabilir.' });
+        }
 
         section.instructor_id = instructorId;
         await section.save();
@@ -131,20 +169,20 @@ exports.enrollStudent = async (req, res) => {
 exports.getSectionById = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         const section = await CourseSection.findByPk(id, {
             include: [
-                { 
-                    model: Course, 
+                {
+                    model: Course,
                     as: 'course',
                     include: [
                         { model: Department, as: 'department', attributes: ['id', 'name', 'code'] }
                     ]
                 },
-                { 
-                    model: User, 
-                    as: 'instructor', 
-                    attributes: ['id', 'full_name', 'email', 'phone_number'] 
+                {
+                    model: User,
+                    as: 'instructor',
+                    attributes: ['id', 'full_name', 'email', 'phone_number']
                 },
                 {
                     model: Enrollment,
@@ -152,10 +190,10 @@ exports.getSectionById = async (req, res) => {
                     where: { status: 'ACTIVE' },
                     required: false,
                     include: [
-                        { 
-                            model: User, 
-                            as: 'student', 
-                            attributes: ['id', 'full_name', 'email', 'student_number'] 
+                        {
+                            model: User,
+                            as: 'student',
+                            attributes: ['id', 'full_name', 'email', 'student_number']
                         }
                     ]
                 },
@@ -180,13 +218,13 @@ exports.getSectionById = async (req, res) => {
             const roomIds = section.schedule
                 .map(s => s.room_id)
                 .filter(id => id != null);
-            
+
             if (roomIds.length > 0) {
                 const classrooms = await Classroom.findAll({
                     where: { id: { [Op.in]: roomIds } },
                     attributes: ['id', 'name', 'building', 'room_number']
                 });
-                
+
                 const classroomMap = {};
                 classrooms.forEach(c => { classroomMap[c.id] = c.toJSON(); });
 
@@ -217,8 +255,8 @@ exports.createSection = async (req, res) => {
 
         // Validate required fields
         if (!course_id || !section_number || !semester || !instructor_id || !capacity) {
-            return res.status(400).json({ 
-                message: 'Missing required fields: course_id, section_number, semester, instructor_id, capacity' 
+            return res.status(400).json({
+                message: 'Missing required fields: course_id, section_number, semester, instructor_id, capacity'
             });
         }
 
@@ -239,8 +277,8 @@ exports.createSection = async (req, res) => {
         }
 
         // Check if instructor exists and is faculty
-        const instructor = await User.findOne({ 
-            where: { id: instructor_id, role: 'faculty' } 
+        const instructor = await User.findOne({
+            where: { id: instructor_id, role: 'faculty' }
         });
         if (!instructor) {
             return res.status(400).json({ message: 'Invalid instructor. User must be a faculty member' });
@@ -248,15 +286,15 @@ exports.createSection = async (req, res) => {
 
         // Check for duplicate section (same course_id, section_number, semester)
         const existing = await CourseSection.findOne({
-            where: { 
-                course_id, 
-                section_number, 
-                semester 
+            where: {
+                course_id,
+                section_number,
+                semester
             }
         });
         if (existing) {
-            return res.status(409).json({ 
-                message: `Section ${section_number} already exists for course ${course.code} in semester ${semester}` 
+            return res.status(409).json({
+                message: `Section ${section_number} already exists for course ${course.code} in semester ${semester}`
             });
         }
 
@@ -271,20 +309,20 @@ exports.createSection = async (req, res) => {
 
             for (const item of schedule) {
                 if (!item.day || !item.start || !item.end) {
-                    return res.status(400).json({ 
-                        message: 'Each schedule item must have day, start, and end fields' 
+                    return res.status(400).json({
+                        message: 'Each schedule item must have day, start, and end fields'
                     });
                 }
 
                 if (!validDays.includes(item.day)) {
-                    return res.status(400).json({ 
-                        message: `Invalid day: ${item.day}. Must be one of: ${validDays.join(', ')}` 
+                    return res.status(400).json({
+                        message: `Invalid day: ${item.day}. Must be one of: ${validDays.join(', ')}`
                     });
                 }
 
                 if (!timeRegex.test(item.start) || !timeRegex.test(item.end)) {
-                    return res.status(400).json({ 
-                        message: 'Start and end times must be in HH:MM format (24-hour)' 
+                    return res.status(400).json({
+                        message: 'Start and end times must be in HH:MM format (24-hour)'
                     });
                 }
 
@@ -295,8 +333,8 @@ exports.createSection = async (req, res) => {
                 const endTime = endHour * 60 + endMin;
 
                 if (endTime <= startTime) {
-                    return res.status(400).json({ 
-                        message: `End time must be after start time for ${item.day}` 
+                    return res.status(400).json({
+                        message: `End time must be after start time for ${item.day}`
                     });
                 }
 
@@ -304,8 +342,8 @@ exports.createSection = async (req, res) => {
                 if (item.room_id) {
                     const classroom = await Classroom.findByPk(item.room_id);
                     if (!classroom) {
-                        return res.status(404).json({ 
-                            message: `Classroom with id ${item.room_id} not found` 
+                        return res.status(404).json({
+                            message: `Classroom with id ${item.room_id} not found`
                         });
                     }
                 }
@@ -368,8 +406,8 @@ exports.updateSection = async (req, res) => {
                 return res.status(400).json({ message: 'Capacity must be a positive integer' });
             }
             if (capacity < section.enrolled_count) {
-                return res.status(400).json({ 
-                    message: `Capacity cannot be less than enrolled count (${section.enrolled_count})` 
+                return res.status(400).json({
+                    message: `Capacity cannot be less than enrolled count (${section.enrolled_count})`
                 });
             }
             section.capacity = capacity;
@@ -377,8 +415,8 @@ exports.updateSection = async (req, res) => {
 
         // Update instructor if provided
         if (instructor_id !== undefined) {
-            const instructor = await User.findOne({ 
-                where: { id: instructor_id, role: 'faculty' } 
+            const instructor = await User.findOne({
+                where: { id: instructor_id, role: 'faculty' }
             });
             if (!instructor) {
                 return res.status(400).json({ message: 'Invalid instructor. User must be a faculty member' });
@@ -398,28 +436,28 @@ exports.updateSection = async (req, res) => {
 
             for (const item of schedule) {
                 if (!item.day || !item.start || !item.end) {
-                    return res.status(400).json({ 
-                        message: 'Each schedule item must have day, start, and end fields' 
+                    return res.status(400).json({
+                        message: 'Each schedule item must have day, start, and end fields'
                     });
                 }
 
                 if (!validDays.includes(item.day)) {
-                    return res.status(400).json({ 
-                        message: `Invalid day: ${item.day}` 
+                    return res.status(400).json({
+                        message: `Invalid day: ${item.day}`
                     });
                 }
 
                 if (!timeRegex.test(item.start) || !timeRegex.test(item.end)) {
-                    return res.status(400).json({ 
-                        message: 'Start and end times must be in HH:MM format' 
+                    return res.status(400).json({
+                        message: 'Start and end times must be in HH:MM format'
                     });
                 }
 
                 if (item.room_id) {
                     const classroom = await Classroom.findByPk(item.room_id);
                     if (!classroom) {
-                        return res.status(404).json({ 
-                            message: `Classroom with id ${item.room_id} not found` 
+                        return res.status(404).json({
+                            message: `Classroom with id ${item.room_id} not found`
                         });
                     }
                 }
@@ -471,15 +509,15 @@ exports.deleteSection = async (req, res) => {
         // Check if section has active enrollments
         const activeEnrollments = section.enrollments.filter(e => e.status === 'ACTIVE');
         if (activeEnrollments.length > 0) {
-            return res.status(400).json({ 
-                message: `Cannot delete section with ${activeEnrollments.length} active enrollments. Please drop all students first.` 
+            return res.status(400).json({
+                message: `Cannot delete section with ${activeEnrollments.length} active enrollments. Please drop all students first.`
             });
         }
 
         // Check if section has attendance sessions
         if (section.sessions && section.sessions.length > 0) {
-            return res.status(400).json({ 
-                message: 'Cannot delete section with attendance sessions. Consider archiving instead.' 
+            return res.status(400).json({
+                message: 'Cannot delete section with attendance sessions. Consider archiving instead.'
             });
         }
 
@@ -493,15 +531,40 @@ exports.deleteSection = async (req, res) => {
 };
 
 // Get students in a section
+// Get students in a section
 exports.getSectionStudents = async (req, res) => {
     try {
         const { sectionId } = req.params;
+
+        // Access Control for Faculty
+        if (req.user.role === 'faculty') {
+            const section = await CourseSection.findByPk(sectionId);
+            if (!section) return res.status(404).json({ message: 'Section not found' });
+            if (section.instructor_id !== req.user.id) {
+                return res.status(403).json({ message: 'Forbidden: You are not the instructor of this section' });
+            }
+        }
+
         const enrollments = await Enrollment.findAll({
             where: { section_id: sectionId, status: 'ACTIVE' },
-            include: [{ model: User, as: 'student', attributes: ['id', 'full_name', 'email'] }]
+            include: [
+                {
+                    model: User,
+                    as: 'student',
+                    attributes: ['id', 'full_name', 'email']
+                }
+            ]
         });
 
-        const students = enrollments.map(e => e.student);
+        // Try to fetch student numbers if possible (optional enhancement)
+        // For now, simplify to just returning user details as student
+        const students = await Promise.all(enrollments.map(async e => {
+            const usr = e.student.toJSON();
+            // Manually fetch student profile for number
+            const profile = await Student.findOne({ where: { user_id: usr.id } });
+            return { ...usr, student_number: profile ? profile.student_number : '' };
+        }));
+
         res.json(students);
     } catch (error) {
         console.error(error);
@@ -514,7 +577,7 @@ exports.getSectionStudents = async (req, res) => {
 // Enroll student to a section (Student)
 exports.enrollToSection = async (req, res) => {
     const transaction = await sequelize.transaction();
-    
+
     try {
         const { section_id } = req.body;
         const studentId = req.user.id;
@@ -538,6 +601,27 @@ exports.enrollToSection = async (req, res) => {
         if (!section) {
             await transaction.rollback();
             return res.status(404).json({ message: 'Section not found' });
+        }
+
+        // Check if enrollment is open
+        const enrollmentSetting = await SystemSetting.findOne({ where: { key: 'enrollment_open' }, transaction });
+        const isEnrollmentOpen = enrollmentSetting ? enrollmentSetting.value === 'true' : true; // Default true if not set
+
+        if (!isEnrollmentOpen) {
+            await transaction.rollback();
+            return res.status(403).json({ message: 'Ders seçim dönemi şu anda kapalıdır.' });
+        }
+
+        // 0. Check department (students can only enroll in their department's courses)
+        const studentProfile = await Student.findOne({ where: { user_id: studentId }, transaction });
+        if (studentProfile && section.course) {
+            const course = await Course.findByPk(section.course_id, { attributes: ['department_id'], transaction });
+            if (course && studentProfile.department_id !== course.department_id) {
+                await transaction.rollback();
+                return res.status(403).json({
+                    message: 'Bu ders sizin bölümünüze ait değil. Sadece kendi bölümünüzdeki derslere kayıt olabilirsiniz.'
+                });
+            }
         }
 
         // 1. Check if already enrolled
@@ -592,11 +676,11 @@ exports.enrollToSection = async (req, res) => {
             return res.status(400).json({ message: 'Section is full' });
         }
 
-        // 5. Create enrollment
+        // 5. Create enrollment (PENDING for advisor approval)
         const enrollment = await Enrollment.create({
             student_id: studentId,
             section_id: section_id,
-            status: 'ACTIVE',
+            status: 'PENDING',
             enrollment_date: new Date()
         }, { transaction });
 
@@ -667,7 +751,7 @@ exports.getMyEnrollments = async (req, res) => {
         const enrollmentsWithStats = await Promise.all(
             enrollments.map(async (enrollment) => {
                 const sectionId = enrollment.section_id;
-                
+
                 // Get attendance records for this enrollment
                 const attendanceRecords = await AttendanceRecord.findAll({
                     where: {
@@ -697,8 +781,8 @@ exports.getMyEnrollments = async (req, res) => {
                         present: presentCount,
                         absent: absentCount,
                         excused: excusedCount,
-                        attendance_percentage: totalSessions > 0 
-                            ? Math.round((presentCount / totalSessions) * 100) 
+                        attendance_percentage: totalSessions > 0
+                            ? Math.round((presentCount / totalSessions) * 100)
                             : 0
                     }
                 };
@@ -715,7 +799,7 @@ exports.getMyEnrollments = async (req, res) => {
 // Drop course (Student)
 exports.dropEnrollment = async (req, res) => {
     const transaction = await sequelize.transaction();
-    
+
     try {
         const { id } = req.params;
         const studentId = req.user.id;
@@ -784,7 +868,9 @@ exports.dropEnrollment = async (req, res) => {
 exports.getAllCourses = async (req, res) => {
     try {
         const { department_id, search, page = 1, limit = 20 } = req.query;
-        
+        const userRole = req.user?.role;
+        const userId = req.user?.id;
+
         const where = {};
         if (department_id) where.department_id = department_id;
         if (search) {
@@ -792,6 +878,23 @@ exports.getAllCourses = async (req, res) => {
                 { code: { [Op.iLike]: `%${search}%` } },
                 { name: { [Op.iLike]: `%${search}%` } }
             ];
+        }
+
+        // Role-based filtering by DEPARTMENT
+        // Students: see all courses from their department
+        if (userRole === 'student') {
+            const studentProfile = await Student.findOne({ where: { user_id: userId } });
+            if (studentProfile) {
+                where.department_id = studentProfile.department_id;
+            }
+        }
+
+        // Faculty: see all courses from their department
+        if (userRole === 'faculty') {
+            const facultyProfile = await Faculty.findOne({ where: { user_id: userId } });
+            if (facultyProfile) {
+                where.department_id = facultyProfile.department_id;
+            }
         }
 
         const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -831,7 +934,7 @@ exports.getAllCourses = async (req, res) => {
 exports.getCourseById = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         const course = await Course.findByPk(id, {
             include: [
                 {
@@ -1043,6 +1146,309 @@ exports.deleteCourse = async (req, res) => {
         await course.destroy();
 
         res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ==================== DROPDOWN DATA ENDPOINTS ====================
+
+// Get all classrooms (for dropdown)
+exports.getAllClassrooms = async (req, res) => {
+    try {
+        const classrooms = await Classroom.findAll({
+            attributes: ['id', 'name', 'building', 'room_number', 'capacity'],
+            order: [['building', 'ASC'], ['name', 'ASC']]
+        });
+        res.json(classrooms);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Get faculty list (for instructor dropdown)
+exports.getFacultyList = async (req, res) => {
+    try {
+        const faculty = await User.findAll({
+            where: { role: 'faculty' },
+            attributes: ['id', 'full_name', 'email'],
+            order: [['full_name', 'ASC']]
+        });
+        res.json(faculty);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ==================== SYSTEM SETTINGS ENDPOINTS ====================
+// Get system settings
+exports.getSettings = async (req, res) => {
+    try {
+        const settings = await SystemSetting.findAll();
+        const settingsMap = {};
+        settings.forEach(s => {
+            settingsMap[s.key] = s.value;
+        });
+        res.json(settingsMap);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Update system settings (Admin only)
+exports.updateSettings = async (req, res) => {
+    try {
+        const { key, value } = req.body;
+
+        if (!key || value === undefined) {
+            return res.status(400).json({ message: 'Key and value are required' });
+        }
+
+        let setting = await SystemSetting.findOne({ where: { key } });
+        if (setting) {
+            setting.value = String(value);
+            await setting.save();
+        } else {
+            setting = await SystemSetting.create({
+                key,
+                value: String(value)
+            });
+        }
+
+        res.json({ message: 'Setting updated successfully', setting });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ==================== ADVISOR APPROVAL ENDPOINTS ====================
+
+// Get pending enrollments for advisor
+exports.getAdvisorPendingEnrollments = async (req, res) => {
+    try {
+        const advisorUserId = req.user.id;
+
+        // Find faculty profile
+        const facultyProfile = await Faculty.findOne({ where: { user_id: advisorUserId } });
+        if (!facultyProfile) {
+            return res.status(404).json({ message: 'Faculty profile not found' });
+        }
+
+        // Find students who have this faculty as advisor
+        const adviseeStudents = await Student.findAll({
+            where: { advisor_id: facultyProfile.id },
+            include: [{ model: User, as: 'user', attributes: ['id', 'full_name', 'email'] }]
+        });
+
+        const studentUserIds = adviseeStudents.map(s => s.user_id);
+
+        if (studentUserIds.length === 0) {
+            return res.json([]);
+        }
+
+        // Get pending enrollments for these students
+        const pendingEnrollments = await Enrollment.findAll({
+            where: {
+                student_id: { [Op.in]: studentUserIds },
+                status: 'PENDING'
+            },
+            include: [
+                { model: User, as: 'student', attributes: ['id', 'full_name', 'email', 'student_number'] },
+                {
+                    model: CourseSection,
+                    as: 'section',
+                    include: [
+                        { model: Course, as: 'course', attributes: ['id', 'code', 'name', 'credits'] },
+                        { model: User, as: 'instructor', attributes: ['id', 'full_name'] }
+                    ]
+                }
+            ],
+            order: [['enrollment_date', 'DESC']]
+        });
+
+        res.json(pendingEnrollments);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Approve enrollment (Advisor)
+exports.approveEnrollment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const advisorUserId = req.user.id;
+
+        const enrollment = await Enrollment.findByPk(id, {
+            include: [
+                { model: User, as: 'student' },
+                { model: CourseSection, as: 'section', include: [{ model: Course, as: 'course' }] }
+            ]
+        });
+
+        if (!enrollment) {
+            return res.status(404).json({ message: 'Enrollment not found' });
+        }
+
+        if (enrollment.status !== 'PENDING') {
+            return res.status(400).json({ message: 'This enrollment is not pending approval' });
+        }
+
+        // Verify advisor relationship
+        const facultyProfile = await Faculty.findOne({ where: { user_id: advisorUserId } });
+        const studentProfile = await Student.findOne({ where: { user_id: enrollment.student_id } });
+
+        if (!facultyProfile || !studentProfile || studentProfile.advisor_id !== facultyProfile.id) {
+            return res.status(403).json({ message: 'You are not the advisor for this student' });
+        }
+
+        // Approve enrollment
+        enrollment.status = 'APPROVED';
+        enrollment.approved_by = advisorUserId;
+        enrollment.approved_at = new Date();
+        await enrollment.save();
+
+        res.json({ message: 'Enrollment approved successfully', enrollment });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Reject enrollment (Advisor)
+exports.rejectEnrollment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+        const advisorUserId = req.user.id;
+
+        const enrollment = await Enrollment.findByPk(id, {
+            include: [
+                { model: User, as: 'student' },
+                { model: CourseSection, as: 'section' }
+            ]
+        });
+
+        if (!enrollment) {
+            return res.status(404).json({ message: 'Enrollment not found' });
+        }
+
+        if (enrollment.status !== 'PENDING') {
+            return res.status(400).json({ message: 'This enrollment is not pending approval' });
+        }
+
+        // Verify advisor relationship
+        const facultyProfile = await Faculty.findOne({ where: { user_id: advisorUserId } });
+        const studentProfile = await Student.findOne({ where: { user_id: enrollment.student_id } });
+
+        if (!facultyProfile || !studentProfile || studentProfile.advisor_id !== facultyProfile.id) {
+            return res.status(403).json({ message: 'You are not the advisor for this student' });
+        }
+
+        // Decrease enrolled count since we're rejecting
+        await CourseSection.decrement('enrolled_count', {
+            where: { id: enrollment.section_id }
+        });
+
+        // Reject enrollment
+        enrollment.status = 'REJECTED';
+        enrollment.approved_by = advisorUserId;
+        enrollment.approved_at = new Date();
+        enrollment.rejection_reason = reason || 'No reason provided';
+        await enrollment.save();
+
+        res.json({ message: 'Enrollment rejected', enrollment });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Get student's advisor info
+exports.getMyAdvisor = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const studentProfile = await Student.findOne({
+            where: { user_id: userId },
+            include: [{
+                model: Faculty,
+                as: 'advisor',
+                include: [
+                    { model: User, as: 'user', attributes: ['id', 'full_name', 'email', 'profile_picture_url'] },
+                    { model: Department, as: 'department', attributes: ['id', 'name'] }
+                ]
+            }]
+        });
+
+        if (!studentProfile) {
+            return res.status(404).json({ message: 'Student profile not found' });
+        }
+
+        if (!studentProfile.advisor) {
+            return res.json({ advisor: null, message: 'No advisor assigned' });
+        }
+
+        res.json({
+            advisor: {
+                id: studentProfile.advisor.id,
+                title: studentProfile.advisor.title,
+                name: studentProfile.advisor.user?.full_name,
+                email: studentProfile.advisor.user?.email,
+                profile_picture: studentProfile.advisor.user?.profile_picture_url,
+                department: studentProfile.advisor.department?.name,
+                office: studentProfile.advisor.office
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Get faculty's advisees (students they advise)
+exports.getMyAdvisees = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const facultyProfile = await Faculty.findOne({ where: { user_id: userId } });
+
+        if (!facultyProfile) {
+            return res.status(404).json({ message: 'Faculty profile not found' });
+        }
+
+        const advisees = await Student.findAll({
+            where: { advisor_id: facultyProfile.id },
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'full_name', 'email', 'student_number', 'profile_picture_url']
+                },
+                { model: Department, as: 'department', attributes: ['id', 'name'] }
+            ],
+            order: [[{ model: User, as: 'user' }, 'full_name', 'ASC']]
+        });
+
+        res.json({
+            count: advisees.length,
+            advisees: advisees.map(s => ({
+                id: s.id,
+                user_id: s.user_id,
+                student_number: s.user?.student_number || s.student_number,
+                name: s.user?.full_name,
+                email: s.user?.email,
+                profile_picture: s.user?.profile_picture_url,
+                department: s.department?.name,
+                gpa: s.gpa,
+                cgpa: s.cgpa
+            }))
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error', error: error.message });

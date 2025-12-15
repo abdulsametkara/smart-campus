@@ -28,5 +28,7 @@ app.use('/api/v1/admin', require('./routes/admin.routes'));
 app.use('/api/v1/attendance', require('../routes/attendance.routes'));
 app.use('/api/v1/academic', require('./routes/academic.routes'));
 app.use('/api/v1/excuses', require('./routes/excuse.routes'));
+app.use('/api/v1/grading', require('./routes/grading.routes'));
+app.use('/api/v1/announcements', require('./routes/announcement.routes'));
 
 module.exports = app;

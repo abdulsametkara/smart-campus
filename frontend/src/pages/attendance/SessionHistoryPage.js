@@ -78,7 +78,7 @@ const SessionHistoryPage = () => {
             {/* Section Selector */}
             <div className="course-attendance-card" style={{ marginBottom: '2rem' }}>
                 <label style={{ fontWeight: 600, color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
-                    Ders Şubesi Seçin
+                    Ders Section Seçin
                 </label>
                 <select
                     value={selectedSection}
@@ -94,10 +94,10 @@ const SessionHistoryPage = () => {
                         transition: 'all 0.3s ease'
                     }}
                 >
-                    <option value="">-- Şube Seçin --</option>
+                    <option value="">-- Section Seçin --</option>
                     {sections.map(section => (
                         <option key={section.id} value={section.id}>
-                            {section.course?.code} - {section.course?.name} (Şube {section.section_number})
+                            {section.course?.code} - {section.course?.name} (Section {section.section_number})
                         </option>
                     ))}
                 </select>
@@ -123,7 +123,7 @@ const SessionHistoryPage = () => {
                     {/* Sessions */}
                     {history.sessions?.length === 0 ? (
                         <div className="custom-alert warning">
-                            <span>ℹ️</span> Bu şube için henüz yoklama oturumu bulunmuyor.
+                            <span>ℹ️</span> Bu section için henüz yoklama oturumu bulunmuyor.
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -171,7 +171,7 @@ const SessionHistoryPage = () => {
             {/* Empty State */}
             {!selectedSection && !loading && (
                 <div className="custom-alert info">
-                    <span>👆</span> Yoklama geçmişini görmek için yukarıdan bir şube seçin.
+                    <span>👆</span> Yoklama geçmişini görmek için yukarıdan bir section seçin.
                 </div>
             )}
         </div>

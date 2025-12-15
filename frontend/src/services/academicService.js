@@ -6,7 +6,7 @@ export const sectionsService = {
   getAll: async (params = {}) => {
     const { course_id, semester, instructor_id, page = 1, limit = 20 } = params;
     const queryParams = new URLSearchParams();
-    
+
     if (course_id) queryParams.append('course_id', course_id);
     if (semester) queryParams.append('semester', semester);
     if (instructor_id) queryParams.append('instructor_id', instructor_id);
@@ -53,6 +53,32 @@ export const sectionsService = {
       instructorId
     });
     return response.data;
+  },
+
+  // Enroll student to section
+  enrollStudent: async (sectionId, email) => {
+    const response = await api.post(`/academic/sections/${sectionId}/enroll`, {
+      email
+    });
+    return response.data;
+  },
+
+  // Get instructor's own sections
+  getMySections: async () => {
+    const response = await api.get('/attendance/sections/my');
+    return response.data;
+  },
+
+  // Get academic settings
+  getSettings: async () => {
+    const response = await api.get('/academic/settings');
+    return response.data;
+  },
+
+  // Update settings
+  updateSettings: async (key, value) => {
+    const response = await api.put('/academic/settings', { key, value });
+    return response.data;
   }
 };
 
@@ -62,7 +88,7 @@ export const coursesService = {
   getAll: async (params = {}) => {
     const { department_id, search, page = 1, limit = 20 } = params;
     const queryParams = new URLSearchParams();
-    
+
     if (department_id) queryParams.append('department_id', department_id);
     if (search) queryParams.append('search', search);
     queryParams.append('page', page);
@@ -128,10 +154,10 @@ export const classroomsService = {
   }
 };
 
-// Users API (for instructor dropdown)
+// Faculty API (for instructor dropdown)
 export const usersService = {
   getFaculty: async () => {
-    const response = await api.get('/users?role=faculty');
+    const response = await api.get('/academic/faculty');
     return response.data;
   }
 };

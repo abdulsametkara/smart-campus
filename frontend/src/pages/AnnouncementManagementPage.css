@@ -1,0 +1,279 @@
+.announcement-management-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.announcement-management-page .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.announcement-management-page .page-header h1 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin: 0;
+}
+
+.announcement-management-page .subtitle {
+    color: #718096;
+    margin: 0.25rem 0 0;
+}
+
+/* Form Card */
+.announcement-form-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+}
+
+.announcement-form-card h3 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
+}
+
+.announcement-form-card .form-group {
+    margin-bottom: 1rem;
+}
+
+.announcement-form-card label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.announcement-form-card input,
+.announcement-form-card textarea,
+.announcement-form-card select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.announcement-form-card input::placeholder,
+.announcement-form-card textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.announcement-form-card input:focus,
+.announcement-form-card textarea:focus,
+.announcement-form-card select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.announcement-form-card select option {
+    background: #667eea;
+    color: white;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.form-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.form-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.form-actions .btn-primary {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.form-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Announcements List */
+.announcements-list {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.announcements-list h3 {
+    margin: 0 0 1.5rem;
+    color: #2d3748;
+    font-size: 1.2rem;
+}
+
+.announcement-cards {
+    display: grid;
+    gap: 1rem;
+}
+
+.announcement-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.announcement-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.announcement-card h4 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.priority-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-high {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.priority-normal {
+    background: #bee3f8;
+    color: #2b6cb0;
+}
+
+.priority-low {
+    background: #c6f6d5;
+    color: #276749;
+}
+
+.card-content {
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.meta-info {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.meta-info span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-delete {
+    background: #fed7d7;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #fc8181;
+    transform: scale(1.1);
+}
+
+/* Empty & Loading States */
+.loading-placeholder,
+.empty-placeholder {
+    text-align: center;
+    padding: 3rem;
+    color: #a0aec0;
+}
+
+.empty-placeholder .empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .announcement-management-page {
+        padding: 1rem;
+    }
+
+    .announcement-management-page .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .meta-info {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}

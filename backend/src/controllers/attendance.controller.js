@@ -497,9 +497,11 @@ exports.getMySections = async (req, res) => {
 
         res.json(sections.map(s => ({
             id: s.id,
-            name: `${s.course?.code} - Şube ${s.section_number}`,
+            name: `${s.course?.code} - Section ${s.section_number}`,
             course_code: s.course?.code,
-            course_name: s.course?.name
+            course_name: s.course?.name,
+            section_number: s.section_number,
+            course: s.course // Include full course object for frontend compatibility
         })));
 
     } catch (error) {

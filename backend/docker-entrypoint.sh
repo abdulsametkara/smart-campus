@@ -18,4 +18,3 @@ npm run db:migrate || echo "Migration failed or already up to date"
 # Start the application
 echo "Starting application..."
 exec "$@"
-

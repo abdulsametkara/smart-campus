@@ -67,7 +67,7 @@ const AttendanceReportPage = () => {
 
             <div className="course-attendance-card" style={{ marginBottom: '2rem' }}>
                 <label style={{ fontWeight: 600, color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
-                    Ders Şubesi Seçin
+                    Ders Section Seçin
                 </label>
                 <select
                     value={selectedSection}
@@ -85,7 +85,7 @@ const AttendanceReportPage = () => {
                 >
                     <option value="">-- Seçiniz --</option>
                     {sections.map(s => (
-                        <option key={s.id} value={s.id}>{s.name} (Şube {s.section_number})</option>
+                        <option key={s.id} value={s.id}>{s.course_code} - {s.course_name} (Section {s.section_number})</option>
                     ))}
                 </select>
             </div>

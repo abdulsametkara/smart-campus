@@ -9,7 +9,7 @@ const db = require('../../models');
 
 const register = async (req, res) => {
   try {
-    const { email, password, role, full_name, phone_number } = req.body;
+    const { email, password, role, full_name, phone_number, student_number, department_id } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
@@ -24,8 +24,22 @@ const register = async (req, res) => {
       return res.status(409).json({ message: 'Email already in use' });
     }
 
-    const passwordHash = await hashPassword(password);
+    // Check if student_number is unique (for student role)
     const roleToUse = role || 'student';
+    if (roleToUse === 'student' && student_number) {
+      const existingStudentNo = await User.findOne({ where: { student_number } });
+      if (existingStudentNo) {
+        return res.status(409).json({ message: 'Bu öğrenci numarası zaten kullanılmakta' });
+      }
+      // Also check in students table
+      const { Student } = db;
+      const existingInStudents = await Student.findOne({ where: { student_number } });
+      if (existingInStudents) {
+        return res.status(409).json({ message: 'Bu öğrenci numarası zaten kayıtlı' });
+      }
+    }
+
+    const passwordHash = await hashPassword(password);
 
     const user = await User.create({
       email,
@@ -34,7 +48,26 @@ const register = async (req, res) => {
       is_email_verified: false,
       full_name,
       phone_number,
+      student_number: roleToUse === 'student' ? student_number : null,
     });
+
+    // Auto-create Student profile if role is student
+    if (roleToUse === 'student' && department_id) {
+      const { Student, Faculty } = db;
+
+      // Find an advisor from the same department
+      const advisor = await Faculty.findOne({
+        where: { department_id },
+        order: db.sequelize.random()
+      });
+
+      await Student.create({
+        user_id: user.id,
+        student_number: student_number || `AUTO${Date.now()}`,
+        department_id: parseInt(department_id),
+        advisor_id: advisor?.id || null
+      });
+    }
 
     await ActivityLog.create({
       user_id: user.id,

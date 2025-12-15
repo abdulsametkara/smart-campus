@@ -25,7 +25,7 @@ const SectionDetailPage = () => {
       setLoading(true);
       const data = await sectionsService.getById(id);
       setSection(data);
-      
+
       // Check if current user is enrolled
       if (user?.role === 'student' && data.enrollments) {
         const enrolled = data.enrollments.some(
@@ -33,10 +33,10 @@ const SectionDetailPage = () => {
         );
         setIsEnrolled(enrolled);
       }
-      
+
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Bölüm yüklenirken hata oluştu');
+      setError(err.response?.data?.message || 'Section yüklenirken hata oluştu');
       console.error(err);
     } finally {
       setLoading(false);
@@ -44,7 +44,7 @@ const SectionDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Bu bölümü silmek istediğinizden emin misiniz?')) {
+    if (!window.confirm('Bu section\'ı silmek istediğinizden emin misiniz?')) {
       return;
     }
 
@@ -53,7 +53,7 @@ const SectionDetailPage = () => {
       await sectionsService.delete(id);
       navigate('/sections');
     } catch (err) {
-      alert(err.response?.data?.message || 'Bölüm silinirken hata oluştu');
+      alert(err.response?.data?.message || 'Section silinirken hata oluştu');
       setDeleting(false);
     }
   };
@@ -76,7 +76,7 @@ const SectionDetailPage = () => {
       title: 'Derse Kayıt Ol',
       html: `
         <p><strong>${section.course?.code} - ${section.course?.name}</strong></p>
-        <p>Şube: ${section.section_number}</p>
+        <p>Section: ${section.section_number}</p>
         <p>Dönem: ${section.semester}</p>
         <p>Bu derse kayıt olmak istediğinizden emin misiniz?</p>
       `,
@@ -93,14 +93,14 @@ const SectionDetailPage = () => {
     try {
       setEnrolling(true);
       await enrollmentsService.enroll(section.id);
-      
+
       Swal.fire({
         icon: 'success',
         title: 'Kayıt Başarılı! 🎉',
         text: 'Derse başarıyla kayıt oldunuz.',
         confirmButtonColor: '#10b981'
       });
-      
+
       // Refresh section data
       await fetchSection();
     } catch (err) {
@@ -118,7 +118,7 @@ const SectionDetailPage = () => {
         });
         errorDetails += '</ul></div>';
       }
-      
+
       // Handle prerequisites
       if (errorData?.missing_prerequisites && errorData.missing_prerequisites.length > 0) {
         errorMessage = 'Önkoşul Eksik! 📚';
@@ -153,7 +153,7 @@ const SectionDetailPage = () => {
     return (
       <div className="page section-detail-page">
         <div className="alert alert-error">
-          {error || 'Bölüm bulunamadı'}
+          {error || 'Section bulunamadı'}
         </div>
         <Link to="/sections" className="btn">Geri Dön</Link>
       </div>
@@ -165,11 +165,14 @@ const SectionDetailPage = () => {
       <div className="page-header">
         <div>
           <Link to="/sections" className="back-link">
-            ← Bölümlere Dön
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Sections
           </Link>
           <h1>
             {section.course?.name || 'Ders Adı Yok'}
-            <span className="section-number">Şube {section.section_number}</span>
+            <span className="section-badge">Section {section.section_number}</span>
           </h1>
         </div>
         <div className="action-buttons">
@@ -183,7 +186,7 @@ const SectionDetailPage = () => {
               {enrolling ? 'Kayıt Olunuyor...' : section.is_full ? 'Kontenjan Dolu' : 'Kayıt Ol'}
             </button>
           )}
-          
+
           {/* Student: Already enrolled message */}
           {user?.role === 'student' && isEnrolled && (
             <div className="enrolled-badge" style={{
@@ -247,8 +250,8 @@ const SectionDetailPage = () => {
             <div className="info-row">
               <span className="label">Boş Kontenjan:</span>
               <span className={`value ${section.is_full ? 'full' : 'available'}`}>
-                {section.available_spots !== undefined 
-                  ? section.available_spots 
+                {section.available_spots !== undefined
+                  ? section.available_spots
                   : section.capacity - section.enrolled_count} boş
               </span>
             </div>
@@ -313,12 +316,12 @@ const SectionDetailPage = () => {
                       {new Date(session.start_time).toLocaleDateString('tr-TR')}
                     </div>
                     <div className="session-time">
-                      {new Date(session.start_time).toLocaleTimeString('tr-TR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })} - {session.end_time && new Date(session.end_time).toLocaleTimeString('tr-TR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                      {new Date(session.start_time).toLocaleTimeString('tr-TR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })} - {session.end_time && new Date(session.end_time).toLocaleTimeString('tr-TR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
                     </div>
                   </div>

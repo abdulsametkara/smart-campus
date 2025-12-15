@@ -12,9 +12,12 @@ import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminLogsPage from './pages/AdminLogsPage';
 import AdminAcademicPage from './pages/AdminAcademicPage';
+import CoursesListPage from './pages/CoursesListPage';
+import CourseFormPage from './pages/CourseFormPage';
 import SectionsListPage from './pages/SectionsListPage';
 import SectionDetailPage from './pages/SectionDetailPage';
 import SectionFormPage from './pages/SectionFormPage';
+import SchedulePage from './pages/SchedulePage';
 
 import NotFoundPage from './pages/NotFoundPage';
 import InstructorAttendancePage from './pages/attendance/InstructorAttendancePage';
@@ -25,6 +28,11 @@ import ExcuseRequestPage from './pages/attendance/ExcuseRequestPage';
 import ExcuseManagementPage from './pages/attendance/ExcuseManagementPage';
 import AttendanceHistoryPage from './pages/attendance/AttendanceHistoryPage';
 import SessionHistoryPage from './pages/attendance/SessionHistoryPage';
+import StudentGradesPage from './pages/StudentGradesPage';
+import InstructorGradesPage from './pages/InstructorGradesPage';
+import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
+import AdvisorApprovalPage from './pages/AdvisorApprovalPage';
+import MyAdviseesPage from './pages/MyAdviseesPage';
 import './App.css';
 
 function Header() {
@@ -38,7 +46,9 @@ function Header() {
       {user && (
         <nav className="app-nav">
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
-          <Link to="/sections" className="nav-link">Ders Bölümleri</Link>
+          <Link to="/courses" className="nav-link">Dersler</Link>
+          <Link to="/sections" className="nav-link">Sections</Link>
+          {user.role !== 'admin' && <Link to="/schedule" className="nav-link">Ders Programı</Link>}
 
           {/* Öğrenci Menüsü */}
           {user.role === 'student' && (
@@ -46,6 +56,7 @@ function Header() {
               <Link to="/attendance/student" className="nav-link">Yoklama</Link>
               <Link to="/attendance/my-stats" className="nav-link">Devamsızlığım</Link>
               <Link to="/attendance/history" className="nav-link">Geçmiş</Link>
+              <Link to="/grades/my" className="nav-link">Notlar</Link>
               <Link to="/attendance/excuses/new" className="nav-link">Mazeret</Link>
             </>
           )}
@@ -56,6 +67,10 @@ function Header() {
               <Link to="/attendance/instructor" className="nav-link">Yoklama</Link>
               <Link to="/attendance/report" className="nav-link">Rapor</Link>
               <Link to="/attendance/sessions" className="nav-link">Geçmiş</Link>
+              <Link to="/grades/manage" className="nav-link">Not Girişi</Link>
+              <Link to="/advisor/approvals" className="nav-link">Ders Onay</Link>
+              <Link to="/advisor/students" className="nav-link">Danışman</Link>
+              <Link to="/announcements/manage" className="nav-link">Duyurular</Link>
               <Link to="/attendance/excuses/manage" className="nav-link">Mazeretler</Link>
             </>
           )}
@@ -66,6 +81,7 @@ function Header() {
               <Link to="/admin/users" className="nav-link">Kullanıcılar</Link>
               <Link to="/admin/logs" className="nav-link">Loglar</Link>
               <Link to="/admin/academic" className="nav-link">Akademik</Link>
+              <Link to="/announcements/manage" className="nav-link">Duyurular</Link>
             </>
           )}
 
@@ -133,6 +149,32 @@ function AppContent() {
             }
           />
 
+          {/* Courses Routes */}
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <CoursesListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/new"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <CourseFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <CourseFormPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Sections Routes */}
           <Route
             path="/sections"
@@ -142,6 +184,55 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/schedule"
+            element={
+              <ProtectedRoute>
+                <SchedulePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/grades/my"
+            element={
+              <ProtectedRoute roles={['student']}>
+                <StudentGradesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/grades/manage"
+            element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <InstructorGradesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/announcements/manage"
+            element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AnnouncementManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/advisor/approvals"
+            element={
+              <ProtectedRoute roles={['faculty']}>
+                <AdvisorApprovalPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/advisor/students"
+            element={
+              <ProtectedRoute roles={['faculty']}>
+                <MyAdviseesPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/sections/new"
             element={
@@ -238,7 +329,7 @@ function AppContent() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
-    </div>
+    </div >
   );
 }
 

@@ -1,0 +1,136 @@
+.my-advisees-page {
+    padding: 2rem;
+}
+
+.my-advisees-page .page-header {
+    margin-bottom: 2rem;
+}
+
+.my-advisees-page .page-header h1 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.my-advisees-page .page-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.empty-state-card {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.empty-state-card .empty-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.empty-state-card h3 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-card p {
+    color: #64748b;
+}
+
+.advisees-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.advisee-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.advisee-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.advisee-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.advisee-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.advisee-avatar span {
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.advisee-info {
+    text-align: center;
+}
+
+.advisee-info h3 {
+    margin: 0 0 0.5rem;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.advisee-info p {
+    margin: 0.25rem 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.advisee-info .student-number {
+    font-weight: 600;
+    color: #1E40AF;
+}
+
+.gpa-info {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.gpa-info span {
+    background: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: #475569;
+}
+
+.advisee-actions {
+    margin-top: 0.5rem;
+}
+
+.advisee-actions .btn {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .advisees-grid {
+        grid-template-columns: 1fr;
+    }
+}
