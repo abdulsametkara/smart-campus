@@ -255,6 +255,23 @@ const SectionDetailPage = () => {
           </div>
         </div>
 
+        {/* Prerequisites */}
+        {section.course?.Prerequisites && section.course.Prerequisites.length > 0 && (
+          <div className="detail-card prerequisites-card">
+            <h2>Önkoşullar</h2>
+            <p className="prereq-info">Bu derse kayıt olmak için aşağıdaki dersleri başarılı şekilde tamamlamış olmanız gerekir:</p>
+            <div className="prerequisites-list">
+              {section.course.Prerequisites.map((prereq) => (
+                <div key={prereq.id} className="prereq-item">
+                  <span className="prereq-code">{prereq.code}</span>
+                  <span className="prereq-name">{prereq.name}</span>
+                  <span className="prereq-credits">{prereq.credits} Kredi</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Schedule */}
         {section.schedule && section.schedule.length > 0 && (
           <div className="detail-card">

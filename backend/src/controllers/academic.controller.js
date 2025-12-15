@@ -176,7 +176,13 @@ exports.getSectionById = async (req, res) => {
                     model: Course,
                     as: 'course',
                     include: [
-                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] }
+                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] },
+                        {
+                            model: Course,
+                            as: 'Prerequisites',
+                            attributes: ['id', 'code', 'name', 'credits'],
+                            through: { attributes: [] }
+                        }
                     ]
                 },
                 {

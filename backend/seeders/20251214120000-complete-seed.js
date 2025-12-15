@@ -185,6 +185,45 @@ module.exports = {
         const courseMap = {};
         courseRows.forEach(c => { courseMap[c.code] = c.id; });
 
+        // ==================== 4.5 COURSE PREREQUISITES ====================
+        // Define realistic prerequisite chains
+        const prerequisites = [
+            // CENG: 101 -> 201 -> 301, 201 -> 302, 301 -> 401
+            { course: 'CENG201', prereq: 'CENG101' },  // Veri Yapıları requires Bilgisayar Müh. Giriş
+            { course: 'CENG301', prereq: 'CENG201' },  // Algoritmalar requires Veri Yapıları
+            { course: 'CENG302', prereq: 'CENG201' },  // Veritabanı requires Veri Yapıları
+            { course: 'CENG401', prereq: 'CENG301' },  // Yazılım Müh. requires Algoritmalar
+            // EEE: 101 -> 201 -> 202 -> 301 -> 401
+            { course: 'EEE201', prereq: 'EEE101' },
+            { course: 'EEE202', prereq: 'EEE201' },
+            { course: 'EEE301', prereq: 'EEE202' },
+            { course: 'EEE401', prereq: 'EEE301' },
+            // ME: 101 -> 201, 201 -> 301
+            { course: 'ME201', prereq: 'ME101' },
+            { course: 'ME202', prereq: 'ME101' },
+            { course: 'ME301', prereq: 'ME201' },
+            { course: 'ME401', prereq: 'ME301' },
+            // IE: 101 -> 201 -> 202
+            { course: 'IE201', prereq: 'IE101' },
+            { course: 'IE202', prereq: 'IE201' },
+            { course: 'IE301', prereq: 'IE202' },
+            // MATH: 101 -> 102 -> 201, 102 -> 202
+            { course: 'MATH102', prereq: 'MATH101' },
+            { course: 'MATH201', prereq: 'MATH102' },
+            { course: 'MATH202', prereq: 'MATH102' },
+            { course: 'MATH301', prereq: 'MATH201' }
+        ];
+
+        const prereqData = prerequisites.map(p => ({
+            course_id: courseMap[p.course],
+            prerequisite_id: courseMap[p.prereq],
+            created_at: now,
+            updated_at: now
+        }));
+
+        await queryInterface.bulkInsert('course_prerequisites', prereqData, {});
+        console.log('✅ Course prerequisites created (' + prereqData.length + ' prerequisite relationships)');
+
         // ==================== 5. COURSE SECTIONS (2 per course = 50 total) ====================
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
         const times = [
@@ -292,6 +331,7 @@ module.exports = {
         // Delete in reverse order of creation
         await queryInterface.bulkDelete('enrollments', null, {});
         await queryInterface.bulkDelete('course_sections', null, {});
+        await queryInterface.bulkDelete('course_prerequisites', null, {});
         await queryInterface.bulkDelete('courses', null, {});
         await queryInterface.bulkDelete('classrooms', null, {});
         await queryInterface.bulkDelete('users', null, {});
