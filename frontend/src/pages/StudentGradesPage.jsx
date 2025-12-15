@@ -26,8 +26,21 @@ const StudentGradesPage = () => {
         }
     };
 
-    const handleExportPDF = () => {
-        window.print();
+    const handleExportPDF = async () => {
+        try {
+            const response = await gradingService.downloadTranscript();
+            // Create blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `transcript_${user?.student_number || 'student'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            console.error(err);
+            alert('PDF oluşturulurken hata oluştu.');
+        }
     };
 
     if (loading) return <LoadingSpinner size="large" message="Notlar yükleniyor..." />;

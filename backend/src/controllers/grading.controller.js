@@ -287,3 +287,147 @@ function calculateLetter(score) {
     if (score >= 40) return 'FD';
     return 'FF';
 }
+
+exports.downloadTranscriptPdf = async (req, res) => {
+    try {
+        const student_id = req.user.id;
+        const student = await User.findByPk(student_id);
+        const PDFDocument = require('pdfkit');
+
+        // Fetch Data (Same logic as getMyGrades)
+        const enrollments = await Enrollment.findAll({
+            where: { student_id, status: 'ACTIVE' },
+            include: [{
+                model: CourseSection,
+                as: 'section',
+                include: [{ model: require('../../models').Course, as: 'course' }]
+            }]
+        });
+
+        const transcriptData = [];
+        let totalCredits = 0;
+        let totalWeightedPoints = 0;
+
+        for (const enrollment of enrollments) {
+            const exams = await Exam.findAll({
+                where: { section_id: enrollment.section_id, is_published: true },
+                include: [{
+                    model: Grade,
+                    as: 'grades',
+                    where: { student_id },
+                    required: false
+                }]
+            });
+
+            let totalWeightedScore = 0;
+            let totalWeight = 0;
+
+            exams.forEach(e => {
+                const myGrade = e.grades[0];
+                if (myGrade) {
+                    totalWeightedScore += (myGrade.score * e.weight);
+                    totalWeight += e.weight;
+                }
+            });
+
+            const calculatedAverage = totalWeight > 0 ? (totalWeightedScore / 100) : 0;
+            let letter = '-';
+            let numericGrade = 0.0;
+
+            if (totalWeight >= 100 || exams.some(e => e.type === 'FINAL')) {
+                letter = calculateLetter(calculatedAverage * 100); // Scale back to 100 for letter check? No, calculatedAverage is already scaled?
+                // Wait, previous logic was: totalWeightedScore / 100.
+                // Example: 90*0.3 + 80*0.7 = 27 + 56 = 83.
+                // calculatedAverage above is 83.
+
+                letter = calculateLetter(calculatedAverage);
+
+                // Simple 4.0 scale mapping
+                if (letter === 'AA') numericGrade = 4.0;
+                else if (letter === 'BA') numericGrade = 3.5;
+                else if (letter === 'BB') numericGrade = 3.0;
+                else if (letter === 'CB') numericGrade = 2.5;
+                else if (letter === 'CC') numericGrade = 2.0;
+                else if (letter === 'DC') numericGrade = 1.5;
+                else if (letter === 'DD') numericGrade = 1.0;
+                else if (letter === 'FD') numericGrade = 0.5;
+                else numericGrade = 0.0;
+            }
+
+            const credits = enrollment.section?.course?.credits || 0;
+
+            // Only count towards GPA if finalized (letter assigned)
+            if (letter !== '-') {
+                totalCredits += credits;
+                totalWeightedPoints += (numericGrade * credits);
+            }
+
+            transcriptData.push({
+                code: enrollment.section?.course?.code,
+                name: enrollment.section?.course?.name,
+                credits: credits,
+                average: calculatedAverage.toFixed(2),
+                letter: letter
+            });
+        }
+
+        const gpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
+
+        // generate PDF
+        const doc = new PDFDocument();
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
+        doc.pipe(res);
+
+        // Header
+        doc.fontSize(20).text('SMART CAMPUS UNIVERSITY', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(16).text('OFFICIAL TRANSCRIPT', { align: 'center' });
+        doc.moveDown();
+
+        // Student Info
+        doc.fontSize(12).text(`Student Name: ${student.full_name}`);
+        doc.text(`Student ID: ${student.student_number || '-'}`);
+        doc.text(`Email: ${student.email}`);
+        doc.text(`Date: ${new Date().toLocaleDateString('tr-TR')}`);
+        doc.moveDown();
+        doc.text(`GPA: ${gpa}`, { stroke: true });
+        doc.moveDown();
+
+        // Table Header
+        const tableTop = 250;
+        let y = tableTop;
+
+        doc.font('Helvetica-Bold');
+        doc.text('Course Code', 50, y);
+        doc.text('Course Name', 150, y);
+        doc.text('Credits', 350, y);
+        doc.text('Grade', 420, y);
+        doc.text('Letter', 480, y);
+
+        // Separator
+        y += 20;
+        doc.moveTo(50, y).lineTo(550, y).stroke();
+        y += 10;
+
+        // Table Content
+        doc.font('Helvetica');
+        transcriptData.forEach(item => {
+            doc.text(item.code, 50, y);
+            doc.text(item.name.substring(0, 35), 150, y); // Truncate long names
+            doc.text(item.credits.toString(), 350, y);
+            doc.text(item.average, 420, y);
+            doc.text(item.letter, 480, y);
+            y += 20;
+        });
+
+        // Footer
+        doc.fontSize(10).text('Generated by Smart Campus System', 50, 700, { align: 'center', width: 500 });
+
+        doc.end();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error generating PDF', error: error.message });
+    }
+};
