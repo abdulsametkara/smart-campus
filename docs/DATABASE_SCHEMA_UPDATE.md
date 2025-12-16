@@ -1,120 +1,120 @@
-# Part 2: Database Schema (Shared Contract)
+# Smart Campus Veritabanı Şema Güncellemesi (Part 2)
 
-> [!NOTE]
-> This document serves as the **Single Source of Truth** for both Developer 1 (Academic) and Developer 2 (Attendance). Both developers must adhere to these table definitions to ensure integration points (like `section_id` and `student_id`) work correctly.
+Bu belge, Akademik Yönetim, Yoklama ve Notlandırma dahil olmak üzere Part 2 özelliklerini desteklemek için uygulanan veritabanı şema güncellemelerini detaylandırır.
 
-## 1. Academic Management (Developer 1)
+## 🗄️ Yeni & Güncellenen Tablolar
 
-### `Departments` (Existing/New)
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `name` | VARCHAR | e.g. "Computer Engineering" |
-| `code` | VARCHAR | e.g. "CENG" |
-| `faculty_name` | VARCHAR | e.g. "Engineering" |
+### 1. Akademik Yapı
 
-### `Courses`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `code` | VARCHAR | e.g. "CENG101" (Unique) |
-| `name` | VARCHAR | e.g. "Intro to Programming" |
-| `description` | TEXT | |
-| `credits` | INTEGER | e.g. 3 |
-| `ects` | INTEGER | e.g. 5 |
-| `department_id` | INTEGER (FK) | -> Departments.id |
-| `syllabus_url` | VARCHAR | Optional PDF link |
-| `deleted_at` | TIMESTAMP | Soft delete support |
+**`departments` (Bölümler)**
+- `id` (PK)
+- `name` (String) - Örn: "Bilgisayar Mühendisliği"
+- `code` (String) - Örn: "CENG"
 
-### `CoursePrerequisites`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `course_id` | INTEGER (FK) | -> Courses.id |
-| `prerequisite_id` | INTEGER (FK) | -> Courses.id |
+**`courses` (Dersler)**
+- `id` (PK)
+- `code` (String) - Örn: "CENG301"
+- `name` (String)
+- `credit` (Integer) - Yerel kredi
+- `ects` (Integer) - AKTS
+- `department_id` (FK -> departments.id)
+- `semester` (Integer)
+- `theoretical_hours` (Integer)
+- `practical_hours` (Integer)
 
-### `CourseSections`
-> [!IMPORTANT]
-> **Integration Point:** Developer 2 needs `id` from this table for `AttendanceSessions`.
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | **Used by Dev 2** |
-| `course_id` | INTEGER (FK) | -> Courses.id |
-| `section_number` | INTEGER | e.g. 1, 2 |
-| `semester` | VARCHAR | e.g. "2024-FALL" |
-| `instructor_id` | INTEGER (FK) | -> Users.id (Faculty) |
-| `capacity` | INTEGER | e.g. 50 |
-| `enrolled_count` | INTEGER | Default 0 |
-| `schedule` | JSONB | e.g. `[{"day": "Mon", "start": "09:00", "end": "12:00", "room_id": 1}]` |
+**`course_prerequisites` (Ders Ön Koşulları)**
+- `course_id` (FK -> courses.id)
+- `prerequisite_id` (FK -> courses.id)
+- *Ders kısıtlamaları için özyinelemeli (recursive) ilişkileri tanımlar.*
 
-### `Enrollments`
-> [!IMPORTANT]
-> **Integration Point:** Developer 2 needs to check if `student_id` exists here for a specific `section_id`.
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `student_id` | INTEGER (FK) | -> Users.id (Student) |
-| `section_id` | INTEGER (FK) | -> CourseSections.id |
-| `status` | ENUM | 'ACTIVE', 'DROPPED', 'FAILED' |
-| `enrollment_date` | TIMESTAMP | |
-| `midterm_grade` | FLOAT | |
-| `final_grade` | FLOAT | |
-| `letter_grade` | VARCHAR | AA, BA, etc. |
-| `gpa_point` | FLOAT | 4.0, 3.5, etc. |
+**`course_sections` (Ders Şubeleri)**
+- `id` (PK)
+- `course_id` (FK -> courses.id)
+- `section_number` (Integer)
+- `instructor_id` (FK -> users.id, rol='faculty')
+- `capacity` (Integer)
+- `schedule` (JSON) - Örn: `[{"day": "Monday", "startTime": "09:00", "endTime": "11:00", "room": "Z-06"}]`
 
----
+### 2. Kayıt Sistemi
 
-## 2. GPS Attendance (Developer 2)
+**`enrollments` (Kayıtlar)**
+- `id` (PK)
+- `student_id` (FK -> students.id)
+- `section_id` (FK -> course_sections.id)
+- `status` (Enum: 'ACTIVE', 'DROPPED', 'WAITLIST')
+- `enrolled_at` (Date)
 
-### `Classrooms`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | **Used in CourseSections.schedule** |
-| `name` | VARCHAR | e.g. "B-201" |
-| `building` | VARCHAR | e.g. "Engineering Block B" |
-| `capacity` | INTEGER | |
-| `latitude` | DECIMAL(10, 8) | Fixed GPS Lat |
-| `longitude` | DECIMAL(11, 8) | Fixed GPS Lng |
+### 3. Yoklama Sistemi (GPS & QR)
 
-### `AttendanceSessions`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `section_id` | INTEGER (FK) | -> CourseSections.id |
-| `instructor_id` | INTEGER (FK) | -> Users.id |
-| `start_time` | TIMESTAMP | |
-| `end_time` | TIMESTAMP | |
-| `latitude` | DECIMAL | Dynamic session location (or Classroom loc) |
-| `longitude` | DECIMAL | |
-| `radius` | INTEGER | Default 15 (meters) |
-| `qr_code` | VARCHAR | Unique hash |
-| `status` | ENUM | 'ACTIVE', 'CLOSED' |
+**`attendance_sessions` (Yoklama Oturumları)**
+- `id` (PK)
+- `section_id` (FK -> course_sections.id)
+- `start_time` (Date)
+- `end_time` (Date)
+- `qr_code` (String, dinamik)
+- `latitude` (Float, Eğitmenin konumu)
+- `longitude` (Float, Eğitmenin konumu)
+- `radius` (Integer, metre cinsinden izin verilen aralık)
+- `status` (Enum: 'ACTIVE', 'FINISHED')
 
-### `AttendanceRecords`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `session_id` | INTEGER (FK) | -> AttendanceSessions.id |
-| `student_id` | INTEGER (FK) | -> Users.id |
-| `check_in_time` | TIMESTAMP | |
-| `latitude` | DECIMAL | Student's location |
-| `longitude` | DECIMAL | |
-| `distance` | FLOAT | Distance to center (meters) |
-| `status` | ENUM | 'PRESENT', 'ABSENT', 'EXCUSED' |
-| `is_flagged` | BOOLEAN | Spoofing detected? |
+**`attendance_records` (Yoklama Kayıtları)**
+- `id` (PK)
+- `session_id` (FK -> attendance_sessions.id)
+- `student_id` (FK -> students.id)
+- `status` (Enum: 'PRESENT', 'ABSENT', 'LATE', 'EXCUSED')
+- `check_in_time` (Date)
+- `latitude` (Float, öğrencinin check-in konumu)
+- `longitude` (Float, öğrencinin check-in konumu)
+- `distance_meters` (Float, mesafe)
+- `device_info` (String)
 
-### `ExcuseRequests`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | SERIAL (PK) | |
-| `student_id` | INTEGER (FK) | |
-| `session_id` | INTEGER (FK) | Optional (General excuse or Specific session) |
-| `title` | VARCHAR | e.g. "Medical Report" |
-| `description` | TEXT | |
-| `document_url` | VARCHAR | Path to uploaded file |
-| `status` | ENUM | 'PENDING', 'APPROVED', 'REJECTED' |
+**`excuse_requests` (Mazeret İstekleri)**
+- `id` (PK)
+- `student_id` (FK -> students.id)
+- `section_id` (FK -> course_sections.id)
+- `date` (Date)
+- `reason` (Text)
+- `document_url` (String, dosya yolu)
+- `status` (Enum: 'PENDING', 'APPROVED', 'REJECTED')
+
+### 4. Notlandırma Sistemi
+
+**`exams` (Sınavlar)**
+- `id` (PK)
+- `section_id` (FK -> course_sections.id)
+- `type` (Enum: 'MIDTERM', 'FINAL', 'PROJECT', 'QUIZ')
+- `percentage` (Integer, ağırlık %)
+- `date` (Date)
+
+**`grades` (Notlar)**
+- `id` (PK)
+- `exam_id` (FK -> exams.id)
+- `student_id` (FK -> students.id)
+- `score` (Float)
 
 ---
 
-## Common Enumerations
-*   **User Roles**: 'admin', 'faculty', 'student'
-*   **Days**: 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+## 🔗 ER Diyagramı (Basitleştirilmiş)
+
+```mermaid
+erDiagram
+    Users ||--o{ Students : is
+    Users ||--o{ Faculty : is
+    Departments ||--o{ Courses : offers
+    Courses ||--o{ CourseSections : has
+    Courses ||--o{ CoursePrerequisites : requires
+    CourseSections ||--o{ Enrollments : contains
+    Students ||--o{ Enrollments : enrolls
+    
+    CourseSections ||--o{ AttendanceSessions : conducts
+    AttendanceSessions ||--o{ AttendanceRecords : logs
+    Students ||--o{ AttendanceRecords : verifies
+    
+    CourseSections ||--o{ Exams : schedules
+    Exams ||--o{ Grades : records
+    Students ||--o{ Grades : receives
+    
+    Students ||--o{ ExcuseRequests : submits
+```
+
+Bu şema güncellemesi, Smart Campus Part 2 dağıtımı için gereksinimleri tam olarak desteklemektedir.
