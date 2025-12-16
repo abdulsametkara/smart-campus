@@ -1,271 +1,133 @@
-# Part 2 API Dokümantasyonu - Yoklama Sistemi
+# Smart Campus API Dokümantasyonu (Part 2)
 
-## Base URL
-```
-http://localhost:5000/api/v1
-```
+Bu belge, Akademik Yönetim, Yoklama Sistemi (GPS & QR) ve Öğrenci Notlandırma süreçlerine odaklanan Part 2 gereksinimleri için uygulanan API uç noktalarını (endpoints) detaylandırır.
 
----
-
-## 🔐 Authentication
-Tüm endpoint'ler JWT token gerektirir:
-```
-Authorization: Bearer <access_token>
-```
+**Temel URL**: `/api/v1`
+**Kimlik Doğrulama**: Tüm korumalı uç noktalar için Bearer Token gereklidir.
 
 ---
 
-## 📍 Attendance Endpoints
+## 📚 1. Akademik Yönetim Uç Noktaları
 
-### Oturum Yönetimi (Hoca)
+### Dersler (Courses)
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `GET` | `/courses` | Tüm dersleri listele (sayfalama & filtreleme ile) | Herkes |
+| `GET` | `/courses/:id` | Detaylı ders bilgisini al (ön koşullar dahil) | Herkes |
+| `POST` | `/courses` | Yeni ders oluştur | Admin |
+| `PUT` | `/courses/:id` | Ders detaylarını güncelle | Admin |
+| `DELETE` | `/courses/:id` | Dersi sil (Soft delete) | Admin |
 
-#### POST /attendance/sessions
-Yeni yoklama oturumu başlat.
-
-**Request:**
+**Örnek Yanıt (GET /courses/:id):**
 ```json
 {
-  "section_id": 1,
-  "duration_minutes": 60,
-  "radius": 15,
-  "latitude": 41.0550,
-  "longitude": 28.9505
+  "id": 1,
+  "code": "CENG301",
+  "name": "Database Management Systems",
+  "department_id": 1,
+  "prerequisites": [
+    { "id": 5, "code": "CENG102", "name": "Data Structures" }
+  ]
 }
 ```
 
-**Response (201):**
+### Şubeler (Sections)
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `GET` | `/sections` | Aktif ders şubelerini listele | Herkes |
+| `GET` | `/sections/:id` | Şube detaylarını al (program, eğitmen) | Herkes |
+| `POST` | `/sections` | Ders için yeni şube oluştur | Admin |
+| `GET` | `/sections/my` | Mevcut eğitmenin verdiği dersleri getir | Fakülte |
+
+### Ders Kayıt (Enrollments)
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/enrollments` | Bir şubeye kayıt ol | Öğrenci |
+| `DELETE` | `/enrollments/:id` | Dersi bırak (aktif dönemde) | Öğrenci |
+| `GET` | `/enrollments/my-enrollments` | Öğrencinin kayıtlı şubelerini listele | Öğrenci |
+| `GET` | `/enrollments/my-schedule` | Haftalık ders programını getir | Öğrenci |
+
+**Kayıt Mantığı:**
+1.  **Ön Koşul Kontrolü:** Öğrencinin tüm ön koşul derslerini geçip geçmediğini doğrular (`PrerequisiteService` kullanarak).
+2.  **Çakışma Kontrolü:** Mevcut derslerle zaman çakışması olup olmadığını kontrol eder (`ScheduleConflictService` kullanarak).
+3.  **Kapasite Kontrolü:** Şube kapasite sınırını doğrular.
+
+---
+
+## 📍 2. Yoklama Sistemi Uç Noktaları (+GPS & QR)
+
+### Oturumlar (Sessions)
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/attendance/sessions` | Yeni yoklama oturumu başlat | Fakülte |
+| `GET` | `/attendance/sessions/active` | Bir şube için aktif oturumu getir | Öğrenci |
+| `POST` | `/attendance/sessions/:id/end` | Aktif oturumu sonlandır | Fakülte |
+
+**Oturum Oluşturma Verisi:**
 ```json
 {
-  "message": "Attendance session started",
-  "session_id": 5,
-  "qr_code": "abc123xyz789",
-  "expires_at": "2024-12-13T20:00:00Z"
+  "sectionId": 101,
+  "durationMinutes": 45,
+  "latitude": 41.0082,
+  "longitude": 28.9784,
+  "radius": 50
 }
 ```
 
----
+### Check-in Mantığı
+**Uç Nokta**: `POST /attendance/check-in`
+**Rol**: Öğrenci
 
-#### GET /attendance/sessions/active
-Aktif oturumu getir.
+**Algoritma:**
+1.  **Mesafe Hesaplama:** Öğrencinin GPS (`lat`, `lng`) verisi ile oturum merkezi arasındaki mesafeyi hesaplamak için **Haversine Formülü** kullanır.
+2.  **Spoofing (Sahtecilik) Tespiti:**
+    *   **Hız Kontrolü:** Son bilinen konum ile mevcut konum arasındaki seyahat hızını hesaplar. > 100km/s ise (imkansız seyahat), reddeder.
+    *   **Doğruluk Kontrolü:** GPS doğruluğu > 50m ise reddeder.
+3.  **QR Doğrulama:** QR modu etkinse, benzersiz dinamik QR kod dizesini doğrular.
 
-**Response:**
-```json
-{
-  "session": {
-    "id": 5,
-    "section_id": 1,
-    "qr_code": "abc123xyz789",
-    "status": "ACTIVE",
-    "start_time": "2024-12-13T19:00:00Z",
-    "end_time": "2024-12-13T20:00:00Z"
-  }
-}
-```
-
----
-
-#### GET /attendance/sessions/:sessionId
-Oturum detayları.
-
-**Response:**
-```json
-{
-  "session": {
-    "id": 5,
-    "course_code": "CENG101",
-    "course_name": "Introduction to Programming",
-    "latitude": 41.0550,
-    "longitude": 28.9505,
-    "radius": 15,
-    "status": "ACTIVE"
-  },
-  "stats": {
-    "total": 30,
-    "present": 25,
-    "absent": 3,
-    "excused": 2,
-    "flagged": 1
-  },
-  "records": [...]
-}
-```
-
----
-
-#### POST /attendance/sessions/:sessionId/end
-Oturumu bitir ve devamsızları işaretle.
-
-**Response:**
-```json
-{
-  "message": "Session closed. 5 students marked absent."
-}
-```
-
----
-
-#### GET /attendance/sessions/my
-Hocanın tüm oturum geçmişi.
-
-**Response:**
-```json
-[
-  {
-    "id": 5,
-    "course_code": "CENG101",
-    "date": "2024-12-13T19:00:00Z",
-    "status": "CLOSED",
-    "present_count": 25,
-    "total_students": 30,
-    "attendance_rate": 83
-  }
-]
-```
-
----
-
-### Yoklama Verme (Öğrenci)
-
-#### POST /attendance/checkin
-GPS ile yoklama ver.
-
-**Request:**
-```json
-{
-  "qr_code": "abc123xyz789",
-  "latitude": 41.0551,
-  "longitude": 28.9504,
-  "accuracy": 10
-}
-```
-
-**Response (200):**
-```json
-{
-  "message": "Check-in successful"
-}
-```
-
-**Error Responses:**
-| Code | Message |
-|------|---------|
-| 400 | Sınıfa çok uzaksınız (XXm > XXm) |
-| 400 | GPS doğruluğu çok düşük |
-| 400 | Bu oturumda zaten yoklama verdiniz |
-| 400 | Yoklama oturumu kapalı |
-| 404 | Oturum bulunamadı |
-
----
-
-#### GET /attendance/my-attendance
-Öğrencinin devamsızlık istatistikleri.
-
-**Response:**
-```json
-[
-  {
-    "course_code": "CENG101",
-    "course_name": "Introduction to Programming",
-    "total_hours": 42,
-    "used_hours": 4,
-    "remaining_hours": 8,
-    "limit_hours": 12,
-    "status": "safe"
-  }
-]
-```
-
----
-
-#### GET /attendance/my-history
-Öğrencinin yoklama geçmişi.
-
-**Response:**
-```json
-[
-  {
-    "id": 10,
-    "course_code": "CENG101",
-    "date": "2024-12-13",
-    "status": "PRESENT",
-    "check_in_time": "19:05:30"
-  }
-]
-```
-
----
-
-## 📝 Excuse Endpoints
-
-#### POST /excuses
-Mazeret gönder (dosya yüklemeli).
-
-**Request (multipart/form-data):**
-```
-title: "Sağlık Raporu"
-description: "Hastaneye gittim"
-session_id: 5
-document: <file>
-```
-
-**Response (201):**
-```json
-{
-  "message": "Excuse request created",
-  "excuse_id": 3
-}
-```
-
----
-
-#### GET /excuses/my
-Öğrencinin mazeretleri.
-
----
-
-#### GET /excuses/pending
-Bekleyen mazeretler (Hoca).
-
----
-
-#### PUT /excuses/:excuseId/approve
-Mazereti onayla → E-posta gönderilir.
-
----
-
-#### PUT /excuses/:excuseId/reject
-Mazereti reddet → E-posta gönderilir.
-
----
-
-## 📊 Report Endpoints
-
-#### GET /attendance/sections/my
-Hocanın şubeleri.
-
-#### GET /attendance/sections/:sectionId/summary
-Şube özet raporu.
-
-#### GET /attendance/sections/:sectionId/history
-Şube oturum geçmişi.
-
----
-
-## 🧮 Haversine Formula
-
+**Haversine Formülü Uygulaması:**
 ```javascript
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3; // Earth radius (meters)
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-    return R * c; // Distance in meters
-}
+const R = 6371e3; // Metre cinsinden Dünya yarıçapı
+const φ1 = lat1 * Math.PI/180;
+const φ2 = lat2 * Math.PI/180;
+const Δφ = (lat2-lat1) * Math.PI/180;
+const Δλ = (lon2-lon1) * Math.PI/180;
+const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ1) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+const distance = R * c; // Sonuç metre cinsinden
 ```
+
+### Yoklama Raporlama & İstatistikler
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `GET` | `/attendance/my-stats` | Öğrencinin yoklama istatistikleri | Öğrenci |
+| `GET` | `/attendance/sections/:id/report` | Bir şube için tam yoklama raporu | Fakülte |
+| `GET` | `/attendance/analytics/:sectionId` | Haftalık trend analizi (Bonus) | Fakülte |
+
+---
+
+## 🚑 3. Mazeret Yönetimi
+
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/attendance/excuses` | Dosya eki ile mazeret bildir | Öğrenci |
+| `GET` | `/attendance/excuses/pending` | Bekleyen istekleri listele | Fakülte |
+| `PATCH` | `/attendance/excuses/:id/approve` | Mazeret isteğini onayla | Fakülte |
+| `PATCH` | `/attendance/excuses/:id/reject` | Mazeret isteğini reddet | Fakülte |
+
+---
+
+## 🎓 4. Notlandırma Sistemi
+
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/exams` | Sınav oluştur (Vize/Final) | Fakülte |
+| `POST` | `/grades` | Öğrenci listesi için not gir | Fakülte |
+| `GET` | `/grading/my-grades` | Transkript ve GPA görüntüle | Öğrenci |
+| `GET` | `/grading/transcript/pdf` | Resmi PDF transkripti indir | Öğrenci |
+
+**GPA Hesaplama:**
+- **Dönem Ortalaması (Semester GPA):** (Toplam (Not Puanı * Kredi)) / Dönem Toplam Kredi.
+- **Genel Ortalama (Cumulative GPA):** Toplam Not Puanı / Toplam Kredi.
