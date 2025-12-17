@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 as: 'Prerequisites',
                 through: 'course_prerequisites',
                 foreignKey: 'course_id',
-                otherKey: 'prerequisite_id'
+                otherKey: 'prerequisite_course_id'
             });
         }
     }

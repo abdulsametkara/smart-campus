@@ -1256,9 +1256,11 @@ exports.updateSettings = async (req, res) => {
 exports.getAdvisorPendingEnrollments = async (req, res) => {
     try {
         const advisorUserId = req.user.id;
+        console.log(`[DEBUG] getAdvisorPendingEnrollments - UserID: ${advisorUserId}, Role: ${req.user.role}`);
 
         // Find faculty profile
         const facultyProfile = await Faculty.findOne({ where: { user_id: advisorUserId } });
+        console.log(`[DEBUG] getAdvisorPendingEnrollments - Profile found: ${!!facultyProfile}`);
         if (!facultyProfile) {
             return res.status(404).json({ message: 'Faculty profile not found' });
         }
@@ -1439,8 +1441,10 @@ exports.getMyAdvisor = async (req, res) => {
 exports.getMyAdvisees = async (req, res) => {
     try {
         const userId = req.user.id;
+        console.log(`[DEBUG] getMyAdvisees - UserID: ${userId}, Role: ${req.user.role}`);
 
         const facultyProfile = await Faculty.findOne({ where: { user_id: userId } });
+        console.log(`[DEBUG] getMyAdvisees - Profile found: ${!!facultyProfile}`);
 
         if (!facultyProfile) {
             return res.status(404).json({ message: 'Faculty profile not found' });
