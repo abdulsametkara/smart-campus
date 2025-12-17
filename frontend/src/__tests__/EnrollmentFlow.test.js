@@ -41,6 +41,14 @@ describe('Enrollment Flow Integration', () => {
     });
 
     test('Student can enroll in a section successfully', async () => {
+        // Override default mock to simulate state change after enrollment
+        sectionsService.getById
+            .mockResolvedValueOnce(mockSection) // Initial load
+            .mockResolvedValue({                // After enrollment refresh
+                ...mockSection,
+                enrollments: [{ student_id: mockUser.id, status: 'PENDING' }]
+            });
+
         render(
             <AuthContext.Provider value={{ user: mockUser }}>
                 <MemoryRouter initialEntries={['/sections/101']}>
@@ -53,7 +61,8 @@ describe('Enrollment Flow Integration', () => {
 
         // Wait for section load
         await waitFor(() => {
-            expect(screen.getByText(/Intro/i)).toBeInTheDocument();
+            const introElements = screen.getAllByText(/Intro/i);
+            expect(introElements.length).toBeGreaterThan(0);
             expect(screen.getByText('Section 1')).toBeInTheDocument();
         });
 
