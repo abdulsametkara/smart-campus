@@ -7,6 +7,15 @@ Smart Campus sistemine hoş geldiniz. Bu kılavuz, öğrenci ve fakülte üyeler
 **Fakülte (Eğitmen):** Ders yönetimi, notlandırma ve yoklama oturumu başlatma erişimi.
 **Öğrenci:** Ders kaydı, yoklamaya katılma ve notları görüntüleme erişimi.
 
+admin@smartcampus.edu.tr
+ahmet.yildiz@smartcampus.edu.tr
+ali.veli@student.smartcampus.edu.tr
+
+
+Şifreler Aynıdır: Campus123!
+
+
+
 ---
 
 ## 🎓 Öğrenciler İçin
@@ -28,10 +37,6 @@ Smart Campus sistemine hoş geldiniz. Bu kılavuz, öğrenci ve fakülte üyeler
 ![Ekran Görüntüsü: Mazeret bildirim ekranı](D:\ceng\ceng\projeler\smart-campus\screen_shots\ders_onay.png)
 
 ![Ekran Görüntüsü: Mazeret bildirim ekranı](D:\ceng\ceng\projeler\smart-campus\screen_shots\ders_onay2.png)
-
-
-
-
 
 ### 2. Yoklamaya Katılma (GPS & QR Güvenliği)
 

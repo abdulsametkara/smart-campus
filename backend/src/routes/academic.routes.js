@@ -1,5 +1,11 @@
 const express = require('express');
 const router = express.Router();
+
+router.use((req, res, next) => {
+    console.log(`[Academic Router] ${req.method} ${req.path}`);
+    next();
+});
+
 const academicController = require('../controllers/academic.controller');
 const { authenticate, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
