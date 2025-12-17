@@ -6,6 +6,11 @@ import api from '../services/api';
 // Mock API
 jest.mock('../services/api');
 
+// Mock SweetAlert2
+jest.mock('sweetalert2', () => ({
+    fire: jest.fn().mockResolvedValue({ isConfirmed: true })
+}));
+
 // Mock Leaflet
 jest.mock('react-leaflet', () => ({
     MapContainer: ({ children }) => <div>{children}</div>,
@@ -24,29 +29,29 @@ jest.mock('html5-qrcode', () => ({
     })),
 }));
 
-// Mock Geolocation
-const mockGeolocation = {
-    getCurrentPosition: jest.fn().mockImplementation((success) =>
-        success({
-            coords: {
-                latitude: 41.0082,
-                longitude: 28.9784,
-                accuracy: 10
-            }
-        })
-    ),
-    watchPosition: jest.fn()
-};
 
-// Safer way to mock navigator
-Object.defineProperty(global.navigator, 'geolocation', {
-    value: mockGeolocation,
-    writable: true
-});
 
 describe('StudentAttendancePage', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+
+        const mockGeolocation = {
+            getCurrentPosition: jest.fn().mockImplementation((success) =>
+                success({
+                    coords: {
+                        latitude: 41.0082,
+                        longitude: 28.9784,
+                        accuracy: 10
+                    }
+                })
+            ),
+            watchPosition: jest.fn()
+        };
+
+        Object.defineProperty(global.navigator, 'geolocation', {
+            value: mockGeolocation,
+            writable: true
+        });
     });
 
     test('renders location step initially', () => {
