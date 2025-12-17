@@ -53,7 +53,7 @@ describe('PrerequisiteService', () => {
 
             expect(result.valid).toBe(false);
             expect(result.missing.length).toBe(1);
-            expect(result.missing[0].code).toBe('CENG101');
+            expect(result.missing[0].course_code).toBe('CENG101');
         });
 
         test('should return valid when prerequisite is completed with passing grade', async () => {
@@ -65,7 +65,10 @@ describe('PrerequisiteService', () => {
 
             // Student completed the prerequisite
             Enrollment.findAll.mockResolvedValue([
-                { course_id: 1, section_id: 10, status: 'COMPLETED' }
+                {
+                    status: 'COMPLETED',
+                    section: { course_id: 1 }
+                }
             ]);
 
             // Has passing grade (DD or better)

@@ -23,6 +23,54 @@ class AttendanceService {
     }
 
     /**
+     * Check if user is within allowed radius of target location
+     */
+    isWithinRadius(userLat, userLon, targetLat, targetLon, radius) {
+        const distance = this.calculateDistance(userLat, userLon, targetLat, targetLon);
+        return distance <= radius;
+    }
+
+    /**
+     * Check for potential GPS spoofing indicators
+     */
+    checkSpoofingIndicators(data) {
+        const { accuracy, speed, altitudeAccuracy, isMock, latitude, longitude, previousLocation } = data;
+        const result = { isSuspicious: false, reasons: [] };
+
+        // Check 1: Low accuracy (e.g. > 100m)
+        if (accuracy > 100) {
+            result.isSuspicious = true;
+            result.reasons.push('low_accuracy');
+        }
+
+        // Calculate speed from previous location if available
+        let calculatedSpeed = speed;
+        if (previousLocation && previousLocation.timestamp) {
+            const distance = this.calculateDistance(latitude, longitude, previousLocation.latitude, previousLocation.longitude);
+            const timeDiff = (Date.now() - previousLocation.timestamp) / 1000; // seconds
+            if (timeDiff > 0) {
+                calculatedSpeed = distance / timeDiff; // m/s
+            }
+        }
+
+        // Check 2: Impossible speed (if available) - e.g. > 1000 km/h
+        // Note: speed is usually in m/s. 100m/s = 360km/h
+        // 120km in 60s = 2000m/s.
+        if (calculatedSpeed && calculatedSpeed > 100) {
+            result.isSuspicious = true;
+            result.reasons.push('impossible_speed');
+        }
+
+        // Check 3: Mock location flag (android)
+        if (isMock) {
+            result.isSuspicious = true;
+            result.reasons.push('mock_location_detected');
+        }
+
+        return result;
+    }
+
+    /**
      * Validate student check-in with enhanced spoofing detection
      */
     async validateCheckIn(session, studentId, userLat, userLon, userQrCode, accuracy = 10) {
@@ -61,11 +109,12 @@ class AttendanceService {
             return result;
         }
 
-        // 5. GPS Accuracy Spoofing Check
-        if (accuracy > 100) {
-            result.reason = 'GPS doğruluğu çok düşük. Lütfen açık alanda deneyin.';
+        // 5. Spoofing Check
+        const spoofCheck = this.checkSpoofingIndicators({ accuracy });
+        if (spoofCheck.isSuspicious) {
+            result.reason = 'GPS verisi şüpheli veya yetersiz.';
             result.isFlagged = true;
-            result.flagReason = 'Düşük GPS doğruluğu (accuracy > 100m)';
+            result.flagReason = spoofCheck.reasons.join(', ');
             return result;
         }
 

@@ -29,7 +29,7 @@ const serializeUser = (userInstance) => {
 
   if (plain.facultyProfile) {
     base.faculty = {
-      employee_number: plain.facultyProfile.employee_number,
+      office_hours: plain.facultyProfile.office_hours,
       title: plain.facultyProfile.title,
       department_id: plain.facultyProfile.department_id,
     };
@@ -43,7 +43,7 @@ const getMe = async (req, res) => {
     const user = await User.findByPk(req.user.id, {
       include: [
         { model: Student, as: 'studentProfile', attributes: ['student_number', 'department_id', 'gpa', 'cgpa'] },
-        { model: Faculty, as: 'facultyProfile', attributes: ['employee_number', 'title', 'department_id'] },
+        { model: Faculty, as: 'facultyProfile', attributes: ['office_hours', 'title', 'department_id'] },
       ],
     });
 
@@ -53,6 +53,7 @@ const getMe = async (req, res) => {
 
     return res.json(serializeUser(user));
   } catch (err) {
+    console.error('getMe Error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -73,6 +74,7 @@ const updateMe = async (req, res) => {
 
     return res.json(serializeUser(user));
   } catch (err) {
+    console.error('getMe Error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -94,6 +96,7 @@ const uploadProfilePicture = async (req, res) => {
 
     return res.json({ profile_picture_url: user.profile_picture_url });
   } catch (err) {
+    console.error('getMe Error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -138,7 +141,7 @@ const listUsers = async (req, res) => {
       where,
       include: [
         { model: Student, as: 'studentProfile', attributes: ['student_number', 'department_id', 'gpa', 'cgpa'] },
-        { model: Faculty, as: 'facultyProfile', attributes: ['employee_number', 'title', 'department_id'] },
+        { model: Faculty, as: 'facultyProfile', attributes: ['office_hours', 'title', 'department_id'] },
       ],
       order: [['id', 'DESC']],
       limit,
@@ -157,6 +160,7 @@ const listUsers = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('getMe Error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
