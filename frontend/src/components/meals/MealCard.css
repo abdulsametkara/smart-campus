@@ -1,0 +1,237 @@
+/* MealCard Component Styles */
+
+.meal-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.meal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.meal-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.meal-card-date {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.cafeteria-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.meal-card-items {
+    padding: 25px 30px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.meal-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.meal-item:last-child {
+    border-bottom: none;
+}
+
+.meal-item-icon {
+    font-size: 1.3rem;
+}
+
+.meal-item-name {
+    font-size: 1.05rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.meal-card-nutrition {
+    padding: 25px 30px;
+    background: #f8fafc;
+}
+
+.nutrition-title {
+    font-size: 1rem;
+    color: #64748b;
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nutrition-items-list {
+    margin-bottom: 20px;
+}
+
+.nutrition-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.nutrition-item-row:last-child {
+    border-bottom: none;
+}
+
+.nut-item-name {
+    font-weight: 500;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.nut-item-values {
+    display: flex;
+    gap: 8px;
+}
+
+.nut-pill {
+    background: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.nut-pill.protein {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.nut-pill.carbs {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.nutrition-total {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.total-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.nutrition-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.nutrition-box {
+    flex: 1;
+    min-width: 80px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.nutrition-box.total {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.nutrition-box.total .nut-val,
+.nutrition-box.total .nut-key {
+    color: white;
+}
+
+.nut-val {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.nut-key {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: capitalize;
+    margin-top: 4px;
+}
+
+.meal-card-action {
+    padding: 25px 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.reserve-btn {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.reserve-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+}
+
+.reserved-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.check-icon {
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .meal-card-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .nutrition-grid {
+        flex-direction: column;
+    }
+
+    .nutrition-box {
+        min-width: 100%;
+    }
+}

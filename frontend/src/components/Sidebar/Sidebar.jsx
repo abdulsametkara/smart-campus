@@ -31,6 +31,17 @@ const Sidebar = ({ isOpen, onClose }) => {
             });
         }
 
+        // Yemekhane & Cüzdan - All users
+        items.push({
+            id: 'yemek',
+            label: 'Yemekhane',
+            children: [
+                { path: '/meals/menu', label: 'Menü' },
+                { path: '/meals/reservations', label: 'Rezervasyonlarım' },
+                { path: '/wallet', label: 'Cüzdanım' }
+            ]
+        });
+
         // Akademik - All users
         items.push({
             id: 'akademik',

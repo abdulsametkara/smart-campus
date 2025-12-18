@@ -37,6 +37,7 @@ COPY --from=builder /usr/src/app/jobs ./jobs
 COPY --from=builder /usr/src/app/routes ./routes
 COPY --from=builder /usr/src/app/scripts ./scripts
 COPY --from=builder /usr/src/app/config ./config
+COPY --from=builder /usr/src/app/tests ./tests
 
 # Create uploads directory
 RUN mkdir -p uploads
