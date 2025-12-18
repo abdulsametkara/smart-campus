@@ -36,6 +36,9 @@ import InstructorGradesPage from './pages/InstructorGradesPage';
 import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
 import AdvisorApprovalPage from './pages/AdvisorApprovalPage';
 import MyAdviseesPage from './pages/MyAdviseesPage';
+import WalletPage from './pages/WalletPage';
+import MenuPage from './pages/meals/MenuPage';
+import MyReservationsPage from './pages/meals/MyReservationsPage';
 import './App.css';
 
 // Mobile Header Component
@@ -334,6 +337,32 @@ function AppContent() {
               element={
                 <ProtectedRoute roles={['faculty', 'admin']}>
                   <AttendanceAnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Meal & Wallet Routes */}
+            <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute>
+                  <WalletPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meals/menu"
+              element={
+                <ProtectedRoute>
+                  <MenuPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meals/reservations"
+              element={
+                <ProtectedRoute>
+                  <MyReservationsPage />
                 </ProtectedRoute>
               }
             />
