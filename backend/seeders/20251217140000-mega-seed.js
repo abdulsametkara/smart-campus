@@ -276,7 +276,7 @@ module.exports = {
         console.log(`✅ ${classroomsData.length} Classrooms created`);
 
         // ==================== 4. COURSES (Based on Realistic Curriculum) ====================
-        const CURRICULUM = require('./curriculum_data'); // Ensure this file exists or paste object here
+        const CURRICULUM = require('../seed_data/curriculum_data'); // Ensure this file exists or paste object here
         const courses = [];
 
         // Prepare course data
