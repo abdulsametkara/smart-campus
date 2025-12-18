@@ -10,6 +10,7 @@ router.use(authenticate);
 router.get('/menus', mealController.getWeeklyMenus);
 router.post('/reservations', mealController.makeReservation);
 router.get('/reservations', mealController.getMyReservations);
+router.delete('/reservations/:id', mealController.cancelReservation);
 router.patch('/reservations/:id/use', mealController.markAsUsed);
 
 module.exports = router;

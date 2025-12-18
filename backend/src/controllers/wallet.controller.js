@@ -21,6 +21,9 @@ const topUp = async (req, res) => {
         res.json({ message: 'Top-up successful', balance: wallet.balance });
     } catch (err) {
         console.error('TopUp Error:', err);
+        if (err.message.includes('Amount') || err.message.includes('Insufficient')) {
+            return res.status(400).json({ message: err.message });
+        }
         res.status(500).json({ message: err.message || 'Error processing top-up' });
     }
 };

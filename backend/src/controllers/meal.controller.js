@@ -49,9 +49,21 @@ const markAsUsed = async (req, res) => {
     }
 };
 
+const cancelReservation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await mealService.cancelReservation(req.user.id, parseInt(id));
+        res.json(result);
+    } catch (err) {
+        console.error('Cancel Reservation Error:', err);
+        res.status(400).json({ message: err.message });
+    }
+};
+
 module.exports = {
     getWeeklyMenus,
     makeReservation,
     getMyReservations,
-    markAsUsed
+    markAsUsed,
+    cancelReservation
 };
