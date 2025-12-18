@@ -30,6 +30,15 @@ class MealService {
             const menu = await MealMenu.findByPk(menuId);
             if (!menu) throw new Error('Menu not found');
 
+            // VALIDATION: Prevent past dates
+            const today = new Date().toISOString().split('T')[0];
+            if (menu.date < today) {
+                // Return 400 error
+                const error = new Error('Geçmiş tarihe rezervasyon yapılamaz.');
+                error.statusCode = 400;
+                throw error;
+            }
+
             // 2. Check if already reserved
             const existing = await MealReservation.findOne({
                 where: { user_id: userId, menu_id: menuId, status: { [Op.not]: 'cancelled' } }
@@ -91,11 +100,20 @@ class MealService {
         const t = await sequelize.transaction();
         try {
             const reservation = await MealReservation.findOne({
-                where: { id: reservationId, user_id: userId }
+                where: { id: reservationId, user_id: userId },
+                include: [{ model: MealMenu, as: 'menu' }]
             });
 
             if (!reservation) throw new Error('Reservation not found');
             if (reservation.status !== 'reserved') throw new Error('Cannot cancel this reservation');
+
+            // VALIDATION: Cannot cancel past reservations
+            const today = new Date().toISOString().split('T')[0];
+            if (reservation.menu.date < today) {
+                const error = new Error('Geçmiş rezervasyonlar iptal edilemez.');
+                error.statusCode = 400;
+                throw error;
+            }
 
             // Refund logic
             // Assuming fixed price 20.00 as per reservation logic
@@ -123,11 +141,20 @@ class MealService {
      */
     async markAsUsed(userId, reservationId) {
         const reservation = await MealReservation.findOne({
-            where: { id: reservationId, user_id: userId }
+            where: { id: reservationId, user_id: userId },
+            include: [{ model: MealMenu, as: 'menu' }]
         });
 
         if (!reservation) throw new Error('Reservation not found');
         if (reservation.status !== 'reserved') throw new Error('Reservation is not active');
+
+        // VALIDATION: Strict date check
+        const today = new Date().toISOString().split('T')[0];
+        if (reservation.menu.date !== today) {
+            const error = new Error('Bu bilet sadece menü tarihinde kullanılabilir.');
+            error.statusCode = 400;
+            throw error;
+        }
 
         reservation.status = 'used';
         reservation.used_at = new Date();
