@@ -91,7 +91,13 @@ const MenuPage = () => {
 
     const currentMenu = menus.find(m => m.date === selectedDate);
 
-    if (loading) return <LoadingSpinner message="Menüler Yükleniyor..." />;
+    if (loading) {
+        return (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                Menüler Yükleniyor...
+            </div>
+        );
+    }
 
     const goToPrevWeek = () => setWeekOffset(prev => prev - 1);
     const goToNextWeek = () => setWeekOffset(prev => prev + 1);
