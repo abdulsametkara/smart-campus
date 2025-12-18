@@ -8,7 +8,7 @@ param(
 )
 
 # 0. Configuration
-$DumpFile = "..\dump.sql"
+$DumpFile = ".\dump.sql"
 $RemotePath = "/tmp/dump.sql"
 $ContainerName = "smart_campus_postgres"
 $DbUser = "admin"
@@ -21,6 +21,20 @@ if ([string]::IsNullOrWhiteSpace($VmIp)) {
 
 if ([string]::IsNullOrWhiteSpace($VmIp)) {
     Write-Error "IP adresi gereklidir."
+    exit 1
+}
+
+# 1.1 Generate Local Dump
+Write-Host "💾 0/3: Local veritabanı yedeği alınıyor (pg_dump)..." -ForegroundColor Yellow
+try {
+    # Check if local container is running
+    $LocalContainer = "smart_campus_postgres"
+    docker exec $LocalContainer pg_dump -U $DbUser $DbName > $DumpFile
+    if ($LASTEXITCODE -ne 0) { throw "pg_dump failed" }
+    Write-Host "✅ Dump oluşturuldu: $DumpFile" -ForegroundColor Green
+}
+catch {
+    Write-Error "HATA: Local veritabanından dump alınamadı. Docker çalışıyor mu?"
     exit 1
 }
 

@@ -35,6 +35,7 @@ services:
       - DB_NAME=${DB_NAME:-campus_db}
       - DB_USER=${DB_USER:-admin}
       - DB_PASSWORD=${DB_PASSWORD:-campus123}
+      - FRONTEND_URL=https://campyy.duckdns.org
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
     networks:
