@@ -75,6 +75,6 @@ describe('Wallet Service Unit Tests', () => {
         };
         Wallet.findOne.mockResolvedValue(mockWalletInstance);
 
-        await expect(walletService.processPayment(1, 50.00, 'Expensive')).rejects.toThrow('Insufficient funds');
+        await expect(walletService.processPayment(1, 50.00, 'Expensive')).rejects.toThrow('Yetersiz Bakiye');
     });
 });
