@@ -15,5 +15,6 @@ router.get('/grades/exam/:examId', authenticate, authorize('faculty', 'admin'), 
 
 // Student Transcript
 router.get('/my-grades', authenticate, gradingController.getMyGrades);
+router.get('/transcript/pdf', authenticate, gradingController.downloadTranscriptPdf);
 
 module.exports = router;

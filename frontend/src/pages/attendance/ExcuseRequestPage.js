@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
 
@@ -13,8 +13,6 @@ const ExcuseRequestPage = () => {
     const [myExcuses, setMyExcuses] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const getToken = () => localStorage.getItem('accessToken');
-
     useEffect(() => {
         fetchAbsentSessions();
         fetchMyExcuses();
@@ -22,9 +20,7 @@ const ExcuseRequestPage = () => {
 
     const fetchAbsentSessions = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/v1/attendance/my-absences', {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get('/attendance/my-absences');
             setAbsentSessions(response.data);
         } catch (error) {
             console.error('Devamsızlıklar yüklenemedi:', error);
@@ -33,9 +29,7 @@ const ExcuseRequestPage = () => {
 
     const fetchMyExcuses = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/v1/excuses/my', {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get('/excuses/my');
             setMyExcuses(response.data);
             setLoading(false);
         } catch (error) {
@@ -73,9 +67,8 @@ const ExcuseRequestPage = () => {
                 formData.append('document', file);
             }
 
-            await axios.post('http://localhost:5000/api/v1/excuses', formData, {
+            await api.post('/excuses', formData, {
                 headers: {
-                    Authorization: `Bearer ${getToken()}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });

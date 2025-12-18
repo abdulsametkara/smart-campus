@@ -48,3 +48,4 @@ coverage/
 *.temp
 .env.production
 DEPLOYMENT.md
+DATABASE_STRUCTURE.md

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import '../../styles/attendance.css';
 
 const MyAttendancePage = () => {
@@ -10,10 +10,7 @@ const MyAttendancePage = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const response = await axios.get('http://localhost:5000/api/v1/attendance/my-attendance', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await api.get('/attendance/my-attendance');
                 setStats(response.data);
                 setLoading(false);
             } catch (err) {

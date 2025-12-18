@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { sectionsService, coursesService, usersService } from '../services/academicService';
+import { sectionsService, coursesService, usersService, enrollmentsService } from '../services/academicService';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './SectionsListPage.css';
 
 const SectionsListPage = () => {
@@ -58,10 +59,28 @@ const SectionsListPage = () => {
         if (params[key] === '') delete params[key];
       });
 
-      const data = await sectionsService.getAll(params);
-      setSections(data.sections || data);
-      if (data.pagination) {
-        setPagination(prev => ({ ...prev, ...data.pagination }));
+      const response = await sectionsService.getAll(params);
+      let fetchedSections = response.sections || response;
+
+      // For students, fetch enrollments and filter
+      if (user?.role === 'student') {
+        try {
+          const enrollmentsData = await enrollmentsService.getMyEnrollments();
+          const myEnrollments = enrollmentsData.enrollments || [];
+
+          const enrolledSectionIds = myEnrollments
+            .filter(e => ['ACTIVE', 'PENDING', 'APPROVED'].includes(e.status))
+            .map(e => e.section_id);
+
+          fetchedSections = fetchedSections.filter(s => !enrolledSectionIds.includes(s.id));
+        } catch (err) {
+          console.error('Error fetching enrollments:', err);
+        }
+      }
+
+      setSections(fetchedSections);
+      if (response.pagination) {
+        setPagination(prev => ({ ...prev, ...response.pagination }));
       }
       setError(null);
     } catch (err) {
@@ -86,9 +105,9 @@ const SectionsListPage = () => {
     return (
       <div className="page sections-page">
         <div className="page-header">
-          <h1>Sections</h1>
+          <h1>{user?.role === 'student' ? 'Derse Kayıt' : 'Sections'}</h1>
         </div>
-        <div className="loading-spinner">Yükleniyor...</div>
+        <LoadingSpinner size="large" message="Şubeler yükleniyor..." />
       </div>
     );
   }
@@ -96,7 +115,7 @@ const SectionsListPage = () => {
   return (
     <div className="page sections-page">
       <div className="page-header">
-        <h1>Sections</h1>
+        <h1>{user?.role === 'student' ? 'Derse Kayıt' : 'Sections'}</h1>
         {(user?.role === 'admin' || user?.role === 'faculty') && (
           <Link to="/sections/new" className="btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -118,81 +137,103 @@ const SectionsListPage = () => {
       <div className="filters-card">
         <h3>Filtrele</h3>
         <div className="filters-grid">
-          <div className="filter-group">
-            <label>Dönem</label>
-            <select
-              name="semester"
-              value={filters.semester}
-              onChange={handleFilterChange}
-            >
-              <option value="">Tüm Dönemler</option>
-              <option value="2024-FALL">2024-FALL (Güz)</option>
-              <option value="2024-SPRING">2024-SPRING (Bahar)</option>
-              <option value="2024-SUMMER">2024-SUMMER (Yaz)</option>
-              <option value="2025-FALL">2025-FALL (Güz)</option>
-              <option value="2025-SPRING">2025-SPRING (Bahar)</option>
-              <option value="2025-SUMMER">2025-SUMMER (Yaz)</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label>Bölüm (Department)</label>
-            <select
-              name="department_id"
-              value={filters.department_id || ''}
-              onChange={(e) => {
-                handleFilterChange(e);
-                // Reset course filter when department changes
-                setFilters(prev => ({ ...prev, course_id: '' }));
-              }}
-            >
-              <option value="">Tüm Bölümler</option>
-              <option value="1">Bilgisayar Mühendisliği</option>
-              <option value="2">Elektrik-Elektronik Müh.</option>
-              <option value="3">Makine Mühendisliği</option>
-              <option value="4">Endüstri Mühendisliği</option>
-              <option value="5">Matematik</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label>Ders</label>
-            <select
-              name="course_id"
-              value={filters.course_id}
-              onChange={handleFilterChange}
-            >
-              <option value="">Tüm Dersler</option>
-              {courses
-                .filter(course => !filters.department_id || course.department_id == filters.department_id)
-                .map(course => (
+          {/* Only show simplified filters for students */}
+          {user?.role === 'student' ? (
+            <div className="filter-group" style={{ gridColumn: 'span 3' }}>
+              <label>Ders Ara / Seç</label>
+              <select
+                name="course_id"
+                value={filters.course_id}
+                onChange={handleFilterChange}
+                style={{ width: '100%' }}
+              >
+                <option value="">Tüm Dersler</option>
+                {courses.map(course => (
                   <option key={course.id} value={course.id}>
                     {course.code} - {course.name}
                   </option>
                 ))}
-            </select>
-          </div>
-          <div className="filter-group">
-            <label>Öğretim Üyesi</label>
-            <select
-              name="instructor_id"
-              value={filters.instructor_id}
-              onChange={handleFilterChange}
-            >
-              <option value="">Tüm Öğretim Üyeleri</option>
-              {instructors.map(instructor => (
-                <option key={instructor.id} value={instructor.id}>
-                  {instructor.full_name}
-                </option>
-              ))}
-            </select>
-          </div>
+              </select>
+            </div>
+          ) : (
+            <>
+              <div className="filter-group">
+                <label>Dönem</label>
+                <select
+                  name="semester"
+                  value={filters.semester}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Tüm Dönemler</option>
+                  <option value="2024-FALL">2024-FALL (Güz)</option>
+                  <option value="2024-SPRING">2024-SPRING (Bahar)</option>
+                  <option value="2024-SUMMER">2024-SUMMER (Yaz)</option>
+                  <option value="2025-FALL">2025-FALL (Güz)</option>
+                  <option value="2025-SPRING">2025-SPRING (Bahar)</option>
+                  <option value="2025-SUMMER">2025-SUMMER (Yaz)</option>
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Bölüm</label>
+                <select
+                  name="department_id"
+                  value={filters.department_id || ''}
+                  onChange={(e) => {
+                    handleFilterChange(e);
+                    setFilters(prev => ({ ...prev, course_id: '' }));
+                  }}
+                >
+                  <option value="">Tüm Bölümler</option>
+                  <option value="1">Bilgisayar Mühendisliği</option>
+                  <option value="2">Elektrik-Elektronik Müh.</option>
+                  <option value="3">Makine Mühendisliği</option>
+                  <option value="4">Endüstri Mühendisliği</option>
+                  <option value="5">Matematik</option>
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Ders</label>
+                <select
+                  name="course_id"
+                  value={filters.course_id}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Tüm Dersler</option>
+                  {courses
+                    .filter(course => !filters.department_id || course.department_id == filters.department_id)
+                    .map(course => (
+                      <option key={course.id} value={course.id}>
+                        {course.code} - {course.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Öğretim Üyesi</label>
+                <select
+                  name="instructor_id"
+                  value={filters.instructor_id}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Tüm Öğretim Üyeleri</option>
+                  {instructors.map(instructor => (
+                    <option key={instructor.id} value={instructor.id}>
+                      {instructor.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Sections Grid */}
       <div className="sections-grid">
         {(() => {
-          // Filter sections by department on frontend
-          const filteredSections = filters.department_id
+          // Filter sections by department on frontend for non-students or complex logic
+          // But here we rely on backend for main filtering, just refined by enrolled exclusion
+          const filteredSections = filters.department_id && user?.role !== 'student' // Only apply frontend dep filter if not student (students see all or filtered by backend)
             ? sections.filter(s => s.course?.department_id == filters.department_id)
             : sections;
 

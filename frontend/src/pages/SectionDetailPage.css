@@ -134,6 +134,57 @@
   font-weight: 600;
 }
 
+/* Prerequisites */
+.prerequisites-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+  border: 1px solid #fbbf24;
+}
+
+.prereq-info {
+  font-size: 0.9rem;
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.prerequisites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.prereq-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid #f59e0b;
+}
+
+.prereq-code {
+  font-weight: 700;
+  color: #b45309;
+  min-width: 100px;
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+
+.prereq-name {
+  flex: 1;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.prereq-credits {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: #fef3c7;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
 .schedule-list {
   display: flex;
   flex-direction: column;

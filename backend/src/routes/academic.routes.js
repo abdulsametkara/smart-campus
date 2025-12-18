@@ -1,5 +1,11 @@
 const express = require('express');
 const router = express.Router();
+
+router.use((req, res, next) => {
+    console.log(`[Academic Router] ${req.method} ${req.path}`);
+    next();
+});
+
 const academicController = require('../controllers/academic.controller');
 const { authenticate, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -66,7 +72,7 @@ router.get('/classrooms', authenticate, academicController.getAllClassrooms);
 // Usually only admin assigns instructors, so maybe allow admin or faculty?
 // Let's keep it open to authenticated users if needed, or restrict to admin/faculty.
 // Assuming getFacultyList is used by Admin mostly.
-router.get('/faculty', authenticate, authorize('admin', 'faculty'), academicController.getFacultyList); // Added authorize just in case, match with previous usage context if any. 
+router.get('/faculty', authenticate, authorize('admin', 'faculty', 'student'), academicController.getFacultyList); // Added authorize just in case, match with previous usage context if any. 
 // Previously it was under admin-only block so it was admin-only.
 // But some forms might need it? 
 // If it was under admin block, then 'admin' is safe. But let's add 'faculty' if they can assign things?

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import axios from 'axios';
+import { io } from 'socket.io-client';
+import api from '../../services/api';
 import Swal from 'sweetalert2';
 import '../../styles/attendance.css';
 
@@ -16,14 +17,67 @@ const InstructorAttendancePage = () => {
     const [sessionInfo, setSessionInfo] = useState(null);
     const [locationStatus, setLocationStatus] = useState({ text: 'Konum Bekleniyor', class: '' });
 
+    // Real-time WebSocket state
+    const [realtimeStudents, setRealtimeStudents] = useState([]);
+    const [isConnected, setIsConnected] = useState(false);
+    const socketRef = useRef(null);
+
+    // WebSocket connection effect
+    useEffect(() => {
+        const SOCKET_URL = process.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+        socketRef.current = io(SOCKET_URL, {
+            transports: ['websocket', 'polling']
+        });
+
+        socketRef.current.on('connect', () => {
+            console.log('[WebSocket] Connected');
+            setIsConnected(true);
+        });
+
+        socketRef.current.on('disconnect', () => {
+            console.log('[WebSocket] Disconnected');
+            setIsConnected(false);
+        });
+
+        socketRef.current.on('student-checked-in', (data) => {
+            console.log('[WebSocket] Student checked in:', data);
+            setRealtimeStudents(prev => [
+                { ...data.student, checkedInAt: data.checkedInAt, distance: data.distance },
+                ...prev
+            ]);
+
+            // Show notification
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `${data.student.name} katıldı!`,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, []);
+
+    // Join session room when active session changes
+    useEffect(() => {
+        if (activeSession?.session_id && socketRef.current) {
+            socketRef.current.emit('join-session', activeSession.session_id);
+            setRealtimeStudents([]); // Reset list for new session
+        }
+    }, [activeSession?.session_id]);
+
     useEffect(() => {
         // Fetch sections from API
         const fetchSections = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const response = await axios.get('http://localhost:5000/api/v1/attendance/sections/my', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await api.get('/attendance/sections/my');
                 setSections(response.data);
             } catch (error) {
                 console.error('Error fetching sections', error);
@@ -33,10 +87,7 @@ const InstructorAttendancePage = () => {
 
         const fetchActiveSession = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const response = await axios.get('http://localhost:5000/api/v1/attendance/sessions/active', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await api.get('/attendance/sessions/active');
                 if (response.data.active) {
                     setActiveSession({
                         session_id: response.data.session_id,
@@ -51,8 +102,6 @@ const InstructorAttendancePage = () => {
         };
         fetchActiveSession();
     }, []);
-
-    const getToken = () => localStorage.getItem('accessToken');
 
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
@@ -84,14 +133,12 @@ const InstructorAttendancePage = () => {
 
     const handleStartSession = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/v1/attendance/sessions', {
+            const response = await api.post('/attendance/sessions', {
                 section_id: selectedSection,
                 duration_minutes: duration,
                 radius: radius,
                 latitude: latitude,
                 longitude: longitude
-            }, {
-                headers: { Authorization: `Bearer ${getToken()}` }
             });
 
             setActiveSession(response.data);
@@ -107,9 +154,7 @@ const InstructorAttendancePage = () => {
     const handleFetchReport = async (sessionId = activeSession?.session_id) => {
         if (!sessionId) return;
         try {
-            const response = await axios.get(`http://localhost:5000/api/v1/attendance/sessions/${sessionId}/report`, {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
+            const response = await api.get(`/attendance/sessions/${sessionId}/report`);
             setReport(response.data.report);
             setSessionInfo(response.data.session);
         } catch (error) {
@@ -131,9 +176,7 @@ const InstructorAttendancePage = () => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`http://localhost:5000/api/v1/attendance/sessions/${activeSession.session_id}/end`, {}, {
-                    headers: { Authorization: `Bearer ${getToken()}` }
-                });
+                const response = await api.post(`/attendance/sessions/${activeSession.session_id}/end`, {});
                 Swal.fire('Tamamlandı', `Oturum bitirildi. ${response.data.absent_count} kişi devamsız işaretlendi.`, 'success');
                 setActiveSession(null);
                 setReport([]);
@@ -242,7 +285,7 @@ const InstructorAttendancePage = () => {
                         </div>
 
                         <div className="custom-alert info" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
-                            Kod: <strong>{activeSession.qr_code.substring(0, 8)}...</strong>
+                            Kod: <strong>{activeSession.qr_code}</strong>
                         </div>
 
                         <div style={{ marginTop: '1rem', color: '#ef4444', fontWeight: 600 }}>
@@ -257,6 +300,58 @@ const InstructorAttendancePage = () => {
                                 OTURUMU BİTİR
                             </button>
                         </div>
+
+                        {/* Real-time Students List */}
+                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                <h4 style={{ margin: 0, color: '#374151' }}>
+                                    🔴 Canlı Katılım ({realtimeStudents.length})
+                                </h4>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '20px',
+                                    background: isConnected ? '#dcfce7' : '#fef2f2',
+                                    color: isConnected ? '#166534' : '#dc2626'
+                                }}>
+                                    {isConnected ? '● Bağlı' : '○ Bağlantı Yok'}
+                                </span>
+                            </div>
+
+                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                {realtimeStudents.length === 0 ? (
+                                    <p style={{ color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center', margin: '1rem 0' }}>
+                                        Henüz katılım yok...
+                                    </p>
+                                ) : (
+                                    realtimeStudents.map((student, idx) => (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '0.5rem 0.75rem',
+                                                background: idx === 0 ? '#ecfdf5' : 'transparent',
+                                                borderRadius: '8px',
+                                                marginBottom: '0.25rem',
+                                                animation: idx === 0 ? 'fadeIn 0.5s ease' : 'none'
+                                            }}
+                                        >
+                                            <div>
+                                                <span style={{ fontWeight: 600, color: '#1f2937' }}>{student.name}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                                                    {student.studentNumber}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
+                                                {new Date(student.checkedInAt).toLocaleTimeString('tr-TR')}
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div className="course-attendance-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#9ca3af' }}>
@@ -269,38 +364,199 @@ const InstructorAttendancePage = () => {
             {/* Rapor Tablosu */}
             {report.length > 0 && (
                 <div className="course-attendance-card" style={{ marginTop: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem' }}>
-                        Yoklama Raporu - {sessionInfo?.course_code} {sessionInfo?.course_name}
-                    </h3>
-                    <table className="attendance-table">
-                        <thead>
-                            <tr>
-                                <th>Öğrenci</th>
-                                <th>E-posta</th>
-                                <th>Durum</th>
-                                <th>Giriş Saati</th>
-                                <th>Mesafe (m)</th>
-                                <th>Devamsızlık</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {report.map(r => {
-                                const status = getStatusBadge(r.status);
-                                return (
-                                    <tr key={r.student_id}>
-                                        <td>{r.student_name}</td>
-                                        <td>{r.student_email}</td>
-                                        <td>
-                                            <span className={`status-badge ${status.class}`}>{status.text}</span>
-                                        </td>
-                                        <td>{r.check_in_time ? new Date(r.check_in_time).toLocaleTimeString('tr-TR') : '-'}</td>
-                                        <td>{r.distance ? r.distance.toFixed(1) : '-'}</td>
-                                        <td>{r.absence_hours_used} / {r.absence_limit} saat</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                    {/* Report Header */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '1.5rem',
+                        flexWrap: 'wrap',
+                        gap: '1rem'
+                    }}>
+                        <div>
+                            <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem' }}>
+                                📋 Yoklama Raporu
+                            </h3>
+                            <p style={{ margin: '0.5rem 0 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                                {sessionInfo?.course_code} - {sessionInfo?.course_name}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => handleFetchReport()}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                color: '#3b82f6',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                fontWeight: 500,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                        >
+                            🔄 Yenile
+                        </button>
+                    </div>
+
+                    {/* Stats Summary */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                        gap: '1rem',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            color: 'white',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 700 }}>
+                                {report.filter(r => r.status === 'PRESENT').length}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>✅ Katıldı</div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            color: 'white',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 700 }}>
+                                {report.filter(r => r.status === 'NOT_CHECKED_IN').length}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>⏳ Bekleniyor</div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            color: 'white',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 700 }}>
+                                {report.filter(r => r.status === 'ABSENT').length}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>❌ Gelmedi</div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            color: 'white',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 700 }}>
+                                {report.length > 0
+                                    ? Math.round((report.filter(r => r.status === 'PRESENT').length / report.length) * 100)
+                                    : 0}%
+                            </div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>📊 Katılım</div>
+                        </div>
+                    </div>
+
+                    {/* Enhanced Table */}
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{
+                            width: '100%',
+                            borderCollapse: 'separate',
+                            borderSpacing: '0'
+                        }}>
+                            <thead>
+                                <tr style={{ background: '#f8fafc' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Öğrenci</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Durum</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Giriş Saati</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Mesafe</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Devamsızlık</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {report.map((r, index) => {
+                                    const getStatusStyle = (status) => {
+                                        switch (status) {
+                                            case 'PRESENT': return { icon: '✅', text: 'Katıldı', color: '#22c55e', bg: 'rgba(34, 197, 94, 0.15)' };
+                                            case 'ABSENT': return { icon: '❌', text: 'Gelmedi', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' };
+                                            case 'NOT_CHECKED_IN': return { icon: '⏳', text: 'Bekleniyor', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' };
+                                            default: return { icon: '❓', text: status, color: '#6b7280', bg: 'rgba(107, 114, 128, 0.15)' };
+                                        }
+                                    };
+                                    const statusStyle = getStatusStyle(r.status);
+
+                                    return (
+                                        <tr
+                                            key={r.student_id}
+                                            style={{
+                                                background: index % 2 === 0 ? 'white' : '#f9fafb',
+                                                transition: 'background 0.2s'
+                                            }}
+                                        >
+                                            <td style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb' }}>
+                                                <div style={{ fontWeight: 600, color: '#1f2937' }}>{r.student_name}</div>
+                                                <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{r.student_email}</div>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
+                                                <span style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.35rem',
+                                                    padding: '0.35rem 0.75rem',
+                                                    borderRadius: '20px',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 500,
+                                                    background: statusStyle.bg,
+                                                    color: statusStyle.color
+                                                }}>
+                                                    {statusStyle.icon} {statusStyle.text}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
+                                                {r.check_in_time ? (
+                                                    <span style={{
+                                                        fontWeight: 600,
+                                                        color: '#1f2937',
+                                                        background: 'rgba(59, 130, 246, 0.1)',
+                                                        padding: '0.25rem 0.5rem',
+                                                        borderRadius: '6px'
+                                                    }}>
+                                                        🕐 {new Date(r.check_in_time).toLocaleTimeString('tr-TR')}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: '#9ca3af' }}>-</span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
+                                                {r.distance ? (
+                                                    <span style={{
+                                                        fontWeight: 600,
+                                                        color: r.distance <= 15 ? '#22c55e' : r.distance <= 30 ? '#f59e0b' : '#ef4444'
+                                                    }}>
+                                                        {r.distance.toFixed(1)}m
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: '#9ca3af' }}>-</span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
+                                                <span style={{
+                                                    fontWeight: 600,
+                                                    color: r.absence_hours_used >= r.absence_limit ? '#ef4444' : '#374151'
+                                                }}>
+                                                    {r.absence_hours_used} / {r.absence_limit}
+                                                </span>
+                                                <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}> saat</span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>

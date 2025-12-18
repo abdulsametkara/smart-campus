@@ -16,24 +16,23 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      employee_number: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        unique: true,
-      },
       title: {
         type: DataTypes.STRING(100),
-        allowNull: false,
+        allowNull: true,
       },
       department_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      office_hours: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       sequelize,
       modelName: 'Faculty',
-      tableName: 'faculty',
+      tableName: 'faculties',
       underscored: true,
     }
   );

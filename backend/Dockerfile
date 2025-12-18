@@ -6,8 +6,8 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for sequelize-cli)
-RUN npm ci
+# Install all dependencies (skip native builds for sqlite3)
+RUN npm install --ignore-scripts
 
 # Copy application files
 COPY . .
@@ -23,9 +23,9 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies and sequelize-cli for migrations
-RUN npm ci --only=production && \
-    npm install --save-prod sequelize-cli && \
+# Install production dependencies and sequelize-cli for migrations (skip native builds)
+RUN npm install --omit=dev --ignore-scripts && \
+    npm install --save-prod sequelize-cli --ignore-scripts && \
     npm cache clean --force
 
 # Copy application files from builder
@@ -37,6 +37,7 @@ COPY --from=builder /usr/src/app/jobs ./jobs
 COPY --from=builder /usr/src/app/routes ./routes
 COPY --from=builder /usr/src/app/scripts ./scripts
 COPY --from=builder /usr/src/app/config ./config
+COPY --from=builder /usr/src/app/tests ./tests
 
 # Create uploads directory
 RUN mkdir -p uploads

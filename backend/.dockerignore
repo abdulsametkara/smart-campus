@@ -4,8 +4,6 @@ npm-debug.log
 .git
 .gitignore
 README.md
-tests
 coverage
-*.test.js
 .editorconfig
 .vscode

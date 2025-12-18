@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import gradingService from '../services/gradingService';
 import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './StudentGradesPage.css';
 
 const StudentGradesPage = () => {
@@ -25,11 +26,24 @@ const StudentGradesPage = () => {
         }
     };
 
-    const handleExportPDF = () => {
-        window.print();
+    const handleExportPDF = async () => {
+        try {
+            const response = await gradingService.downloadTranscript();
+            // Create blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `transcript_${user?.student_number || 'student'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            console.error(err);
+            alert('PDF oluşturulurken hata oluştu.');
+        }
     };
 
-    if (loading) return <div className="loading-spinner">Yükleniyor...</div>;
+    if (loading) return <LoadingSpinner size="large" message="Notlar yükleniyor..." />;
     if (error) return <div className="error-message">{error}</div>;
 
     return (

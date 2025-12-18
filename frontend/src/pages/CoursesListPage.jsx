@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { coursesService } from '../services/academicService';
+import { coursesService, enrollmentsService } from '../services/academicService';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './CoursesListPage.css';
 
 const CoursesListPage = () => {
@@ -18,8 +19,29 @@ const CoursesListPage = () => {
     const fetchCourses = async () => {
         try {
             setLoading(true);
-            const data = await coursesService.getAll({ limit: 100 });
-            setCourses(Array.isArray(data) ? data : data.courses || []);
+
+            if (user?.role === 'student') {
+                const data = await enrollmentsService.getMyEnrollments();
+                const myCourses = (data.enrollments || []).map(e => {
+                    // Only show ACTIVE (approved) courses
+                    if (e.status !== 'ACTIVE') return null;
+
+                    // Extract course from enrollment -> section -> course
+                    const course = e.section?.course;
+                    return course ? {
+                        ...course,
+                        department: course.department
+                    } : null;
+                }).filter(Boolean);
+
+                // Remove duplicates if any (though technically shouldn't happen for active enrollments)
+                const uniqueCourses = Array.from(new Map(myCourses.map(c => [c.id, c])).values());
+                setCourses(uniqueCourses);
+            } else {
+                const data = await coursesService.getAll({ limit: 100 });
+                setCourses(Array.isArray(data) ? data : data.courses || []);
+            }
+
             setError(null);
         } catch (err) {
             setError(err.response?.data?.message || 'Dersler yüklenirken hata oluştu');
@@ -52,7 +74,7 @@ const CoursesListPage = () => {
                 <div className="page-header">
                     <h1>Dersler</h1>
                 </div>
-                <div className="loading-spinner">Yükleniyor...</div>
+                <LoadingSpinner size="large" message="Dersler yükleniyor..." />
             </div>
         );
     }

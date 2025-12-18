@@ -30,5 +30,7 @@ app.use('/api/v1/academic', require('./routes/academic.routes'));
 app.use('/api/v1/excuses', require('./routes/excuse.routes'));
 app.use('/api/v1/grading', require('./routes/grading.routes'));
 app.use('/api/v1/announcements', require('./routes/announcement.routes'));
+app.use('/api/v1/wallet', require('./routes/wallet.routes'));
+app.use('/api/v1/meals', require('./routes/meal.routes'));
 
 module.exports = app;

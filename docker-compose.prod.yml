@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: smart_campus_postgres
+    environment:
+      POSTGRES_DB: campus_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: campus123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - campus_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d campus_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: smart_campus_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_NAME=${DB_NAME:-campus_db}
+      - DB_USER=${DB_USER:-admin}
+      - DB_PASSWORD=${DB_PASSWORD:-campus123}
+    volumes:
+      - ./backend/uploads:/usr/src/app/uploads
+    networks:
+      - campus_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_API_URL=https://campyy.duckdns.org/api/v1
+    container_name: smart_campus_frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./frontend/nginx.prod.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+    networks:
+      - campus_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+
+networks:
+  campus_network:
+    driver: bridge

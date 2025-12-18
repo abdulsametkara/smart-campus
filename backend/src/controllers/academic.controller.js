@@ -176,7 +176,13 @@ exports.getSectionById = async (req, res) => {
                     model: Course,
                     as: 'course',
                     include: [
-                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] }
+                        { model: Department, as: 'department', attributes: ['id', 'name', 'code'] },
+                        {
+                            model: Course,
+                            as: 'Prerequisites',
+                            attributes: ['id', 'code', 'name', 'credits'],
+                            through: { attributes: [] }
+                        }
                     ]
                 },
                 {
@@ -625,18 +631,24 @@ exports.enrollToSection = async (req, res) => {
         }
 
         // 1. Check if already enrolled
+        // 1. Check if already enrolled
         const existingEnrollment = await Enrollment.findOne({
             where: {
                 student_id: studentId,
-                section_id: section_id,
-                status: 'ACTIVE'
+                section_id: section_id
             },
             transaction
         });
 
         if (existingEnrollment) {
-            await transaction.rollback();
-            return res.status(400).json({ message: 'You are already enrolled in this section' });
+            if (existingEnrollment.status === 'ACTIVE') {
+                await transaction.rollback();
+                return res.status(400).json({ message: 'You are already enrolled in this section' });
+            }
+            if (existingEnrollment.status === 'PENDING') {
+                await transaction.rollback();
+                return res.status(400).json({ message: 'Enrollment is already pending approval' });
+            }
         }
 
         // 2. Check prerequisites
@@ -677,12 +689,24 @@ exports.enrollToSection = async (req, res) => {
         }
 
         // 5. Create enrollment (PENDING for advisor approval)
-        const enrollment = await Enrollment.create({
-            student_id: studentId,
-            section_id: section_id,
-            status: 'PENDING',
-            enrollment_date: new Date()
-        }, { transaction });
+        // 5. Create or Update enrollment (PENDING for advisor approval)
+        let enrollment;
+        if (existingEnrollment) {
+            enrollment = await existingEnrollment.update({
+                status: 'PENDING',
+                enrollment_date: new Date(),
+                rejection_reason: null,
+                approved_by: null,
+                approved_at: null
+            }, { transaction });
+        } else {
+            enrollment = await Enrollment.create({
+                student_id: studentId,
+                section_id: section_id,
+                status: 'PENDING',
+                enrollment_date: new Date()
+            }, { transaction });
+        }
 
         await transaction.commit();
 
@@ -1232,9 +1256,11 @@ exports.updateSettings = async (req, res) => {
 exports.getAdvisorPendingEnrollments = async (req, res) => {
     try {
         const advisorUserId = req.user.id;
+        console.log(`[DEBUG] getAdvisorPendingEnrollments - UserID: ${advisorUserId}, Role: ${req.user.role}`);
 
         // Find faculty profile
         const facultyProfile = await Faculty.findOne({ where: { user_id: advisorUserId } });
+        console.log(`[DEBUG] getAdvisorPendingEnrollments - Profile found: ${!!facultyProfile}`);
         if (!facultyProfile) {
             return res.status(404).json({ message: 'Faculty profile not found' });
         }
@@ -1307,8 +1333,8 @@ exports.approveEnrollment = async (req, res) => {
             return res.status(403).json({ message: 'You are not the advisor for this student' });
         }
 
-        // Approve enrollment
-        enrollment.status = 'APPROVED';
+        // Approve enrollment - set to ACTIVE for system compatibility
+        enrollment.status = 'ACTIVE';
         enrollment.approved_by = advisorUserId;
         enrollment.approved_at = new Date();
         await enrollment.save();
@@ -1415,8 +1441,10 @@ exports.getMyAdvisor = async (req, res) => {
 exports.getMyAdvisees = async (req, res) => {
     try {
         const userId = req.user.id;
+        console.log(`[DEBUG] getMyAdvisees - UserID: ${userId}, Role: ${req.user.role}`);
 
         const facultyProfile = await Faculty.findOne({ where: { user_id: userId } });
+        console.log(`[DEBUG] getMyAdvisees - Profile found: ${!!facultyProfile}`);
 
         if (!facultyProfile) {
             return res.status(404).json({ message: 'Faculty profile not found' });
