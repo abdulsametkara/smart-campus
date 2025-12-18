@@ -66,7 +66,9 @@ class WalletService {
             const wallet = await this.getWallet(userId);
 
             if (parseFloat(wallet.balance) < parseFloat(amount)) {
-                throw new Error('Insufficient funds');
+                const error = new Error('Yetersiz Bakiye');
+                error.statusCode = 400; // Custom property to handle in controller
+                throw error;
             }
 
             // Deduct balance
