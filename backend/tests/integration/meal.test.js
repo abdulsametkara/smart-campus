@@ -3,6 +3,8 @@
  * Tests for Developer 1 Part 3: Meal Service & Wallet
  */
 
+process.env.NODE_ENV = 'test';
+
 const request = require('supertest');
 const app = require('../../src/app');
 const { User, Wallet, sequelize } = require('../../models');
@@ -25,6 +27,9 @@ describe('Meal Service Integration Tests', () => {
     // Setup: Create User
     beforeAll(async () => {
         try {
+            // Sync database to create tables (crucial for SQLite in-memory tests)
+            await sequelize.sync({ force: true });
+
             // Create user directly in DB
             const hashedPassword = await require('bcrypt').hash(testUser.password, 10);
             createdUser = await User.create({
