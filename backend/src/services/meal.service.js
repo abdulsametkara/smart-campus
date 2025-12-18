@@ -95,7 +95,7 @@ class MealService {
             });
 
             if (!reservation) throw new Error('Reservation not found');
-            if (reservation.status !== 'RESERVED') throw new Error('Cannot cancel this reservation');
+            if (reservation.status !== 'reserved') throw new Error('Cannot cancel this reservation');
 
             // Refund logic
             // Assuming fixed price 20.00 as per reservation logic
