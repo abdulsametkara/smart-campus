@@ -28,11 +28,14 @@ const AdminAcademicPage = () => {
             const res = await axios.get('http://localhost:5000/api/v1/academic/sections', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setSections(res.data);
+            // Ensure sections is always an array
+            const sectionsData = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.sections || []);
+            setSections(sectionsData);
             setLoading(false);
         } catch (err) {
             setError('Failed to load sections');
             setLoading(false);
+            setSections([]); // Ensure sections is always an array even on error
         }
     };
 
@@ -102,7 +105,12 @@ const AdminAcademicPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {sections.map(section => (
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center">Yükleniyor...</TableCell>
+                            </TableRow>
+                        ) : sections && Array.isArray(sections) && sections.length > 0 ? (
+                            sections.map(section => (
                             <TableRow key={section.id}>
                                 <TableCell>{section.id}</TableCell>
                                 <TableCell>{section.course?.code || '-'}</TableCell>
@@ -127,7 +135,14 @@ const AdminAcademicPage = () => {
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center">
+                                    {error || 'Henüz şube bulunmuyor'}
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </Paper>
