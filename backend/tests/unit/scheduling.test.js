@@ -33,7 +33,7 @@ describe('SchedulingService Unit Tests', () => {
 
         const result = await schedulingService.generateSchedule('2024-FALL');
         expect(result.success).toBe(false);
-        expect(result.message).toContain('No sections found');
+        expect(result.message).toContain('Bu dönem için henüz açılmış ders (section) bulunmuyor.');
     });
 
     it('should successfully schedule non-conflicting sections', async () => {
@@ -84,7 +84,7 @@ describe('SchedulingService Unit Tests', () => {
 
         // Should fail to find solution
         expect(result.success).toBe(false);
-        expect(result.message).toContain('Could not find a valid schedule');
+        expect(result.message).toContain('Uygun bir program oluşturulamadı');
     });
 
     it('should handle instructor conflict constraints', async () => {
