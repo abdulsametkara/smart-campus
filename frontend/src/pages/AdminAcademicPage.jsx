@@ -58,6 +58,44 @@ const AdminAcademicPage = () => {
     };
 
     const [enrollmentOpen, setEnrollmentOpen] = useState(true);
+    const [generating, setGenerating] = useState(false);
+
+    const handleAutoSchedule = async () => {
+        try {
+            const result = await Swal.fire({
+                title: 'Otomatik Programlama',
+                text: "Tüm dersler için en uygun zaman ve sınıflar hesaplanacak. Mevcut program silinip yeniden oluşturulacaktır. Bu işlem bir kaç dakika sürebilir. Devam edilsin mi?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, Başlat',
+                cancelButtonText: 'İptal'
+            });
+
+            if (result.isConfirmed) {
+                setGenerating(true);
+                // Call backend
+                const response = await sectionsService.generateSchedule();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'İşlem Başarılı!',
+                    text: `Program oluşturuldu. Çakışma Sayısı: ${response.conflicts || 0}`,
+                });
+                fetchData(); // Refresh list to show assigned slots if we display them
+            }
+        } catch (error) {
+            console.error('Schedule gen error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: error.response?.data?.message || 'Program oluşturulurken bir hata meydana geldi.'
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     useEffect(() => {
         fetchData();
@@ -171,14 +209,22 @@ const AdminAcademicPage = () => {
                 <h1>Akademik Yönetim</h1>
                 <p className="page-subtitle">Section'lara öğretim üyesi atayın ve öğrenci kaydedin</p>
 
-                <div className="header-actions" style={{ marginTop: '1rem' }}>
+                <div className="header-actions" style={{ marginTop: '1rem', display: 'flex', gap: '10px' }}>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleAutoSchedule}
+                        disabled={generating}
+                    >
+                        {generating ? 'Hesaplanıyor...' : '⚡ Programı Hesapla ve Dağıt'}
+                    </button>
+
                     <button
                         className={`btn ${enrollmentOpen ? 'btn-danger' : 'btn-success'}`}
                         onClick={handleToggleEnrollment}
                     >
                         {enrollmentOpen ? '🔴 Ders Kayıtlarını Kapat' : '🟢 Ders Kayıtlarını Aç'}
                     </button>
-                    <span style={{ marginLeft: '1rem', color: 'var(--text-muted)' }}>
+                    <span style={{ marginLeft: '1rem', color: 'var(--text-muted)', alignSelf: 'center' }}>
                         Durum: <strong>{enrollmentOpen ? 'Açık' : 'Kapalı'}</strong>
                     </span>
                 </div>
