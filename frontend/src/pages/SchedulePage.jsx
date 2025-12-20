@@ -154,6 +154,28 @@ const SchedulePage = () => {
                         user?.role === 'faculty' ? 'Verdiğiniz derslerin haftalık programı' :
                             'Tüm derslerin haftalık programı'}
                 </p>
+                <div style={{ marginTop: '1rem' }}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={async () => {
+                            try {
+                                const blob = await sectionsService.exportICal();
+                                const url = window.URL.createObjectURL(new Blob([blob]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', 'schedule.ics');
+                                document.body.appendChild(link);
+                                link.click();
+                                link.parentNode.removeChild(link);
+                            } catch (err) {
+                                console.error('Export failed', err);
+                                alert('Takvim indirilirken hata oluştu.');
+                            }
+                        }}
+                    >
+                        📅 Takvime Ekle (iCal)
+                    </button>
+                </div>
             </div>
 
             {error && (

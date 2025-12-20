@@ -152,9 +152,64 @@ class SchedulingService {
      */
     calculateScore(assignment) {
         let score = 0;
-        // Example: Penalize gaps between classes for the same group/semester (omitted for simplicity)
-        // Example: Prefer certain rooms for certain departments
+
+        // Soft Constraint: Minimize Gaps for Instructors
+        // 1. Group by Instructor -> Day -> Time Slots
+        const instructorSchedules = {};
+
+        for (const [sectionId, val] of Object.entries(assignment)) {
+            // val = { classroomId, day, start, end, instructorId }
+            if (!val.instructorId) continue;
+
+            if (!instructorSchedules[val.instructorId]) {
+                instructorSchedules[val.instructorId] = {};
+            }
+            if (!instructorSchedules[val.instructorId][val.day]) {
+                instructorSchedules[val.instructorId][val.day] = [];
+            }
+            instructorSchedules[val.instructorId][val.day].push(val);
+        }
+
+        // 2. Calculate Penalties
+        // For each instructor, for each day, sort slots by time and check gaps
+        for (const instructorId in instructorSchedules) {
+            for (const day in instructorSchedules[instructorId]) {
+                const slots = instructorSchedules[instructorId][day];
+
+                // Sort by start time
+                slots.sort((a, b) => a.start.localeCompare(b.start));
+
+                for (let i = 0; i < slots.length - 1; i++) {
+                    const current = slots[i];
+                    const next = slots[i + 1];
+
+                    // Check gap
+                    // current.end vs next.start
+                    // Assume format HH:MM
+                    const gap = this.calculateGapMinutes(current.end, next.start);
+
+                    if (gap > 60) { // Gap > 60 mins
+                        score -= 10; // Penalty
+                    } else if (gap > 20) {
+                        score -= 2; // Small penalty for medium gaps
+                    } else {
+                        score += 5; // Bonus for compact schedule
+                    }
+                }
+            }
+        }
+
         return score;
+    }
+
+    calculateGapMinutes(endTime, startTime) {
+        const [endH, endM] = endTime.split(':').map(Number);
+        const [startH, startM] = startTime.split(':').map(Number);
+
+        const endMinutes = endH * 60 + endM;
+        const startMinutes = startH * 60 + startM;
+
+        return startMinutes - endMinutes;
     }
 
     /**

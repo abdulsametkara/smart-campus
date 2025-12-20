@@ -85,6 +85,15 @@ export const sectionsService = {
   generateSchedule: async (semester = '2025-SPRING') => {
     const response = await api.post('/scheduling/generate', { semester });
     return response.data;
+  },
+
+  // Export iCal
+  exportICal: async (semester = '2025-SPRING') => {
+    // requesting blob response
+    const response = await api.get(`/scheduling/export/ical?semester=${semester}`, {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 };
 
