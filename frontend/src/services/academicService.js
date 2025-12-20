@@ -79,6 +79,12 @@ export const sectionsService = {
   updateSettings: async (key, value) => {
     const response = await api.put('/academic/settings', { key, value });
     return response.data;
+  },
+
+  // Trigger auto scheduling
+  generateSchedule: async (semester = '2025-SPRING') => {
+    const response = await api.post('/scheduling/generate', { semester });
+    return response.data;
   }
 };
 
