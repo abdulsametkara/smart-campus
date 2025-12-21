@@ -120,10 +120,14 @@ class EventService {
      */
     async registerToEvent(userId, eventId, customFields = {}) {
         const t = await sequelize.transaction();
+        let event;
+        let registration;
+        let qrImage;
+        let isWaitlisted = false;
 
         try {
             // 1. Get event
-            const event = await Event.findByPk(eventId, { transaction: t });
+            event = await Event.findByPk(eventId, { transaction: t });
             if (!event) {
                 throw new Error('Event not found');
             }
@@ -160,7 +164,7 @@ class EventService {
                 transaction: t
             });
 
-            let isWaitlisted = false;
+            isWaitlisted = false;
             if (currentRegistrations >= event.capacity) {
                 // Capacity full - add to waitlist (bonus feature)
                 isWaitlisted = true;
@@ -183,10 +187,10 @@ class EventService {
                 timestamp: Date.now()
             };
             const qrCodeString = JSON.stringify(qrData);
-            const qrImage = await qrService.generate(qrData);
+            qrImage = await qrService.generate(qrData);
 
             // 8. Create registration
-            const registration = await EventRegistration.create({
+            registration = await EventRegistration.create({
                 event_id: eventId,
                 user_id: userId,
                 registration_date: new Date(),
@@ -201,22 +205,27 @@ class EventService {
             }
 
             await t.commit();
-
-            // 10. Send confirmation email with QR code
-            const user = await User.findByPk(userId);
-            if (user && user.email) {
-                await this.sendRegistrationEmail(user, event, registration, qrImage, isWaitlisted);
-            }
-
-            return {
-                registration,
-                qrCode: qrImage,
-                isWaitlisted
-            };
         } catch (error) {
             await t.rollback();
             throw error;
         }
+
+        // 10. Send confirmation email (outside transaction)
+        try {
+            const user = await User.findByPk(userId);
+            if (user && user.email) {
+                await this.sendRegistrationEmail(user, event, registration, qrImage, isWaitlisted);
+            }
+        } catch (emailError) {
+            console.error('Failed to send registration email:', emailError);
+            // Don't fail the request if email fails
+        }
+
+        return {
+            registration,
+            qrCode: qrImage,
+            isWaitlisted
+        };
     }
 
     /**
@@ -224,9 +233,11 @@ class EventService {
      */
     async cancelRegistration(userId, eventId, registrationId) {
         const t = await sequelize.transaction();
+        let registration;
+        let event;
 
         try {
-            const registration = await EventRegistration.findOne({
+            registration = await EventRegistration.findOne({
                 where: {
                     id: registrationId,
                     event_id: eventId,
@@ -245,7 +256,7 @@ class EventService {
                 throw new Error('Cannot cancel checked-in registration');
             }
 
-            const event = registration.event;
+            event = registration.event;
 
             // Refund if paid
             if (event.is_paid && event.price > 0) {
@@ -265,18 +276,22 @@ class EventService {
             // TODO: If waitlist exists, notify next person (bonus feature)
 
             await t.commit();
-
-            // Send cancellation email
-            const user = await User.findByPk(userId);
-            if (user && user.email) {
-                await this.sendCancellationEmail(user, event);
-            }
-
-            return { message: 'Registration cancelled successfully' };
         } catch (error) {
             await t.rollback();
             throw error;
         }
+
+        // Send cancellation email (outside transaction)
+        try {
+            const user = await User.findByPk(userId);
+            if (user && user.email) {
+                await this.sendCancellationEmail(user, event);
+            }
+        } catch (emailError) {
+            console.error('Failed to send cancellation email:', emailError);
+        }
+
+        return { message: 'Registration cancelled successfully' };
     }
 
     /**
@@ -308,8 +323,8 @@ class EventService {
             // Validate QR code
             let qrData;
             try {
-                qrData = typeof qrCodeData === 'string' 
-                    ? JSON.parse(qrCodeData) 
+                qrData = typeof qrCodeData === 'string'
+                    ? JSON.parse(qrCodeData)
                     : qrCodeData;
             } catch (error) {
                 throw new Error('Invalid QR code format');
@@ -334,7 +349,7 @@ class EventService {
 
             // Validate QR code matches
             const storedQrData = JSON.parse(registration.qr_code);
-            if (storedQrData.eventId !== qrData.eventId || 
+            if (storedQrData.eventId !== qrData.eventId ||
                 storedQrData.userId !== qrData.userId) {
                 throw new Error('QR code does not match registration');
             }

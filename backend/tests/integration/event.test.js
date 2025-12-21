@@ -6,6 +6,14 @@
 process.env.NODE_ENV = 'test';
 
 const request = require('supertest');
+
+// Mock nodemailer
+jest.mock('nodemailer', () => ({
+    createTransport: jest.fn().mockReturnValue({
+        sendMail: jest.fn().mockResolvedValue(true)
+    })
+}));
+
 const app = require('../../src/app');
 const { User, Event, EventRegistration, Wallet, sequelize } = require('../../models');
 
