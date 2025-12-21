@@ -72,7 +72,6 @@ const AdminAcademicPage = () => {
                 confirmButtonText: 'Evet, Başlat',
                 cancelButtonText: 'İptal'
             });
-
             if (result.isConfirmed) {
                 setGenerating(true);
                 // Call backend
@@ -375,108 +374,114 @@ const AdminAcademicPage = () => {
             </div>
 
             {/* Assign Instructor Modal */}
-            {showAssignModal && (
-                <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Öğretim Üyesi Ata</h2>
-                            <button className="modal-close" onClick={() => setShowAssignModal(false)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="modal-info">
-                                <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
-                                <br />
-                                Section {selectedSection?.section_number}
-                            </p>
-                            <div className="form-group">
-                                <label>Öğretim Üyesi Seçin</label>
-                                <select
-                                    value={selectedInstructor}
-                                    onChange={(e) => setSelectedInstructor(e.target.value)}
-                                >
-                                    <option value="">Seçiniz...</option>
-                                    {faculty.map(f => (
-                                        <option key={f.id} value={f.id}>
-                                            {f.full_name} ({f.email})
-                                        </option>
-                                    ))}
-                                </select>
+            {
+                showAssignModal && (
+                    <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
+                        <div className="modal" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Öğretim Üyesi Ata</h2>
+                                <button className="modal-close" onClick={() => setShowAssignModal(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="modal-info">
+                                    <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
+                                    <br />
+                                    Section {selectedSection?.section_number}
+                                </p>
+                                <div className="form-group">
+                                    <label>Öğretim Üyesi Seçin</label>
+                                    <select
+                                        value={selectedInstructor}
+                                        onChange={(e) => setSelectedInstructor(e.target.value)}
+                                    >
+                                        <option value="">Seçiniz...</option>
+                                        {faculty.map(f => (
+                                            <option key={f.id} value={f.id}>
+                                                {f.full_name} ({f.email})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn secondary" onClick={() => setShowAssignModal(false)}>İptal</button>
+                                <button className="btn" onClick={handleAssignInstructor}>Ata</button>
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            <button className="btn secondary" onClick={() => setShowAssignModal(false)}>İptal</button>
-                            <button className="btn" onClick={handleAssignInstructor}>Ata</button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Enroll Student Modal */}
-            {showEnrollModal && (
-                <div className="modal-overlay" onClick={() => setShowEnrollModal(false)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Öğrenci Kaydet</h2>
-                            <button className="modal-close" onClick={() => setShowEnrollModal(false)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="modal-info">
-                                <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
-                                <br />
-                                Section {selectedSection?.section_number}
-                            </p>
-                            <div className="form-group">
-                                <label>Öğrenci E-postası</label>
-                                <input
-                                    type="email"
-                                    value={studentEmail}
-                                    onChange={(e) => setStudentEmail(e.target.value)}
-                                    placeholder="ornek@ogrenci.edu.tr"
-                                />
+            {
+                showEnrollModal && (
+                    <div className="modal-overlay" onClick={() => setShowEnrollModal(false)}>
+                        <div className="modal" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Öğrenci Kaydet</h2>
+                                <button className="modal-close" onClick={() => setShowEnrollModal(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="modal-info">
+                                    <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
+                                    <br />
+                                    Section {selectedSection?.section_number}
+                                </p>
+                                <div className="form-group">
+                                    <label>Öğrenci E-postası</label>
+                                    <input
+                                        type="email"
+                                        value={studentEmail}
+                                        onChange={(e) => setStudentEmail(e.target.value)}
+                                        placeholder="ornek@ogrenci.edu.tr"
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn secondary" onClick={() => setShowEnrollModal(false)}>İptal</button>
+                                <button className="btn" onClick={handleEnrollStudent}>Kaydet</button>
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            <button className="btn secondary" onClick={() => setShowEnrollModal(false)}>İptal</button>
-                            <button className="btn" onClick={handleEnrollStudent}>Kaydet</button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* View Students Modal */}
-            {showStudentsModal && (
-                <div className="modal-overlay" onClick={() => setShowStudentsModal(false)}>
-                    <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Kayıtlı Öğrenciler</h2>
-                            <button className="modal-close" onClick={() => setShowStudentsModal(false)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="modal-info">
-                                <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
-                                <br />
-                                Section {selectedSection?.section_number}
-                            </p>
-                            {sectionStudents.length === 0 ? (
-                                <p className="empty-message">Henüz kayıtlı öğrenci yok</p>
-                            ) : (
-                                <ul className="students-list">
-                                    {sectionStudents.map(student => (
-                                        <li key={student.id}>
-                                            <span className="student-name">{student.full_name}</span>
-                                            <span className="student-email">{student.email}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn secondary" onClick={() => setShowStudentsModal(false)}>Kapat</button>
+            {
+                showStudentsModal && (
+                    <div className="modal-overlay" onClick={() => setShowStudentsModal(false)}>
+                        <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Kayıtlı Öğrenciler</h2>
+                                <button className="modal-close" onClick={() => setShowStudentsModal(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="modal-info">
+                                    <strong>{selectedSection?.course?.code} - {selectedSection?.course?.name}</strong>
+                                    <br />
+                                    Section {selectedSection?.section_number}
+                                </p>
+                                {sectionStudents.length === 0 ? (
+                                    <p className="empty-message">Henüz kayıtlı öğrenci yok</p>
+                                ) : (
+                                    <ul className="students-list">
+                                        {sectionStudents.map(student => (
+                                            <li key={student.id}>
+                                                <span className="student-name">{student.full_name}</span>
+                                                <span className="student-email">{student.email}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn secondary" onClick={() => setShowStudentsModal(false)}>Kapat</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

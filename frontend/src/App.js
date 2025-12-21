@@ -39,6 +39,11 @@ import MyAdviseesPage from './pages/MyAdviseesPage';
 import WalletPage from './pages/WalletPage';
 import MenuPage from './pages/meals/MenuPage';
 import MyReservationsPage from './pages/meals/MyReservationsPage';
+import EventsPage from './pages/events/EventsPage';
+import EventDetailsPage from './pages/events/EventDetailsPage';
+import MyEventsPage from './pages/events/MyEventsPage';
+import EventCheckInPage from './pages/events/EventCheckInPage';
+import EventManagementPage from './pages/events/EventManagementPage';
 import './App.css';
 
 // Mobile Header Component
@@ -367,6 +372,55 @@ function AppContent() {
               }
             />
 
+            {/* Event Routes */}
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <EventsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/manage"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <EventManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <EventDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-events"
+              element={
+                <ProtectedRoute>
+                  <MyEventsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/checkin"
+              element={
+                <ProtectedRoute roles={['admin', 'faculty']}>
+                  <EventCheckInPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:eventId/checkin/:regId"
+              element={
+                <ProtectedRoute roles={['admin', 'faculty']}>
+                  <EventCheckInPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

@@ -42,6 +42,21 @@ const Sidebar = ({ isOpen, onClose }) => {
             ]
         });
 
+        // Etkinlikler - All users
+        items.push({
+            id: 'etkinlikler',
+            label: 'Etkinlikler',
+            children: [
+                { path: '/events', label: 'Tüm Etkinlikler' },
+                { path: '/my-events', label: 'Etkinliklerim' },
+                ...(user?.role === 'admin'
+                    ? [{ path: '/events/manage', label: 'Etkinlik Yönetimi' }]
+                    : []),
+                ...(user?.role === 'admin' || user?.role === 'faculty'
+                    ? [{ path: '/events/checkin', label: 'Check-in (QR)' }]
+                    : [])
+            ]
+        });
         // Akademik - All users
         items.push({
             id: 'akademik',

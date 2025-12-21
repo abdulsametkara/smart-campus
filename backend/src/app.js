@@ -32,6 +32,11 @@ app.use('/api/v1/grading', require('./routes/grading.routes'));
 app.use('/api/v1/announcements', require('./routes/announcement.routes'));
 app.use('/api/v1/wallet', require('./routes/wallet.routes'));
 app.use('/api/v1/meals', require('./routes/meal.routes'));
+
+// Events Routes (Developer 2)
+app.use('/api/v1/events', require('./routes/event.routes'));
+
+// Scheduling & Reservation Routes (Developer 3)
 app.use('/api/v1/scheduling', require('./routes/scheduling.routes'));
 app.use('/api/v1/reservations', require('./routes/reservation.routes'));
 
