@@ -16,6 +16,21 @@ jobs:
       matrix:
         node-version: [18.x, 20.x]
 
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: campus_db_test
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
     
@@ -29,6 +44,11 @@ jobs:
 
     - name: Backend Install & Test
       working-directory: ./backend
+      env:
+        DB_HOST: localhost
+        DB_USER: admin
+        DB_PASSWORD: test_password
+        DB_NAME_TEST: campus_db_test
       run: |
         npm install
         echo "NODE_ENV=test" >> .env
