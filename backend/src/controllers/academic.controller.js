@@ -740,7 +740,9 @@ exports.getMyEnrollments = async (req, res) => {
     try {
         const studentId = req.user.id;
 
+        // Role check is already done by authorize middleware, but keep for extra safety
         if (req.user.role !== 'student') {
+            console.warn('[getMyEnrollments] Role mismatch:', req.user.role);
             return res.status(403).json({ message: 'Only students can view their enrollments' });
         }
 

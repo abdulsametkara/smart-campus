@@ -20,9 +20,24 @@ const authenticate = (req, res, next) => {
 };
 
 const authorize = (...roles) => (req, res, next) => {
-  if (!req.user || !roles.includes(req.user.role)) {
-    return res.status(403).json({ message: 'Forbidden' });
+  // Debug logging
+  console.log('[Authorize Middleware]', {
+    user: req.user ? { id: req.user.id, role: req.user.role } : 'No user',
+    requiredRoles: roles,
+    hasAccess: req.user && roles.includes(req.user.role)
+  });
+
+  if (!req.user) {
+    return res.status(403).json({ message: 'Forbidden: No user found' });
   }
+
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ 
+      message: 'Forbidden', 
+      details: `Required roles: ${roles.join(', ')}, Your role: ${req.user.role}` 
+    });
+  }
+
   return next();
 };
 

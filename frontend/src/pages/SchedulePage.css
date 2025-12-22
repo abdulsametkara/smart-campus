@@ -306,6 +306,78 @@
     }
 }
 
+/* Reservation Items */
+.reservation-item {
+    background: #3b82f6 !important;
+    color: white !important;
+    border: 1px solid #2563eb;
+}
+
+.reservation-item.status-pending {
+    background: #f59e0b !important;
+    border-color: #d97706;
+    color: white !important;
+}
+
+.reservation-item.status-approved {
+    background: #10b981 !important;
+    border-color: #059669;
+    color: white !important;
+}
+
+.reservation-item.status-rejected {
+    background: #ef4444 !important;
+    border-color: #dc2626;
+    color: white !important;
+}
+
+.reservation-item.status-cancelled {
+    background: #6b7280 !important;
+    border-color: #4b5563;
+    color: white !important;
+}
+
+.reservation-item .schedule-item-name,
+.reservation-item .schedule-item-time,
+.reservation-item .schedule-item-room {
+    color: white !important;
+    opacity: 1 !important;
+}
+
+.reservation-item .status-badge {
+    margin-top: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .schedule-page {

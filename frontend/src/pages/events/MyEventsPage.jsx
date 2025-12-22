@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import eventService from '../../services/eventService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { QRCodeSVG } from 'qrcode.react';
-import Swal from 'sweetalert2';
+import NotificationService from '../../services/notificationService';
+import QrCodeService from '../../services/qrCodeService';
 import './MyEventsPage.css';
 
 const MyEventsPage = () => {
@@ -23,7 +24,7 @@ const MyEventsPage = () => {
       setRegistrations(data);
     } catch (error) {
       console.error('Error fetching registrations:', error);
-      Swal.fire('Hata', 'Kayıtlarınız yüklenemedi', 'error');
+      NotificationService.error('Hata', 'Kayıtlarınız yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -31,23 +32,23 @@ const MyEventsPage = () => {
 
   const handleCancelRegistration = async (eventId, registrationId) => {
     try {
-      const result = await Swal.fire({
-        title: 'Kaydı İptal Et?',
-        text: 'Etkinlik kaydınızı iptal etmek istediğinize emin misiniz?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Evet, İptal Et',
-        cancelButtonText: 'Vazgeç'
-      });
+      const result = await NotificationService.confirm(
+        'Kaydı İptal Et?',
+        'Etkinlik kaydınızı iptal etmek istediğinize emin misiniz?',
+        {
+          confirmButtonText: 'Evet, İptal Et',
+          cancelButtonText: 'Vazgeç'
+        }
+      );
 
       if (result.isConfirmed) {
         await eventService.cancelRegistration(eventId, registrationId);
-        Swal.fire('Başarılı', 'Kayıt iptal edildi', 'success');
+        NotificationService.success('Başarılı', 'Kayıt iptal edildi');
         fetchRegistrations();
       }
     } catch (error) {
       console.error('Error cancelling registration:', error);
-      Swal.fire('Hata', error.response?.data?.message || 'İptal sırasında bir hata oluştu', 'error');
+      NotificationService.error('Hata', error.response?.data?.message || 'İptal sırasında bir hata oluştu');
     }
   };
 
@@ -73,15 +74,13 @@ const MyEventsPage = () => {
         return registration.qr_code;
       }
       // Fallback: construct QR data from registration info
-      return JSON.stringify({
-        type: 'event',
+      return QrCodeService.buildEventPayload({
         eventId: registration.event_id,
         userId: registration.user_id,
         registrationId: registration.id
       });
     } catch (error) {
-      return JSON.stringify({
-        type: 'event',
+      return QrCodeService.buildEventPayload({
         eventId: registration.event_id,
         registrationId: registration.id
       });

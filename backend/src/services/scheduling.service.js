@@ -5,9 +5,12 @@ class SchedulingService {
     /**
      * Generate schedule for a given semester using CSP (Constraint Satisfaction Problem) approach.
      * @param {string} semester - e.g., "2024-FALL"
+     * @param {Object} options - Configuration options
+     * @param {boolean} options.overwriteExisting - Whether to overwrite existing schedules
+     * @param {string} options.preferredTimeSlot - 'morning', 'afternoon', or 'any'
      * @returns {Promise<Object>} - Result summary
      */
-    async generateSchedule(semester) {
+    async generateSchedule(semester, options = {}) {
         try {
             console.log(`[DEBUG] Starting schedule generation for semester: "${semester}"`);
 
@@ -41,7 +44,7 @@ class SchedulingService {
 
             // 3. Run Backtracking Algorithm
             console.log('[DEBUG] Starting solver...');
-            const assignment = await this.solve(variables, classrooms, {});
+            const assignment = await this.solve(variables, classrooms, {}, options);
 
             if (!assignment) {
                 console.log('[DEBUG] Solver could not find a solution.');
@@ -51,9 +54,19 @@ class SchedulingService {
             console.log(`[DEBUG] Solution found with ${Object.keys(assignment).length} assignments.`);
 
             // 4. Save Solution to Database
-            await this.saveSchedule(assignment, semester);
+            await this.saveSchedule(assignment, semester, options);
 
-            return { success: true, message: 'Ders programı başarıyla oluşturuldu.', assignmentCount: Object.keys(assignment).length };
+            const assignmentCount = Object.keys(assignment).length;
+            const totalSections = sections.length;
+            const unassignedCount = totalSections - assignmentCount;
+
+            return { 
+                success: true, 
+                message: `Ders programı başarıyla oluşturuldu. ${assignmentCount} ders atandı${unassignedCount > 0 ? `, ${unassignedCount} ders atanamadı` : ''}.`, 
+                assignmentCount,
+                totalSections,
+                unassignedCount
+            };
 
         } catch (error) {
             console.error('[DEBUG] CRITICAL ERROR in generateSchedule:', error);
@@ -68,7 +81,7 @@ class SchedulingService {
      * @param {Object} currentAssignment - Current state of assignments { sectionId: { roomId, day, start, end } }
      * @returns {Object|null} - Complete assignment or null if failure
      */
-    async solve(variables, classrooms, currentAssignment) {
+    async solve(variables, classrooms, currentAssignment, options = {}) {
         // Base case: All variables assigned
         if (Object.keys(currentAssignment).length === variables.length) {
             return currentAssignment;
@@ -80,7 +93,7 @@ class SchedulingService {
 
         // Define Domain for this variable (Time Slots * Classrooms)
         // This is a simplified domain generation. In reality, we might iterate efficiently.
-        const domain = this.generateDomain(unassignedVar, classrooms);
+        const domain = this.generateDomain(unassignedVar, classrooms, options);
 
         for (const value of domain) {
             // Value = { classroomId, day, start, end }
@@ -216,14 +229,37 @@ class SchedulingService {
      * Generate possible assignments (Domain) for a variable.
      * @returns {Array} List of { classroomId, day, start, end, classroomObj, instructorId }
      */
-    generateDomain(variable, classrooms) {
+    generateDomain(variable, classrooms, options = {}) {
         const domain = [];
         const days = [1, 2, 3, 4, 5]; // Mon-Fri
-        const timeSlots = [
-            { start: '09:00', end: '11:50' }, // Morning block
-            { start: '13:00', end: '15:50' }, // Afternoon block
-            // Add more granular slots as needed
-        ];
+        
+        // Time slots based on preference
+        let timeSlots = [];
+        const { preferredTimeSlot = 'any' } = options;
+        
+        if (preferredTimeSlot === 'morning') {
+            timeSlots = [
+                { start: '09:00', end: '11:50' }, // Morning block
+                { start: '08:00', end: '10:50' }, // Early morning
+                { start: '10:00', end: '12:50' }  // Late morning
+            ];
+        } else if (preferredTimeSlot === 'afternoon') {
+            timeSlots = [
+                { start: '13:00', end: '15:50' }, // Afternoon block
+                { start: '14:00', end: '16:50' }, // Late afternoon
+                { start: '15:00', end: '17:50' }  // Evening
+            ];
+        } else {
+            // Any time - include all slots
+            timeSlots = [
+                { start: '09:00', end: '11:50' }, // Morning block
+                { start: '13:00', end: '15:50' }, // Afternoon block
+                { start: '08:00', end: '10:50' }, // Early morning
+                { start: '10:00', end: '12:50' }, // Late morning
+                { start: '14:00', end: '16:50' }, // Late afternoon
+                { start: '15:00', end: '17:50' }  // Evening
+            ];
+        }
 
         for (const room of classrooms) {
             // Pre-filter by capacity to reduce domain size early
@@ -253,27 +289,63 @@ class SchedulingService {
         return (slot1.start < slot2.end && slot1.end > slot2.start);
     }
 
-    async saveSchedule(assignment, semester) {
+    async saveSchedule(assignment, semester, options = {}) {
         const transaction = await require('../../models').sequelize.transaction();
         try {
-            // First clear existing schedules for this semester if re-generating?
-            // Or maybe this is an append operation. For DB safety, let's assume overwrite for the sections involved.
+            const { overwriteExisting = true } = options;
+
+            // Clear existing schedules for this semester if overwriting
+            if (overwriteExisting) {
+                // Get section IDs that will be updated
+                const sectionIds = Object.keys(assignment).map(id => parseInt(id));
+                
+                // Delete existing Schedule entries for these sections
+                await Schedule.destroy({
+                    where: { section_id: { [Op.in]: sectionIds } },
+                    transaction
+                });
+            }
 
             const scheduleEntries = [];
+            const sectionUpdates = {}; // To update CourseSection.schedule JSONB
+
             for (const [sectionId, val] of Object.entries(assignment)) {
+                const sectionIdNum = parseInt(sectionId);
+                
+                // Add to Schedule table
                 scheduleEntries.push({
-                    section_id: sectionId,
+                    section_id: sectionIdNum,
                     classroom_id: val.classroomId,
                     day_of_week: val.day,
                     start_time: val.start,
                     end_time: val.end
                 });
+
+                // Prepare CourseSection.schedule update (JSONB format)
+                if (!sectionUpdates[sectionIdNum]) {
+                    sectionUpdates[sectionIdNum] = [];
+                }
+                
+                // Map day_of_week (1-5) to day name (Monday-Friday)
+                const dayMap = { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday' };
+                sectionUpdates[sectionIdNum].push({
+                    day: dayMap[val.day] || 'Monday',
+                    start: val.start,
+                    end: val.end,
+                    room_id: val.classroomId
+                });
             }
 
-            // Bulk Create
+            // Bulk Create Schedule entries
             await Schedule.bulkCreate(scheduleEntries, { transaction });
 
-            // Also update CourseSection json if needed, or rely on Schedule table (Schedule table is better relationally)
+            // Update CourseSection.schedule JSONB fields
+            for (const [sectionId, scheduleArray] of Object.entries(sectionUpdates)) {
+                await CourseSection.update(
+                    { schedule: scheduleArray },
+                    { where: { id: parseInt(sectionId) }, transaction }
+                );
+            }
 
             await transaction.commit();
         } catch (error) {

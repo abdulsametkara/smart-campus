@@ -130,7 +130,7 @@ const MyReservationsPage = () => {
                                 <div className="ticket-body">
                                     <div className="menu-preview">
                                         <h4>{res.menu?.cafeteria?.name || 'Ana Yemekhane'}</h4>
-                                        <p>Öğle Yemeği</p>
+                                        <p>{res.menu?.meal_type === 'dinner' ? '🌙 Akşam Yemeği' : '🍽️ Öğle Yemeği'}</p>
                                         {res.status?.toLowerCase() === 'used' && (
                                             <div className="used-message">
                                                 <span className="used-icon">✓</span>

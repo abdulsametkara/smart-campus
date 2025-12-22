@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         cafeteria_id: DataTypes.INTEGER,
         meal_type: DataTypes.ENUM('lunch', 'dinner'),
         date: DataTypes.DATEONLY,
-        qr_code: DataTypes.STRING,
+        qr_code: DataTypes.TEXT, // Changed from STRING to TEXT to support base64 QR codes
         status: {
             type: DataTypes.ENUM('reserved', 'used', 'cancelled'),
             defaultValue: 'reserved'

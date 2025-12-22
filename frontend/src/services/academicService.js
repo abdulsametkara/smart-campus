@@ -82,8 +82,12 @@ export const sectionsService = {
   },
 
   // Trigger auto scheduling
-  generateSchedule: async (semester = '2025-SPRING') => {
-    const response = await api.post('/scheduling/generate', { semester });
+  generateSchedule: async (semester = '2025-SPRING', options = {}) => {
+    const response = await api.post('/scheduling/generate', { 
+      semester,
+      overwriteExisting: options.overwriteExisting !== false,
+      preferredTimeSlot: options.preferredTimeSlot || 'any'
+    });
     return response.data;
   },
 

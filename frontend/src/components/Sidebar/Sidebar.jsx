@@ -22,22 +22,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     const getMenuItems = () => {
         const items = [];
 
-        // Ders Programı - first for visibility
-        if (user?.role !== 'admin') {
-            items.push({
-                id: 'program',
-                label: 'Ders Programı',
-                path: '/schedule'
-            });
-        }
-
         // Yemekhane & Cüzdan - All users
         items.push({
             id: 'yemek',
             label: 'Yemekhane',
             children: [
                 { path: '/meals/menu', label: 'Menü' },
-                { path: '/meals/reservations', label: 'Rezervasyonlarım' },
+                { path: '/meals/reservations', label: 'Yemek Rezervasyonlarım' },
                 { path: '/wallet', label: 'Cüzdanım' }
             ]
         });
@@ -62,11 +53,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             id: 'akademik',
             label: 'Akademik',
             children: [
+                { path: '/schedule', label: 'Ders Programı' },
                 { path: '/courses', label: 'Dersler' },
                 user?.role === 'student'
                     ? { path: '/sections', label: 'Derse Kayıt' }
                     : { path: '/sections', label: 'Sections' },
-                { path: '/academic/calendar', label: 'Akademik Takvim' }
+                { path: '/academic/calendar', label: 'Akademik Takvim' },
+                { path: '/reservations', label: 'Sınıf Rezervasyonları' }
             ]
         });
 
@@ -144,7 +137,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                 children: [
                     { path: '/admin/users', label: 'Kullanıcılar' },
                     { path: '/admin/logs', label: 'Sistem Logları' },
-                    { path: '/admin/academic', label: 'Akademik Yönetim' }
+                    { path: '/admin/academic', label: 'Akademik Yönetim' },
+                    { path: '/admin/scheduling/generate', label: 'Program Oluşturma' },
+                    { path: '/admin/reservations', label: 'Rezervasyon Yönetimi' },
+                    { path: '/admin/meals/menus', label: 'Yemek Menüsü Yönetimi' }
                 ]
             });
         }

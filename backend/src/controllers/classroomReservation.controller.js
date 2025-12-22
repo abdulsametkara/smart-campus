@@ -7,12 +7,35 @@ class ClassroomReservationController {
     async createReservation(req, res) {
         try {
             const { classroom_id, date, start_time, end_time, purpose } = req.body;
-            const user_id = req.user.id; // Assuming auth middleware sets req.user
+            
+            // Validate required fields
+            if (!classroom_id || !date || !start_time || !end_time || !purpose) {
+                return res.status(400).json({ message: 'Tüm alanlar zorunludur.' });
+            }
+
+            // Validate user is authenticated
+            if (!req.user || !req.user.id) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+            // Only students and faculty can create reservations (admin should approve, not create)
+            if (req.user.role !== 'student' && req.user.role !== 'faculty') {
+                return res.status(403).json({ 
+                    message: 'Rezervasyon oluşturmak için öğrenci veya öğretim görevlisi olmanız gerekir. Yöneticiler rezervasyon onaylamak için yönetim sayfasını kullanabilir.' 
+                });
+            }
+
+            const user_id = req.user.id;
+
+            // Validate time format and logic
+            if (start_time >= end_time) {
+                return res.status(400).json({ message: 'Başlangıç saati bitiş saatinden önce olmalıdır.' });
+            }
 
             // Check if room exists
             const classroom = await Classroom.findByPk(classroom_id);
             if (!classroom) {
-                return res.status(404).json({ message: 'Classroom not found' });
+                return res.status(404).json({ message: 'Sınıf bulunamadı.' });
             }
 
             // Check for conflicts with existing APPROVED reservations
@@ -29,7 +52,7 @@ class ClassroomReservationController {
             });
 
             if (existing) {
-                return res.status(409).json({ message: 'Room is already reserved for this time slot.' });
+                return res.status(409).json({ message: 'Bu saat dilimi için sınıf zaten rezerve edilmiş.' });
             }
 
             // Create reservation
@@ -43,14 +66,25 @@ class ClassroomReservationController {
                 status: 'pending' // Defaults to pending
             });
 
+            // Fetch reservation with related data
+            const reservationWithDetails = await Reservation.findByPk(reservation.id, {
+                include: [
+                    { model: Classroom, as: 'classroom', attributes: ['id', 'name', 'building', 'room_number', 'capacity'] },
+                    { model: User, as: 'user', attributes: ['id', 'full_name', 'email'] }
+                ]
+            });
+
             return res.status(201).json({
-                message: 'Reservation request created successfully.',
-                reservation
+                message: 'Rezervasyon talebi başarıyla oluşturuldu.',
+                reservation: reservationWithDetails
             });
 
         } catch (error) {
             console.error('Error creating reservation:', error);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({ 
+                message: 'Rezervasyon oluşturulurken bir hata oluştu.',
+                error: error.message 
+            });
         }
     }
 
@@ -70,8 +104,8 @@ class ClassroomReservationController {
             const reservations = await Reservation.findAll({
                 where: whereClause,
                 include: [
-                    { model: Classroom, as: 'classroom', attributes: ['name', 'location'] },
-                    { model: User, as: 'user', attributes: ['name', 'email'] }
+                    { model: Classroom, as: 'classroom', attributes: ['id', 'name', 'building', 'room_number', 'capacity'] },
+                    { model: User, as: 'user', attributes: ['id', 'full_name', 'email'] }
                 ],
                 order: [['date', 'ASC'], ['start_time', 'ASC']]
             });
@@ -88,6 +122,11 @@ class ClassroomReservationController {
         try {
             const { id } = req.params;
             const { status } = req.body; // 'approved', 'rejected'
+            
+            if (!req.user || !req.user.id) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+            
             const adminId = req.user.id;
 
             if (!['approved', 'rejected', 'cancelled'].includes(status)) {
