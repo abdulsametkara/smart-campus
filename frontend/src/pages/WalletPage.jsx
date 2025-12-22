@@ -222,43 +222,43 @@ const WalletPage = () => {
             const { value: cardData, isConfirmed } = await Swal.fire({
                 title: '<span style="font-weight: 700;">💳 Kart Bilgileri</span>',
                 html: `
-                    <div style="padding: 15px 0;">
+                    <div style="padding: 15px 0; max-height: 60vh; overflow-y: auto; overflow-x: hidden;">
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                    padding: 25px; border-radius: 20px; color: white; margin-bottom: 25px;
+                                    padding: 20px; border-radius: 20px; color: white; margin-bottom: 20px;
                                     box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4); position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; 
                                         background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -20px; left: -20px; width: 80px; height: 80px; 
                                         background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; position: relative;">
-                                <span style="font-size: 1.8rem;">💳</span>
-                                <span id="brand-display" style="font-size: 0.9rem; opacity: 0.9; font-weight: 600;">VISA</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative;">
+                                <span style="font-size: 1.5rem;">💳</span>
+                                <span id="brand-display" style="font-size: 0.85rem; opacity: 0.9; font-weight: 600;">VISA</span>
                             </div>
-                            <div id="card-display" style="font-size: 1.5rem; letter-spacing: 4px; font-family: 'Courier New', monospace; margin-bottom: 20px; position: relative;">
+                            <div id="card-display" style="font-size: 1.2rem; letter-spacing: 3px; font-family: 'Courier New', monospace; margin-bottom: 15px; position: relative;">
                                 •••• •••• •••• ••••
                             </div>
                             <div style="display: flex; justify-content: space-between; position: relative;">
                                 <div>
-                                    <div style="font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Kart Sahibi</div>
-                                    <div id="holder-display" style="font-size: 0.95rem; font-weight: 500; margin-top: 3px;">AD SOYAD</div>
+                                    <div style="font-size: 0.6rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Kart Sahibi</div>
+                                    <div id="holder-display" style="font-size: 0.85rem; font-weight: 500; margin-top: 3px;">AD SOYAD</div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px;">Son Kullanma</div>
-                                    <div id="expiry-display" style="font-size: 0.95rem; font-weight: 500; margin-top: 3px;">••/••</div>
+                                    <div style="font-size: 0.6rem; opacity: 0.7; letter-spacing: 1px;">Son Kullanma</div>
+                                    <div id="expiry-display" style="font-size: 0.85rem; font-weight: 500; margin-top: 3px;">••/••</div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
                             <input type="text" id="card-holder" placeholder="Kart Sahibi Adı Soyadı"
-                                   style="padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
+                                   style="padding: 14px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem;
                                           transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                    oninput="document.getElementById('holder-display').textContent = this.value.toUpperCase() || 'AD SOYAD'"
                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
                             <input type="text" id="card-number" placeholder="Kart Numarası" maxlength="19"
-                                   style="padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1.1rem;
-                                          font-family: 'Courier New', monospace; letter-spacing: 3px; transition: all 0.3s ease;
+                                   style="padding: 14px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem;
+                                          font-family: 'Courier New', monospace; letter-spacing: 2px; transition: all 0.3s ease;
                                           box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                    oninput="let v=this.value.replace(/\\s/g,'').replace(/(.{4})/g,'$1 ').trim(); this.value=v;
                                             document.getElementById('card-display').textContent = v.padEnd(19, '•').replace(/(.{4})/g,'$1 ').trim();
@@ -266,32 +266,48 @@ const WalletPage = () => {
                                             document.getElementById('brand-display').textContent = brand;"
                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
-                            <div style="display: flex; gap: 14px;">
+                            <div style="display: flex; gap: 12px;">
                                 <input type="text" id="card-expiry" placeholder="AA/YY" maxlength="5"
-                                       style="flex: 1; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
+                                       style="flex: 1; padding: 14px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem;
                                               text-align: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                        oninput="let v=this.value.replace(/\\D/g,''); if(v.length>=2) v=v.slice(0,2)+'/'+v.slice(2); this.value=v;
                                                 document.getElementById('expiry-display').textContent = v || '••/••';"
                                        onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
                                 <input type="text" id="card-cvc" placeholder="CVC" maxlength="3"
-                                       style="flex: 1; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
+                                       style="flex: 1; padding: 14px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem;
                                               text-align: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                        oninput="this.value=this.value.replace(/\\D/g,'');"
                                        onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
                             </div>
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 16px; 
-                                          background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 14px; 
-                                          cursor: pointer; margin-top: 5px; transition: all 0.3s ease;
+                            <label style="display: flex; align-items: center; gap: 10px; padding: 14px; 
+                                          background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; 
+                                          cursor: pointer; margin-top: 3px; transition: all 0.3s ease;
                                           border: 2px solid transparent;"
                                    onmouseover="this.style.borderColor='#667eea'"
                                    onmouseout="this.style.borderColor='transparent'">
-                                <input type="checkbox" id="save-card" checked style="width: 22px; height: 22px; accent-color: #667eea;">
-                                <span style="color: #475569; font-weight: 500;">Bu kartı sonraki ödemeler için kaydet</span>
+                                <input type="checkbox" id="save-card" checked style="width: 20px; height: 20px; accent-color: #667eea;">
+                                <span style="color: #475569; font-weight: 500; font-size: 0.9rem;">Bu kartı sonraki ödemeler için kaydet</span>
                             </label>
                         </div>
                     </div>
+                    <style>
+                        .swal2-html-container::-webkit-scrollbar {
+                            width: 8px;
+                        }
+                        .swal2-html-container::-webkit-scrollbar-track {
+                            background: #f1f5f9;
+                            border-radius: 4px;
+                        }
+                        .swal2-html-container::-webkit-scrollbar-thumb {
+                            background: #cbd5e1;
+                            border-radius: 4px;
+                        }
+                        .swal2-html-container::-webkit-scrollbar-thumb:hover {
+                            background: #94a3b8;
+                        }
+                    </style>
                 `,
                 showCancelButton: true,
                 confirmButtonText: `<span style="display: flex; align-items: center; gap: 8px;">💰 ${amount} TL Öde</span>`,
@@ -299,6 +315,10 @@ const WalletPage = () => {
                 confirmButtonColor: '#667eea',
                 cancelButtonColor: '#94a3b8',
                 width: 480,
+                heightAuto: false,
+                customClass: {
+                    htmlContainer: 'swal2-html-container-scrollable'
+                },
                 showClass: { popup: 'animate__animated animate__fadeInUp animate__faster' },
                 hideClass: { popup: 'animate__animated animate__fadeOutDown animate__faster' },
                 preConfirm: () => {

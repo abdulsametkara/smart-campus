@@ -6,15 +6,21 @@ class SchedulingController {
     // POST /generate
     async triggerScheduling(req, res) {
         try {
-            const { semester } = req.body;
+            const { semester, overwriteExisting, preferredTimeSlot } = req.body;
 
             if (!semester) {
                 return res.status(400).json({ message: 'Semester is required.' });
             }
 
+            // Options from request body
+            const options = {
+                overwriteExisting: overwriteExisting !== false, // Default true
+                preferredTimeSlot: preferredTimeSlot || 'any'
+            };
+
             // This could be a long running process. 
             // In production, offload to a queue. For now, await it.
-            const result = await schedulingService.generateSchedule(semester);
+            const result = await schedulingService.generateSchedule(semester, options);
 
             if (!result.success) {
                 return res.status(400).json(result);

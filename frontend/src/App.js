@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminLogsPage from './pages/AdminLogsPage';
 import AdminAcademicPage from './pages/AdminAcademicPage';
+import AdminScheduleGeneratePage from './pages/AdminScheduleGeneratePage';
 import CoursesListPage from './pages/CoursesListPage';
 import CourseFormPage from './pages/CourseFormPage';
 import SectionsListPage from './pages/SectionsListPage';
@@ -39,6 +40,9 @@ import MyAdviseesPage from './pages/MyAdviseesPage';
 import WalletPage from './pages/WalletPage';
 import MenuPage from './pages/meals/MenuPage';
 import MyReservationsPage from './pages/meals/MyReservationsPage';
+import ClassroomReservationsPage from './pages/ClassroomReservationsPage';
+import ClassroomReservationManagementPage from './pages/ClassroomReservationManagementPage';
+import MealMenuManagementPage from './pages/admin/MealMenuManagementPage';
 import EventsPage from './pages/events/EventsPage';
 import EventDetailsPage from './pages/events/EventDetailsPage';
 import MyEventsPage from './pages/events/MyEventsPage';
@@ -148,6 +152,22 @@ function AppContent() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <AdminAcademicPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/scheduling/generate"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminScheduleGeneratePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/meals/menus"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <MealMenuManagementPage />
                 </ProtectedRoute>
               }
             />
@@ -368,6 +388,22 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <MyReservationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reservations"
+              element={
+                <ProtectedRoute>
+                  <ClassroomReservationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reservations"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ClassroomReservationManagementPage />
                 </ProtectedRoute>
               }
             />

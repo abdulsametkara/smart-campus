@@ -46,6 +46,9 @@ Bu belge, Akademik Yönetim, Yoklama Sistemi (GPS & QR) ve Öğrenci Notlandırm
 | `DELETE` | `/enrollments/:id` | Dersi bırak (aktif dönemde) | Öğrenci |
 | `GET` | `/enrollments/my-enrollments` | Öğrencinin kayıtlı şubelerini listele | Öğrenci |
 | `GET` | `/enrollments/my-schedule` | Haftalık ders programını getir | Öğrenci |
+| `POST` | `/scheduling/generate` | Belirli bir dönem için otomatik ders programı üret (admin) | Admin |
+| `GET` | `/scheduling` | Üretilmiş ders programı slotlarını listele | Admin / Akademik |
+| `GET` | `/scheduling/export/ical` | Üretilen programı iCal formatında dışa aktar | Admin / Öğrenci |
 
 **Kayıt Mantığı:**
 1.  **Ön Koşul Kontrolü:** Öğrencinin tüm ön koşul derslerini geçip geçmediğini doğrular (`PrerequisiteService` kullanarak).
@@ -131,3 +134,218 @@ const distance = R * c; // Sonuç metre cinsinden
 **GPA Hesaplama:**
 - **Dönem Ortalaması (Semester GPA):** (Toplam (Not Puanı * Kredi)) / Dönem Toplam Kredi.
 - **Genel Ortalama (Cumulative GPA):** Toplam Not Puanı / Toplam Kredi.
+
+---
+
+## 📅 5. Ders Programı Yönetimi (Developer 4)
+
+### Otomatik Program Oluşturma
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/scheduling/generate` | Belirli bir dönem için otomatik ders programı üret | Admin |
+| `GET` | `/scheduling/export/ical` | Üretilen programı iCal formatında dışa aktar | Herkes |
+
+**Program Oluşturma İsteği:**
+```json
+{
+  "semester": "2025-SPRING",
+  "overwriteExisting": true,
+  "preferredTimeSlot": "morning"
+}
+```
+
+**Yanıt:**
+```json
+{
+  "success": true,
+  "message": "Ders programı başarıyla oluşturuldu.",
+  "assignmentCount": 45,
+  "totalSections": 50,
+  "unassignedSections": 5
+}
+```
+
+**Parametreler:**
+- `semester`: Dönem kodu (örn: "2025-SPRING")
+- `overwriteExisting`: Mevcut programı silip yeniden oluştur (boolean)
+- `preferredTimeSlot`: Tercih edilen saat dilimi ("morning", "afternoon", "any")
+
+**iCal Export:**
+- `GET /scheduling/export/ical` endpoint'i `.ics` formatında dosya döner
+- Takvim uygulamalarına (Google Calendar, Outlook) eklenebilir
+
+---
+
+## 🏫 6. Sınıf Rezervasyon Sistemi (Developer 4)
+
+### Rezervasyon İşlemleri
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/reservations` | Yeni sınıf rezervasyon talebi oluştur | Student, Faculty |
+| `GET` | `/reservations` | Rezervasyonları listele (filtreleme ile) | Herkes |
+| `PATCH` | `/reservations/:id/approve` | Rezervasyon talebini onayla/reddet | Admin |
+
+**Rezervasyon Oluşturma İsteği:**
+```json
+{
+  "classroom_id": 1,
+  "date": "2025-01-15",
+  "start_time": "14:00",
+  "end_time": "16:00",
+  "purpose": "Proje sunumu"
+}
+```
+
+**Yanıt:**
+```json
+{
+  "message": "Rezervasyon talebi başarıyla oluşturuldu.",
+  "reservation": {
+    "id": 1,
+    "classroom_id": 1,
+    "date": "2025-01-15",
+    "start_time": "14:00",
+    "end_time": "16:00",
+    "status": "pending",
+    "user": {
+      "id": 5,
+      "full_name": "Ahmet Yılmaz",
+      "email": "ahmet@student.smartcampus.edu.tr"
+    },
+    "classroom": {
+      "id": 1,
+      "name": "A-101",
+      "building": "A Blok",
+      "room_number": "101",
+      "capacity": 50
+    }
+  }
+}
+```
+
+**Rezervasyon Onaylama/Reddetme:**
+```json
+{
+  "status": "approved" // veya "rejected"
+}
+```
+
+**Notlar:**
+- Sadece öğrenci ve öğretim görevlileri rezervasyon oluşturabilir
+- Admin rezervasyon oluşturma formunu görmez, sadece onaylama yapabilir
+- Sadece onaylanmış (`approved`) rezervasyonlar diğer kullanıcılara görünür
+- Bekleyen (`pending`) rezervasyonlar sadece sahibi tarafından görülebilir
+
+---
+
+## 🍽️ 7. Yemek Menüsü Yönetimi (Developer 4)
+
+### Menü Görüntüleme
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `GET` | `/meals/menus` | Haftalık menüleri listele | Herkes |
+
+**Query Parametreleri:**
+- `start`: Başlangıç tarihi (YYYY-MM-DD)
+- `end`: Bitiş tarihi (YYYY-MM-DD)
+
+**Yanıt:**
+```json
+[
+  {
+    "id": 1,
+    "cafeteria_id": 1,
+    "date": "2025-01-15",
+    "meal_type": "lunch",
+    "items_json": ["Çorba", "Ana Yemek", "Pilav", "Salata"],
+    "nutrition_json": {
+      "total": {
+        "calories": 500,
+        "protein": 25,
+        "carbs": 60
+      },
+      "items": [...]
+    },
+    "price": 20.00,
+    "is_published": true,
+    "cafeteria": {
+      "id": 1,
+      "name": "Main Campus Dining"
+    }
+  }
+]
+```
+
+### Menü Yönetimi (Admin)
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `GET` | `/meals/menus/all` | Tüm menüleri listele (yönetim için) | Admin |
+| `POST` | `/meals/menus` | Yeni menü oluştur | Admin |
+| `PUT` | `/meals/menus/:id` | Menü güncelle | Admin |
+| `DELETE` | `/meals/menus/:id` | Menü sil | Admin |
+| `PATCH` | `/meals/menus/:id/publish` | Menü yayınlama durumunu değiştir | Admin |
+
+**Menü Oluşturma İsteği:**
+```json
+{
+  "cafeteria_id": 1,
+  "date": "2025-01-15",
+  "meal_type": "lunch",
+  "items_json": ["Çorba", "Ana Yemek", "Pilav", "Salata"],
+  "nutrition_json": {
+    "total": {
+      "calories": 500,
+      "protein": 25,
+      "carbs": 60
+    },
+    "items": [
+      {
+        "name": "Çorba",
+        "calories": 100,
+        "protein": 5,
+        "carbs": 15
+      }
+    ]
+  },
+  "price": 20.00,
+  "is_published": true
+}
+```
+
+### Yemek Rezervasyonu
+| Metot | Uç Nokta | Açıklama | Rol |
+|-------|----------|----------|-----|
+| `POST` | `/meals/reservations` | Yemek rezervasyonu oluştur | Herkes |
+| `GET` | `/meals/reservations` | Kullanıcının rezervasyonlarını listele | Herkes |
+| `PATCH` | `/meals/reservations/:id/use` | Rezervasyonu kullanıldı olarak işaretle | Herkes |
+| `DELETE` | `/meals/reservations/:id` | Rezervasyonu iptal et | Herkes |
+
+**Rezervasyon Oluşturma:**
+```json
+{
+  "menuId": 1
+}
+```
+
+**Yanıt:**
+```json
+{
+  "id": 1,
+  "user_id": 5,
+  "menu_id": 1,
+  "status": "reserved",
+  "qr_code": "data:image/png;base64,...",
+  "menu": {
+    "id": 1,
+    "date": "2025-01-15",
+    "meal_type": "lunch",
+    "price": 20.00
+  }
+}
+```
+
+**Notlar:**
+- Rezervasyon yapılırken cüzdan bakiyesinden menü fiyatı düşülür
+- QR kod otomatik oluşturulur
+- Geçmiş tarihe rezervasyon yapılamaz
+- Aynı menü için tekrar rezervasyon yapılamaz
