@@ -119,10 +119,26 @@ describe('Classroom Reservation Integration Tests', () => {
     });
 
     afterAll(async () => {
-        // Cleanup
-        if (createdStudent) await createdStudent.destroy({ force: true }).catch(() => {});
-        if (createdFaculty) await createdFaculty.destroy({ force: true }).catch(() => {});
-        if (createdAdmin) await createdAdmin.destroy({ force: true }).catch(() => {});
+        // Cleanup with FK handling
+        try {
+            if (createdStudent) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdStudent.id}`);
+                await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${createdStudent.id}`);
+                await createdStudent.destroy({ force: true }).catch(() => { });
+            }
+            if (createdFaculty) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdFaculty.id}`);
+                await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${createdFaculty.id}`);
+                await createdFaculty.destroy({ force: true }).catch(() => { });
+            }
+            if (createdAdmin) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdAdmin.id}`);
+                await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${createdAdmin.id}`);
+                await createdAdmin.destroy({ force: true }).catch(() => { });
+            }
+        } catch (e) {
+            console.error('Cleanup Error:', e);
+        }
         await sequelize.close();
     });
 
@@ -290,14 +306,24 @@ describe('Classroom Reservation Integration Tests', () => {
 
     describe('Reservation Approval (Admin)', () => {
         test('PATCH /api/v1/reservations/:id/approve - Admin should approve reservation', async () => {
-            if (!testReservationId) {
-                console.log('Skipping: No reservation to approve');
-                return;
-            }
+            // Create a pending reservation specifically for this test
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
+
+            const reservation = await Reservation.create({
+                classroom_id: testClassroomId,
+                user_id: createdStudent.id,
+                date: dateStr,
+                start_time: '18:00', // Different time to avoid conflict
+                end_time: '20:00',
+                purpose: 'Approval Test',
+                status: 'pending'
+            });
 
             const response = await request(app)
-                .patch(`/api/v1/reservations/${testReservationId}/approve`)
-                .set('Authorization', `Bearer ${adminToken}`)
+                .patch(`/api/v1/reservations/${reservation.id}/approve`)
+                .set('Authorization', `Bearer ${adminToken`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(200);
@@ -322,8 +348,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/api/v1/reservations/${reservation.id}/approve`)
-                .set('Authorization', `Bearer ${adminToken}`)
+                .patch(`/ api / v1 / reservations / ${ reservation.id } / approve`)
+                .set('Authorization', `Bearer ${ adminToken }`)
                 .send({ status: 'rejected' });
 
             expect(response.status).toBe(200);
@@ -346,8 +372,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/api/v1/reservations/${reservation.id}/approve`)
-                .set('Authorization', `Bearer ${studentToken}`)
+                .patch(`/ api / v1 / reservations / ${ reservation.id } / approve`)
+                .set('Authorization', `Bearer ${ studentToken }`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(403);
@@ -381,8 +407,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/api/v1/reservations/${pendingReservation.id}/approve`)
-                .set('Authorization', `Bearer ${adminToken}`)
+                .patch(`/ api / v1 / reservations / ${ pendingReservation.id } / approve`)
+                .set('Authorization', `Bearer ${ adminToken }`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(409);

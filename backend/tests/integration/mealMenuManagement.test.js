@@ -97,10 +97,13 @@ describe('Meal Menu Management Integration Tests', () => {
         try {
             if (createdAdmin) {
                 await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdAdmin.id}`);
+                await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${createdAdmin.id}`);
                 await createdAdmin.destroy({ force: true }).catch(() => { });
             }
             if (createdStudent) {
                 await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdStudent.id}`);
+                await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${createdStudent.id}`);
+                await sequelize.query(`DELETE FROM "meal_reservations" WHERE "user_id" = ${createdStudent.id}`);
                 await createdStudent.destroy({ force: true }).catch(() => { });
             }
         } catch (e) {
