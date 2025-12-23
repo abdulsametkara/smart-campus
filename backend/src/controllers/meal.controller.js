@@ -4,7 +4,7 @@ const getWeeklyMenus = async (req, res) => {
     try {
         const { start, end } = req.query;
         console.log('[MealController] getWeeklyMenus called with start:', start, 'end:', end);
-        
+
         // Default to this week if dates not provided
         const startDate = start || new Date().toISOString().split('T')[0];
         const endDate = end || new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0];
@@ -37,7 +37,7 @@ const getMyReservations = async (req, res) => {
         res.json(reservations);
     } catch (err) {
         console.error('Get Reservations Error:', err);
-        res.status(500).json({ message: 'Error retrieving reservations' });
+        res.status(500).json({ message: 'Error retrieving reservations', error: err.message, stack: err.stack });
     }
 };
 
