@@ -409,7 +409,7 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/ api / v1 / reservations / ${pendingReservation.id} / approve`)
+                .patch(`/api/v1/reservations/${pendingReservation.id}/approve`)
                 .set('Authorization', `Bearer ${adminToken}`)
                 .send({ status: 'approved' });
 
@@ -426,7 +426,6 @@ describe('Classroom Reservation Integration Tests', () => {
             expect(response.status).toBe(401);
         });
     });
-});
 });
 
 
