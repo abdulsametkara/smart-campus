@@ -142,7 +142,7 @@ describe('Meal Menu Management Integration Tests', () => {
             expect(response.status).toBe(201);
             expect(response.body).toHaveProperty('id');
             expect(response.body).toHaveProperty('meal_type', 'lunch');
-            expect(response.body).toHaveProperty('price', 20.00);
+            expect(response.body).toHaveProperty('price', '20.00');
             expect(response.body).toHaveProperty('is_published', true);
 
             testMenuId = response.body.menu.id;
