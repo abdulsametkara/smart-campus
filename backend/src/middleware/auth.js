@@ -31,10 +31,10 @@ const authorize = (...roles) => (req, res, next) => {
     return res.status(403).json({ message: 'Forbidden: No user found' });
   }
 
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ 
-      message: 'Forbidden', 
-      details: `Required roles: ${roles.join(', ')}, Your role: ${req.user.role}` 
+  if (roles.length > 0 && !roles.includes(req.user.role)) {
+    return res.status(403).json({
+      message: 'Forbidden',
+      details: `Required roles: ${roles.join(', ')}, Your role: ${req.user.role}`
     });
   }
 
