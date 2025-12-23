@@ -68,11 +68,18 @@ describe('Meal Service Integration Tests', () => {
     });
 
     afterAll(async () => {
-        if (createdUser) {
-            // Cleanup: Force delete user (cascade should handle wallet/reservations)
-            await createdUser.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
+        try {
+            if (createdUser) {
+                // Manual cleanup of activity logs (Cascade backup)
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdUser.id}`);
+                // Cleanup: Force delete user (cascade should handle wallet/reservations)
+                await createdUser.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
+            }
+        } catch (error) {
+            console.error('Final Cleanup Error:', error);
+        } finally {
+            await sequelize.close(); // Close DB connection
         }
-        await sequelize.close(); // Close DB connection
     });
 
     describe('Menu Endpoints', () => {

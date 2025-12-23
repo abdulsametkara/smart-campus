@@ -104,13 +104,21 @@ describe('Event Management Integration Tests', () => {
     });
 
     afterAll(async () => {
-        if (testStudent) {
-            await testStudent.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
+        try {
+            // Manual cleanup of foreign key dependencies to be safe in CI
+            if (testStudent) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${testStudent.id}`);
+                await testStudent.destroy({ force: true }).catch(err => console.error('Cleanup Error Student:', err));
+            }
+            if (testAdmin) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${testAdmin.id}`);
+                await testAdmin.destroy({ force: true }).catch(err => console.error('Cleanup Error Admin:', err));
+            }
+        } catch (error) {
+            console.error('Final Cleanup Error:', error);
+        } finally {
+            await sequelize.close();
         }
-        if (testAdmin) {
-            await testAdmin.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
-        }
-        await sequelize.close();
     });
 
     describe('Event CRUD Operations', () => {

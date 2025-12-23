@@ -81,6 +81,12 @@ describe('Meal Menu Management Integration Tests', () => {
                 });
             studentToken = studentResponse.body.accessToken;
 
+            // Cleanup existing menus for test date to prevent "Menu already exists" error
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
+            await MealMenu.destroy({ where: { date: dateStr } });
+
         } catch (error) {
             console.error('Test Setup Error:', error);
             throw error;
@@ -88,8 +94,18 @@ describe('Meal Menu Management Integration Tests', () => {
     });
 
     afterAll(async () => {
-        if (createdAdmin) await createdAdmin.destroy({ force: true }).catch(() => {});
-        if (createdStudent) await createdStudent.destroy({ force: true }).catch(() => {});
+        try {
+            if (createdAdmin) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdAdmin.id}`);
+                await createdAdmin.destroy({ force: true }).catch(() => { });
+            }
+            if (createdStudent) {
+                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdStudent.id}`);
+                await createdStudent.destroy({ force: true }).catch(() => { });
+            }
+        } catch (e) {
+            console.error('Cleanup Error:', e);
+        }
         await sequelize.close();
     });
 
@@ -184,7 +200,7 @@ describe('Meal Menu Management Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(Array.isArray(response.body)).toBe(true);
-            
+
             // All returned menus should be published
             response.body.forEach(menu => {
                 expect(menu.is_published).toBe(true);
