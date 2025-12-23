@@ -114,22 +114,22 @@ describe('Meal Menu Management Integration Tests', () => {
 
     describe('Menu Creation (Admin)', () => {
         test('POST /api/v1/meals/menus - Admin should create menu', async () => {
+            // Ensure clean state for this test
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const dateStr = tomorrow.toISOString().split('T')[0];
+            await MealMenu.destroy({ where: { date: dateStr, meal_type: 'lunch' } });
 
             const menuData = {
                 cafeteria_id: testCafeteriaId,
                 date: dateStr,
                 meal_type: 'lunch',
-                items_json: ['Çorba', 'Ana Yemek', 'Pilav', 'Salata'],
-                nutrition_json: {
-                    total: {
-                        calories: 500,
-                        protein: 25,
-                        carbs: 60
-                    }
-                },
+                items: [
+                    { name: 'Lentil Soup', calories: 150 },
+                    { name: 'Grilled Chicken', calories: 400 },
+                    { name: 'Rice', calories: 200 },
+                    { name: 'Salad', calories: 50 }
+                ],
                 price: 20.00,
                 is_published: true
             };

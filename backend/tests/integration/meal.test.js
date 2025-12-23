@@ -222,4 +222,4 @@ describe('Meal Service Error Handling', () => {
         expect(response.status).toBe(400);
     });
 });
-});
+
