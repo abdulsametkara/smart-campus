@@ -37,7 +37,7 @@ const getMyReservations = async (req, res) => {
         res.json(reservations);
     } catch (err) {
         console.error('Get Reservations Error:', err);
-        res.status(500).json({ message: 'Error retrieving reservations', error: err.message, stack: err.stack });
+        res.status(500).json({ message: 'Error retrieving reservations' });
     }
 };
 
