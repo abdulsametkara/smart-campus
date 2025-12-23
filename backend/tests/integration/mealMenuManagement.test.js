@@ -145,7 +145,7 @@ describe('Meal Menu Management Integration Tests', () => {
             expect(response.body).toHaveProperty('price', '20.00');
             expect(response.body).toHaveProperty('is_published', true);
 
-            testMenuId = response.body.menu.id;
+            testMenuId = response.body.id;
         });
 
         test('POST /api/v1/meals/menus - Should create dinner menu', async () => {
@@ -246,7 +246,7 @@ describe('Meal Menu Management Integration Tests', () => {
                 .send(updateData);
 
             expect(response.status).toBe(200);
-            expect(response.body.menu).toHaveProperty('price', 22.00);
+            expect(response.body).toHaveProperty('price', '22.00');
         });
 
         test('PUT /api/v1/meals/menus/:id - Non-admin should NOT update', async () => {
@@ -295,7 +295,7 @@ describe('Meal Menu Management Integration Tests', () => {
                 .send({ is_published: false });
 
             expect(response.status).toBe(200);
-            expect(response.body.menu).toHaveProperty('is_published', false);
+            expect(response.body).toHaveProperty('is_published', false);
         });
     });
 

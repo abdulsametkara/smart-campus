@@ -7,6 +7,14 @@ process.env.NODE_ENV = 'test';
 
 const request = require('supertest');
 const app = require('../../src/app');
+
+// Mock nodemailer
+jest.mock('nodemailer', () => ({
+    createTransport: jest.fn().mockReturnValue({
+        sendMail: jest.fn().mockResolvedValue(true)
+    })
+}));
+
 const { User, Wallet, sequelize } = require('../../models');
 
 describe('Meal Service Integration Tests', () => {
@@ -74,6 +82,8 @@ describe('Meal Service Integration Tests', () => {
                 await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdUser.id}`);
                 await sequelize.query(`DELETE FROM "saved_cards" WHERE "user_id" = ${createdUser.id}`);
                 await sequelize.query(`DELETE FROM "meal_reservations" WHERE "user_id" = ${createdUser.id}`);
+                await sequelize.query(`DELETE FROM "session_tokens" WHERE "user_id" = ${createdUser.id}`);
+                await sequelize.query(`DELETE FROM "wallets" WHERE "user_id" = ${createdUser.id}`);
                 // Cleanup: Force delete user (cascade should handle wallet/reservations)
                 await createdUser.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
             }

@@ -7,6 +7,14 @@ process.env.NODE_ENV = 'test';
 
 const request = require('supertest');
 const app = require('../../src/app');
+
+// Mock nodemailer
+jest.mock('nodemailer', () => ({
+    createTransport: jest.fn().mockReturnValue({
+        sendMail: jest.fn().mockResolvedValue(true)
+    })
+}));
+
 const { User, Wallet, MealMenu, Cafeteria, Classroom, Reservation, sequelize } = require('../../models');
 const bcrypt = require('bcrypt');
 

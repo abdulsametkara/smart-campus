@@ -110,6 +110,7 @@ describe('Event Management Integration Tests', () => {
                 await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${testStudent.id}`);
                 await sequelize.query(`DELETE FROM "event_registrations" WHERE "user_id" = ${testStudent.id}`);
                 await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${testStudent.id}`);
+                await sequelize.query(`DELETE FROM "wallets" WHERE "user_id" = ${testStudent.id}`);
                 await sequelize.query(`DELETE FROM "session_tokens" WHERE "user_id" = ${testStudent.id}`);
                 await testStudent.destroy({ force: true }).catch(err => console.error('Cleanup Error Student:', err));
             }
@@ -117,6 +118,7 @@ describe('Event Management Integration Tests', () => {
                 await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${testAdmin.id}`);
                 await sequelize.query(`DELETE FROM "event_registrations" WHERE "user_id" = ${testAdmin.id}`);
                 await sequelize.query(`DELETE FROM "notification_logs" WHERE "user_id" = ${testAdmin.id}`);
+                await sequelize.query(`DELETE FROM "wallets" WHERE "user_id" = ${testAdmin.id}`);
                 await sequelize.query(`DELETE FROM "session_tokens" WHERE "user_id" = ${testAdmin.id}`);
                 await testAdmin.destroy({ force: true }).catch(err => console.error('Cleanup Error Admin:', err));
             }
