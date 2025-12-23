@@ -29,7 +29,11 @@ const Sidebar = ({ isOpen, onClose }) => {
             children: [
                 { path: '/meals/menu', label: 'Menü' },
                 { path: '/meals/reservations', label: 'Yemek Rezervasyonlarım' },
-                { path: '/wallet', label: 'Cüzdanım' }
+                { path: '/wallet', label: 'Cüzdanım' },
+                // Admin/Staff only
+                ...(user?.role === 'admin' || user?.role === 'staff'
+                    ? [{ path: '/meals/checkin', label: 'Yemek Kontrol (QR)' }]
+                    : [])
             ]
         });
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import mealService from '../../services/meal.service';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Swal from 'sweetalert2';
@@ -166,34 +167,48 @@ const MyReservationsPage = () => {
                 )}
             </div>
 
-            {/* QR Modal */}
-            {selectedReservation && (
+            {/* QR Modal - Portalled to body */}
+            {selectedReservation && createPortal(
                 <div className="qr-modal-overlay" onClick={closeModal}>
                     <div className="qr-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close" onClick={closeModal}>×</button>
-                        <h2>Yemek Bileti</h2>
-                        <p className="modal-date">
-                            {new Date(selectedReservation.menu?.date).toLocaleDateString('tr-TR', {
-                                weekday: 'long',
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                            })}
-                        </p>
-                        <div className="modal-qr-container">
-                            <img
-                                src={selectedReservation.qr_code}
-                                alt="QR Kod"
-                                className="modal-qr-img"
-                            />
+                        <div className="modal-header-bar">
+                            {/* Header content hidden via CSS if needed, but button is now safe outside */}
+                            <h2>Yemek Bileti</h2>
+                            <p className="modal-date">
+                                {new Date(selectedReservation.menu?.date).toLocaleDateString('tr-TR', {
+                                    weekday: 'long',
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                })}
+                            </p>
                         </div>
-                        <p className="modal-instruction">QR kodu turnikede okutunuz</p>
-                        <button className="simulate-scan-btn" onClick={handleMarkAsUsed}>
-                            <span className="scan-icon">📱</span>
-                            Taramayı Simüle Et
-                        </button>
+
+                        <div className="modal-content-wrapper">
+                            <div className="modal-qr-container">
+                                <img
+                                    src={selectedReservation.qr_code}
+                                    alt="QR Kod"
+                                    className="modal-qr-img"
+                                />
+                            </div>
+
+                            <div className="reservation-code-box">
+                                <p className="code-title">Manuel Onay Kodu</p>
+                                <p className="code-value">
+                                    #{selectedReservation.id.toString().padStart(6, '0')}
+                                </p>
+                            </div>
+
+                            <p className="modal-instruction">
+                                Bu QR kodu turnikedeki okuyucuya gösterin<br />
+                                veya görevliye manuel onay kodunu iletin.
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

@@ -3,13 +3,15 @@ const schedulingService = require('../../src/services/scheduling.service');
 // Mock Models
 jest.mock('../../models', () => ({
     CourseSection: {
-        findAll: jest.fn()
+        findAll: jest.fn(),
+        update: jest.fn()
     },
     Classroom: {
         findAll: jest.fn()
     },
     Schedule: {
-        bulkCreate: jest.fn()
+        bulkCreate: jest.fn(),
+        destroy: jest.fn()
     },
     sequelize: {
         transaction: jest.fn(() => ({
@@ -59,8 +61,8 @@ describe('SchedulingService Unit Tests', () => {
         expect(bulkCreateArgs).toHaveLength(2);
 
         // Since it's the same room, they MUST be at different times
-        const slot1 = bulkCreateArgs.find(s => s.section_id === '101');
-        const slot2 = bulkCreateArgs.find(s => s.section_id === '102');
+        const slot1 = bulkCreateArgs.find(s => s.section_id === 101);
+        const slot2 = bulkCreateArgs.find(s => s.section_id === 102);
 
         // Either different days or different times
         const overlap = (slot1.day_of_week === slot2.day_of_week) &&
@@ -106,8 +108,8 @@ describe('SchedulingService Unit Tests', () => {
         expect(result.success).toBe(true);
 
         const scheduled = Schedule.bulkCreate.mock.calls[0][0];
-        const s1 = scheduled.find(s => s.section_id === '201');
-        const s2 = scheduled.find(s => s.section_id === '202');
+        const s1 = scheduled.find(s => s.section_id === 201);
+        const s2 = scheduled.find(s => s.section_id === 202);
 
         // Must not overlap because same instructor
         const overlap = (s1.day_of_week === s2.day_of_week) &&

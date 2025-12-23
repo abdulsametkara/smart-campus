@@ -1,5 +1,6 @@
 const { Reservation, Classroom, User } = require('../../models');
 const { Op } = require('sequelize');
+const { sendReservationStatusEmail } = require('../utils/email');
 
 class ClassroomReservationController {
 
@@ -7,7 +8,7 @@ class ClassroomReservationController {
     async createReservation(req, res) {
         try {
             const { classroom_id, date, start_time, end_time, purpose } = req.body;
-            
+
             // Validate required fields
             if (!classroom_id || !date || !start_time || !end_time || !purpose) {
                 return res.status(400).json({ message: 'Tüm alanlar zorunludur.' });
@@ -20,8 +21,8 @@ class ClassroomReservationController {
 
             // Only students and faculty can create reservations (admin should approve, not create)
             if (req.user.role !== 'student' && req.user.role !== 'faculty') {
-                return res.status(403).json({ 
-                    message: 'Rezervasyon oluşturmak için öğrenci veya öğretim görevlisi olmanız gerekir. Yöneticiler rezervasyon onaylamak için yönetim sayfasını kullanabilir.' 
+                return res.status(403).json({
+                    message: 'Rezervasyon oluşturmak için öğrenci veya öğretim görevlisi olmanız gerekir. Yöneticiler rezervasyon onaylamak için yönetim sayfasını kullanabilir.'
                 });
             }
 
@@ -74,6 +75,10 @@ class ClassroomReservationController {
                 ]
             });
 
+            // Send notification email (async, non-blocking)
+            sendReservationStatusEmail(req.user, reservationWithDetails, 'received')
+                .catch(err => console.error('Failed to send reservation received email:', err));
+
             return res.status(201).json({
                 message: 'Rezervasyon talebi başarıyla oluşturuldu.',
                 reservation: reservationWithDetails
@@ -81,9 +86,9 @@ class ClassroomReservationController {
 
         } catch (error) {
             console.error('Error creating reservation:', error);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 message: 'Rezervasyon oluşturulurken bir hata oluştu.',
-                error: error.message 
+                error: error.message
             });
         }
     }
@@ -122,18 +127,24 @@ class ClassroomReservationController {
         try {
             const { id } = req.params;
             const { status } = req.body; // 'approved', 'rejected'
-            
+
             if (!req.user || !req.user.id) {
                 return res.status(401).json({ message: 'Unauthorized' });
             }
-            
+
             const adminId = req.user.id;
 
             if (!['approved', 'rejected', 'cancelled'].includes(status)) {
                 return res.status(400).json({ message: 'Invalid status' });
             }
 
-            const reservation = await Reservation.findByPk(id);
+            const reservation = await Reservation.findByPk(id, {
+                include: [
+                    { model: Classroom, as: 'classroom' },
+                    { model: User, as: 'user' }
+                ]
+            });
+
             if (!reservation) {
                 return res.status(404).json({ message: 'Reservation not found' });
             }
@@ -163,6 +174,12 @@ class ClassroomReservationController {
                 reservation.approved_by = adminId;
             }
             await reservation.save();
+
+            // Send notification email
+            if (status === 'approved' || status === 'rejected') {
+                sendReservationStatusEmail(reservation.user, reservation, status)
+                    .catch(err => console.error(`Failed to send reservation ${status} email:`, err));
+            }
 
             return res.json({ message: `Reservation ${status} successfully.`, reservation });
 

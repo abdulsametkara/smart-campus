@@ -32,17 +32,17 @@ const MenuPage = () => {
             // Hafta başlangıç ve bitiş tarihlerini gönder
             const startDate = weekDates[0]; // İlk gün (Pazartesi)
             const endDate = weekDates[6]; // Son gün (Pazar)
-            
+
             console.log('[MenuPage] Fetching menus for week:', startDate, 'to', endDate);
-            
+
             const [menuData, resData] = await Promise.all([
                 mealService.getWeeklyMenus(startDate, endDate),
                 mealService.getMyReservations()
             ]);
-            
+
             console.log('[MenuPage] Received menu data:', menuData);
             console.log('[MenuPage] Received reservation data:', resData);
-            
+
             // Backend'den gelen menüleri array olarak al
             const menusArray = Array.isArray(menuData) ? menuData : (menuData.menus || menuData.data || []);
             console.log('[MenuPage] Processed menus array:', menusArray);
@@ -94,7 +94,7 @@ const MenuPage = () => {
             const menu = menus.find(m => m.id === menuId);
             const price = parseFloat(menu?.price || 20.00).toFixed(2);
             const mealTypeLabel = menu?.meal_type === 'dinner' ? 'Akşam' : 'Öğle';
-            
+
             const result = await NotificationService.confirm(
                 'Yemek Rezervasyonu',
                 `${mealTypeLabel} yemeği için hesabınızdan ${price} TL düşülecektir. Onaylıyor musunuz?`,
@@ -190,7 +190,7 @@ const MenuPage = () => {
                     const dayIndex = dateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
                     const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
                     const dayName = dayNames[dayIndex];
-                    
+
                     return (
                         <button
                             key={date}
@@ -244,8 +244,23 @@ const MenuPage = () => {
                                 <div key={idx} className="menu-item">
                                     <span className="item-icon">🍽️</span>
                                     <span className="item-name">{item}</span>
+                                    {(item.toLowerCase().includes('vegan') || item.toLowerCase().includes('vejetaryen') || item.toLowerCase().includes('sebze')) && (
+                                        <span className="badge badge-green" style={{ marginLeft: 'auto', fontSize: '0.7rem', background: '#dcfce7', color: '#166534', padding: '2px 6px', borderRadius: '4px' }}>
+                                            🌱
+                                        </span>
+                                    )}
                                 </div>
                             ))}
+                        </div>
+
+                        {/* Vegan/Veg Indicators Summary */}
+                        <div style={{ padding: '0 1.5rem', marginBottom: '1rem', display: 'flex', gap: '5px' }}>
+                            {/* Simple check for demo purposes */}
+                            {(JSON.stringify(currentMenu.items_json).toLowerCase().includes('vegan')) && (
+                                <span className="badge-pill" style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    🌱 Vegan Seçenek Mevcut
+                                </span>
+                            )}
                         </div>
 
                         <div className="nutrition-info">

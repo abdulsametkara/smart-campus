@@ -20,7 +20,7 @@ class WalletService {
     /**
      * Add money to wallet (Top-up)
      */
-    async topUp(userId, amount) {
+    async topUp(userId, amount, description = null) {
         if (amount <= 0) {
             throw new Error('Amount must be positive');
         }
@@ -39,7 +39,9 @@ class WalletService {
                 wallet_id: wallet.id,
                 type: 'credit',
                 amount: amount,
-                description: `Wallet top-up (Ref: TOPUP-${Date.now()})`,
+                type: 'credit',
+                amount: amount,
+                description: description || `Wallet top-up (Ref: TOPUP-${Date.now()})`,
                 status: 'COMPLETED', // Assuming instant for now
                 reference_id: null
             }, { transaction: t });

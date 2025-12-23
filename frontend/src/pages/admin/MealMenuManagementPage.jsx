@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import mealService from '../../services/meal.service';
+import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NotificationService from '../../services/notificationService';
 import './MealMenuManagementPage.css';
@@ -35,16 +35,12 @@ const MealMenuManagementPage = () => {
       // Get menus for next 30 days
       const startDate = new Date().toISOString().split('T')[0];
       const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/meals/menus/all?start=${startDate}&end=${endDate}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
+
+      const response = await api.get('/meals/menus/all', {
+        params: { start: startDate, end: endDate }
       });
-      
-      if (!response.ok) throw new Error('Menüler yüklenemedi');
-      const data = await response.json();
-      setMenus(Array.isArray(data) ? data : []);
+
+      setMenus(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching menus:', error);
       NotificationService.error('Hata', 'Menüler yüklenemedi.');
@@ -107,35 +103,11 @@ const MealMenuManagementPage = () => {
 
       if (editingMenu) {
         // Update
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/meals/menus/${editingMenu.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Menü güncellenemedi');
-        }
+        await api.put(`/meals/menus/${editingMenu.id}`, payload);
         NotificationService.success('Başarılı', 'Menü güncellendi.');
       } else {
         // Create
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/meals/menus`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Menü oluşturulamadı');
-        }
+        await api.post('/meals/menus', payload);
         NotificationService.success('Başarılı', 'Menü oluşturuldu.');
       }
 
@@ -145,7 +117,7 @@ const MealMenuManagementPage = () => {
       fetchMenus();
     } catch (error) {
       console.error('Error saving menu:', error);
-      NotificationService.error('Hata', error.message || 'Menü kaydedilemedi.');
+      NotificationService.error('Hata', error.response?.data?.message || 'Menü kaydedilemedi.');
     }
   };
 
@@ -165,7 +137,7 @@ const MealMenuManagementPage = () => {
     setEditingMenu(menu);
     const items = menu.items_json ? (Array.isArray(menu.items_json) ? menu.items_json : JSON.parse(menu.items_json)) : [''];
     const nutrition = menu.nutrition_json ? (typeof menu.nutrition_json === 'object' ? menu.nutrition_json : JSON.parse(menu.nutrition_json)) : { total: { calories: 0, protein: 0, carbs: 0 } };
-    
+
     setFormData({
       cafeteria_id: menu.cafeteria_id,
       date: menu.date,
@@ -188,45 +160,25 @@ const MealMenuManagementPage = () => {
     if (!confirmed.isConfirmed) return;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/meals/menus/${menuId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Menü silinemedi');
-      }
+      await api.delete(`/meals/menus/${menuId}`);
 
       NotificationService.success('Başarılı', 'Menü silindi.');
       fetchMenus();
     } catch (error) {
       console.error('Error deleting menu:', error);
-      NotificationService.error('Hata', error.message || 'Menü silinemedi.');
+      NotificationService.error('Hata', error.response?.data?.message || 'Menü silinemedi.');
     }
   };
 
   const handleTogglePublish = async (menuId) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/meals/menus/${menuId}/publish`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Yayın durumu değiştirilemedi');
-      }
+      await api.patch(`/meals/menus/${menuId}/publish`);
 
       NotificationService.success('Başarılı', 'Yayın durumu güncellendi.');
       fetchMenus();
     } catch (error) {
       console.error('Error toggling publish:', error);
-      NotificationService.error('Hata', error.message || 'Yayın durumu değiştirilemedi.');
+      NotificationService.error('Hata', error.response?.data?.message || 'Yayın durumu değiştirilemedi.');
     }
   };
 
@@ -445,4 +397,3 @@ const MealMenuManagementPage = () => {
 };
 
 export default MealMenuManagementPage;
-

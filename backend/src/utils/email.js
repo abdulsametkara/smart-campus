@@ -96,7 +96,77 @@ const sendPasswordResetEmail = async (user, token) => {
   });
 };
 
+const sendReservationStatusEmail = async (user, reservation, status) => {
+  const transporter = createTransporter();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const reservationUrl = `${frontendUrl}/reservations`;
+
+  let title, body, btnText;
+
+  // Tarih ve saat formatlaması
+  const dateStr = new Date(reservation.date).toLocaleDateString('tr-TR');
+  // start_time "HH:MM:SS" gelebilir, sadece "HH:MM" kısmını alalım
+  const formatTime = (t) => t ? t.substring(0, 5) : '';
+  const timeStr = `${formatTime(reservation.start_time)} - ${formatTime(reservation.end_time)}`;
+
+  const roomStr = reservation.classroom
+    ? `${reservation.classroom.name} (${reservation.classroom.building} ${reservation.classroom.room_number})`
+    : 'Sınıf';
+
+  switch (status) {
+    case 'received':
+      title = 'Rezervasyon Talebi Alındı';
+      body = `Merhaba <strong>${user.full_name}</strong>,<br><br>
+              <strong>${dateStr}</strong> tarihinde, <strong>${timeStr}</strong> saatleri arasında 
+              <strong>${roomStr}</strong> için yaptığınız rezervasyon talebi tarafımıza ulaşmıştır.<br><br>
+              Talebiniz yönetici onayı beklemektedir. Durum güncellendiğinde size tekrar bilgi verilecektir.`;
+      btnText = 'Rezervasyonlarımı Görüntüle';
+      break;
+
+    case 'approved':
+      title = 'Rezervasyon Onaylandı! ✅';
+      body = `Merhaba <strong>${user.full_name}</strong>,<br><br>
+              <strong>${roomStr}</strong> için yaptığınız rezervasyon talebi <strong>onaylanmıştır</strong>.<br><br>
+              <strong>📋 Rezervasyon Detayları:</strong><br>
+              • <strong>Tarih:</strong> ${dateStr}<br>
+              • <strong>Saat:</strong> ${timeStr}<br>
+              • <strong>Amaç:</strong> ${reservation.purpose}<br><br>
+              Lütfen belirtilen saatte sınıfta olunuz.`;
+      btnText = 'Detayları Görüntüle';
+      break;
+
+    case 'rejected':
+      title = 'Rezervasyon Reddedildi ❌';
+      body = `Merhaba <strong>${user.full_name}</strong>,<br><br>
+              <strong>${roomStr}</strong> için yaptığınız rezervasyon talebi ne yazık ki onaylanamamıştır.<br><br>
+              <strong>Sebep:</strong> Müsaitlik durumu veya idari sebepler.<br>
+              Daha uygun bir zaman dilimi veya farklı bir sınıf için yeni bir talep oluşturabilirsiniz.`;
+      btnText = 'Yeni Talep Oluştur';
+      break;
+
+    default:
+      return;
+  }
+
+  const html = getHtmlTemplate(title, body, btnText, reservationUrl);
+
+  try {
+    await transporter.sendMail({
+      from: `"Campy Akademik" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: `Campy - ${title}`,
+      text: body.replace(/<[^>]*>?/gm, ''), // HTML taglerini temizle
+      html: html
+    });
+    console.log(`Reservation email (${status}) sent to ${user.email}`);
+  } catch (error) {
+    console.error('Email sending failed:', error);
+    // Hata fırlatma, akışı bozmasın
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendReservationStatusEmail,
 };

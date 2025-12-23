@@ -12,7 +12,7 @@ router.get('/menus', mealController.getWeeklyMenus);
 router.post('/reservations', mealController.makeReservation);
 router.get('/reservations', mealController.getMyReservations);
 router.delete('/reservations/:id', mealController.cancelReservation);
-router.patch('/reservations/:id/use', mealController.markAsUsed);
+router.patch('/reservations/:id/use', authorize('admin', 'staff'), mealController.markAsUsed);
 
 // Admin routes - Menu Management
 router.get('/menus/all', authorize('admin'), mealController.getAllMenus);

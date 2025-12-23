@@ -210,15 +210,27 @@ class EventService {
             throw error;
         }
 
-        // 10. Send confirmation email (outside transaction)
+        // 10. Send notifications
         try {
             const user = await User.findByPk(userId);
+            const notificationService = require('./notification.service');
+
+            // Send Email (Existing Logic)
             if (user && user.email) {
                 await this.sendRegistrationEmail(user, event, registration, qrImage, isWaitlisted);
             }
-        } catch (emailError) {
-            console.error('Failed to send registration email:', emailError);
-            // Don't fail the request if email fails
+
+            // Send SMS & Push (Bonus)
+            await notificationService.send({
+                userId,
+                type: 'EVENT_REGISTER',
+                title: 'Etkinlik Kaydı',
+                message: `${event.title} etkinliğine kaydınız ${isWaitlisted ? 'bekleme listesine' : 'başarıyla'} alındı.`
+            });
+
+        } catch (notifError) {
+            console.error('Failed to send notifications:', notifError);
+            // Don't fail the request
         }
 
         return {

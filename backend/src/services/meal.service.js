@@ -71,25 +71,31 @@ class MealService {
             const mealTypeLabel = menu.meal_type === 'dinner' ? 'Akşam' : 'Öğle';
             await walletService.processPayment(userId, PRICE, `${mealTypeLabel} Yemeği Rezervasyonu: ${menu.date}`); // Uses its own transaction
 
-            // 4. Generate QR Code
-            // Format: RES-{userId}-{menuId}-{UniqueSuffix}
+
+            // 4. Create Reservation (First with empty QR to get ID)
+            const reservation = await MealReservation.create({
+                user_id: userId,
+                menu_id: menuId,
+                cafeteria_id: menu.cafeteria_id,
+                meal_type: menu.meal_type,
+                date: menu.date,
+                amount: PRICE,
+                status: 'reserved',
+                qr_code: 'PENDING' // Placeholder
+            }, { transaction: t });
+
+            // 5. Generate QR Code with Reservation ID
             const qrData = {
+                id: reservation.id, // THE KEY CHANGE: Include ID
                 u: userId,
                 m: menuId,
                 t: Date.now()
             };
             const qrImage = await qrService.generate(qrData);
 
-            // 5. Create Reservation
-            const reservation = await MealReservation.create({
-                user_id: userId,
-                menu_id: menuId,
-                cafeteria_id: menu.cafeteria_id,
-                meal_type: menu.meal_type, // Store meal type
-                date: menu.date, // Store date for easier querying
-                status: 'reserved',
-                qr_code: qrImage
-            }, { transaction: t });
+            // 6. Update Reservation with real QR
+            reservation.qr_code = qrImage;
+            await reservation.save({ transaction: t });
 
             await t.commit();
             return reservation;
@@ -131,22 +137,42 @@ class MealService {
             if (reservation.status !== 'reserved') throw new Error('Cannot cancel this reservation');
 
             // VALIDATION: Cannot cancel past reservations
-            const today = new Date().toISOString().split('T')[0];
-            if (reservation.menu.date < today) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (reservation.menu.date < todayStr) {
                 const error = new Error('Geçmiş rezervasyonlar iptal edilemez.');
                 error.statusCode = 400;
                 throw error;
             }
 
+            // VALIDATION: Check 2 hours before meal time
+            // Assuming Lunch starts at 12:00, Dinner at 17:00
+            if (reservation.menu.date === todayStr) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                // Lunch deadline: 10:00
+                // Dinner deadline: 15:00
+                let deadlineHour = reservation.menu.meal_type === 'lunch' ? 10 : 15;
+
+                if (currentHour > deadlineHour || (currentHour === deadlineHour && currentMinute > 0)) {
+                    const typeLabel = reservation.menu.meal_type === 'lunch' ? 'Öğle' : 'Akşam';
+                    const error = new Error(`${typeLabel} yemeği için iptal süresi (${deadlineHour}:00) dolmuştur.`);
+                    error.statusCode = 400;
+                    throw error;
+                }
+            }
+
             // Refund logic
-            // Assuming fixed price 20.00 as per reservation logic
-            // In a real system, we should store the price in the reservation record
-            const REFUND_AMOUNT = 20.00;
-            await walletService.topUp(userId, REFUND_AMOUNT);
-            // Create refund transaction record
-            /* Note: topUp already creates a 'credit' transaction, 
-               but we might want a specific 'refund' type eventually. 
-               For now, topUp is sufficient to return money. */
+            // Use stored amount if available, otherwise fallback (or 0 if scholarship)
+            const REFUND_AMOUNT = parseFloat(reservation.amount || 0);
+
+            if (REFUND_AMOUNT > 0) {
+                await walletService.topUp(userId, REFUND_AMOUNT, `İade: ${reservation.menu.date} Yemek İptali`);
+            }
+
+            // Create refund transaction record handled by topUp with description
+            /* Note: topUp already creates a 'credit' transaction. */
 
             reservation.status = 'cancelled';
             await reservation.save({ transaction: t });
@@ -163,8 +189,10 @@ class MealService {
      * Mark reservation as used (QR scanned at turnstile)
      */
     async markAsUsed(userId, reservationId) {
+        // userId is now the Admin/Staff ID performing the action
+        // We do NOT filter by user_id here, because the reservation belongs to a student.
         const reservation = await MealReservation.findOne({
-            where: { id: reservationId, user_id: userId },
+            where: { id: reservationId },
             include: [{ model: MealMenu, as: 'menu' }]
         });
 
@@ -173,8 +201,9 @@ class MealService {
 
         // VALIDATION: Strict date check
         const today = new Date().toISOString().split('T')[0];
+
         if (reservation.menu.date !== today) {
-            const error = new Error('Bu bilet sadece menü tarihinde kullanılabilir.');
+            const error = new Error(`Bu bilet sadece menü tarihinde (${reservation.menu.date}) kullanılabilir. Bugün: ${today}`);
             error.statusCode = 400;
             throw error;
         }

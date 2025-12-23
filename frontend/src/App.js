@@ -43,6 +43,7 @@ import MyReservationsPage from './pages/meals/MyReservationsPage';
 import ClassroomReservationsPage from './pages/ClassroomReservationsPage';
 import ClassroomReservationManagementPage from './pages/ClassroomReservationManagementPage';
 import MealMenuManagementPage from './pages/admin/MealMenuManagementPage';
+import MealCheckInPage from './pages/meals/MealCheckInPage'; // [NEW]
 import EventsPage from './pages/events/EventsPage';
 import EventDetailsPage from './pages/events/EventDetailsPage';
 import MyEventsPage from './pages/events/MyEventsPage';
@@ -404,6 +405,16 @@ function AppContent() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <ClassroomReservationManagementPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Meal QR Check-in Route */}
+            <Route
+              path="/meals/checkin"
+              element={
+                <ProtectedRoute roles={['admin', 'staff']}> {/* Assuming 'staff' might exist or just admin */}
+                  <MealCheckInPage />
                 </ProtectedRoute>
               }
             />
