@@ -331,8 +331,10 @@ describe('Classroom Reservation Integration Tests', () => {
             expect(response.body.reservation).toHaveProperty('approved_by');
         });
 
+
+
         test('PATCH /api/v1/reservations/:id/approve - Admin should reject reservation', async () => {
-            // Create a new pending reservation
+            // Create a fresh pending reservation
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const dateStr = tomorrow.toISOString().split('T')[0];
@@ -341,106 +343,90 @@ describe('Classroom Reservation Integration Tests', () => {
                 classroom_id: testClassroomId,
                 user_id: createdStudent.id,
                 date: dateStr,
-                start_time: '18:00',
-                end_time: '20:00',
+                start_time: '12:00',
+                end_time: '14:00',
                 purpose: 'Test rejection',
                 status: 'pending'
             });
 
-            test('PATCH /api/v1/reservations/:id/approve - Admin should reject reservation', async () => {
-                // Create a fresh pending reservation
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const dateStr = tomorrow.toISOString().split('T')[0];
+            const response = await request(app)
+                .patch(`/api/v1/reservations/${reservation.id}/approve`)
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({ status: 'rejected' });
 
-                const reservation = await Reservation.create({
-                    classroom_id: testClassroomId,
-                    user_id: createdStudent.id,
-                    date: dateStr,
-                    start_time: '12:00',
-                    end_time: '14:00',
-                    purpose: 'Test rejection',
-                    status: 'pending'
-                });
-
-                const response = await request(app)
-                    .patch(`/api/v1/reservations/${reservation.id}/approve`)
-                    .set('Authorization', `Bearer ${adminToken}`)
-                    .send({ status: 'rejected' });
-
-                expect(response.status).toBe(200);
-                expect(response.body.reservation).toHaveProperty('status', 'rejected');
-            });
-
-            test('PATCH /api/v1/reservations/:id/approve - Non-admin should NOT approve', async () => {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const dateStr = tomorrow.toISOString().split('T')[0];
-
-                const reservation = await Reservation.create({
-                    classroom_id: testClassroomId,
-                    user_id: createdStudent.id,
-                    date: dateStr,
-                    start_time: '20:00',
-                    end_time: '22:00',
-                    purpose: 'Test unauthorized',
-                    status: 'pending'
-                });
-
-                const response = await request(app)
-                    .patch(`/api/v1/reservations/${reservation.id}/approve`)
-                    .set('Authorization', `Bearer ${studentToken}`)
-                    .send({ status: 'approved' });
-
-                expect(response.status).toBe(403);
-            });
-
-            test('PATCH /api/v1/reservations/:id/approve - Should reject conflict on approval', async () => {
-                // Create an approved reservation
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const dateStr = tomorrow.toISOString().split('T')[0];
-
-                const approvedReservation = await Reservation.create({
-                    classroom_id: testClassroomId,
-                    user_id: createdAdmin.id,
-                    date: dateStr,
-                    start_time: '13:00',
-                    end_time: '15:00',
-                    purpose: 'Approved',
-                    status: 'approved'
-                });
-
-                // Create a pending reservation that conflicts
-                const pendingReservation = await Reservation.create({
-                    classroom_id: testClassroomId,
-                    user_id: createdStudent.id,
-                    date: dateStr,
-                    start_time: '14:00',
-                    end_time: '16:00', // Overlaps with 13:00-15:00
-                    purpose: 'Pending conflict',
-                    status: 'pending'
-                });
-
-                const response = await request(app)
-                    .patch(`/ api / v1 / reservations / ${pendingReservation.id} / approve`)
-                    .set('Authorization', `Bearer ${adminToken}`)
-                    .send({ status: 'approved' });
-
-                expect(response.status).toBe(409);
-                expect(response.body.message).toContain('conflict');
-            });
+            expect(response.status).toBe(200);
+            expect(response.body.reservation).toHaveProperty('status', 'rejected');
         });
 
-        describe('Authorization', () => {
-            test('Should reject unauthorized access', async () => {
-                const response = await request(app)
-                    .get('/api/v1/reservations');
+        test('PATCH /api/v1/reservations/:id/approve - Non-admin should NOT approve', async () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
 
-                expect(response.status).toBe(401);
+            const reservation = await Reservation.create({
+                classroom_id: testClassroomId,
+                user_id: createdStudent.id,
+                date: dateStr,
+                start_time: '20:00',
+                end_time: '22:00',
+                purpose: 'Test unauthorized',
+                status: 'pending'
             });
+
+            const response = await request(app)
+                .patch(`/api/v1/reservations/${reservation.id}/approve`)
+                .set('Authorization', `Bearer ${studentToken}`)
+                .send({ status: 'approved' });
+
+            expect(response.status).toBe(403);
+        });
+
+        test('PATCH /api/v1/reservations/:id/approve - Should reject conflict on approval', async () => {
+            // Create an approved reservation
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
+
+            const approvedReservation = await Reservation.create({
+                classroom_id: testClassroomId,
+                user_id: createdAdmin.id,
+                date: dateStr,
+                start_time: '13:00',
+                end_time: '15:00',
+                purpose: 'Approved',
+                status: 'approved'
+            });
+
+            // Create a pending reservation that conflicts
+            const pendingReservation = await Reservation.create({
+                classroom_id: testClassroomId,
+                user_id: createdStudent.id,
+                date: dateStr,
+                start_time: '14:00',
+                end_time: '16:00', // Overlaps with 13:00-15:00
+                purpose: 'Pending conflict',
+                status: 'pending'
+            });
+
+            const response = await request(app)
+                .patch(`/ api / v1 / reservations / ${pendingReservation.id} / approve`)
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({ status: 'approved' });
+
+            expect(response.status).toBe(409);
+            expect(response.body.message).toContain('conflict');
         });
     });
+
+    describe('Authorization', () => {
+        test('Should reject unauthorized access', async () => {
+            const response = await request(app)
+                .get('/api/v1/reservations');
+
+            expect(response.status).toBe(401);
+        });
+    });
+});
 });
 
 

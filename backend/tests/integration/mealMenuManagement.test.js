@@ -118,7 +118,7 @@ describe('Meal Menu Management Integration Tests', () => {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const dateStr = tomorrow.toISOString().split('T')[0];
-            await MealMenu.destroy({ where: { date: dateStr, meal_type: 'lunch' } });
+            await MealMenu.destroy({ where: { date: dateStr, meal_type: 'lunch' }, force: true });
 
             const menuData = {
                 cafeteria_id: testCafeteriaId,

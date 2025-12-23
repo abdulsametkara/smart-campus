@@ -104,8 +104,8 @@ describe('Developer 4 General System Verification', () => {
     });
 
     afterAll(async () => {
-        if (createdStudent) await createdStudent.destroy({ force: true }).catch(() => {});
-        if (createdAdmin) await createdAdmin.destroy({ force: true }).catch(() => {});
+        if (createdStudent) await createdStudent.destroy({ force: true }).catch(() => { });
+        if (createdAdmin) await createdAdmin.destroy({ force: true }).catch(() => { });
         await sequelize.close();
     });
 
@@ -257,6 +257,12 @@ describe('Developer 4 General System Verification', () => {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const dateStr = tomorrow.toISOString().split('T')[0];
+
+            // Ensure cleanup
+            await MealMenu.destroy({
+                where: { date: dateStr, meal_type: 'lunch' },
+                force: true
+            });
 
             // 1. Admin creates menu (unpublished)
             const createResponse = await request(app)

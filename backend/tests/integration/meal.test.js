@@ -82,144 +82,146 @@ describe('Meal Service Integration Tests', () => {
         } finally {
             await sequelize.close(); // Close DB connection
         }
-    });
-});
 
-describe('Menu Endpoints', () => {
-    test('GET /api/v1/meals/menus - Should get weekly menus', async () => {
-        const response = await request(app)
-            .get('/api/v1/meals/menus')
-            .set('Authorization', `Bearer ${authToken}`);
-
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-
-        if (response.body.length > 0) {
-            testMenuId = response.body[0].id;
-        }
-    });
-});
-
-describe('Wallet Endpoints', () => {
-    test('GET /api/v1/wallet - Should get user wallet', async () => {
-        const response = await request(app)
-            .get('/api/v1/wallet')
-            .set('Authorization', `Bearer ${authToken}`);
-
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('balance');
-        expect(Number(response.body.balance)).toBeGreaterThanOrEqual(100);
     });
 
-    test('GET /api/v1/wallet/history - Should get transaction history', async () => {
-        const response = await request(app)
-            .get('/api/v1/wallet/history')
-            .set('Authorization', `Bearer ${authToken}`);
+    describe('Menu Endpoints', () => {
+        test('GET /api/v1/meals/menus - Should get weekly menus', async () => {
+            const response = await request(app)
+                .get('/api/v1/meals/menus')
+                .set('Authorization', `Bearer ${authToken}`);
 
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+
+            if (response.body.length > 0) {
+                testMenuId = response.body[0].id;
+            }
+        });
     });
 
-    test('POST /api/v1/wallet/top-up - Should add money to wallet', async () => {
-        const response = await request(app)
-            .post('/api/v1/wallet/top-up')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ amount: 50 });
+    describe('Wallet Endpoints', () => {
+        test('GET /api/v1/wallet - Should get user wallet', async () => {
+            const response = await request(app)
+                .get('/api/v1/wallet')
+                .set('Authorization', `Bearer ${authToken}`);
 
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('message');
-    });
-});
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('balance');
+            expect(Number(response.body.balance)).toBeGreaterThanOrEqual(100);
+        });
 
-describe('Reservation Flow', () => {
-    test('GET /api/v1/meals/reservations - Should get user reservations', async () => {
-        const response = await request(app)
-            .get('/api/v1/meals/reservations')
-            .set('Authorization', `Bearer ${authToken}`);
+        test('GET /api/v1/wallet/history - Should get transaction history', async () => {
+            const response = await request(app)
+                .get('/api/v1/wallet/history')
+                .set('Authorization', `Bearer ${authToken}`);
 
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-    });
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
 
-    test('POST /api/v1/meals/reservations - Should create a reservation', async () => {
-        if (!testMenuId) {
-            console.log('Skipping: No menu available for reservation test');
-            return;
-        }
+        test('POST /api/v1/wallet/top-up - Should add money to wallet', async () => {
+            const response = await request(app)
+                .post('/api/v1/wallet/top-up')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({ amount: 50 });
 
-        const response = await request(app)
-            .post('/api/v1/meals/reservations')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ menuId: testMenuId });
-
-        // 201 Created or 200 OK
-        expect([201, 200]).toContain(response.status);
-
-        if (response.status === 201 || response.status === 200) {
-            testReservationId = response.body.id || response.body.reservation?.id;
-        }
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message');
+        });
     });
 
-    test('DELETE /api/v1/meals/reservations/:id - Should cancel a reservation', async () => {
-        if (!testReservationId) {
-            console.log('Skipping: No reservation to cancel');
-            return;
-        }
+    describe('Reservation Flow', () => {
+        test('GET /api/v1/meals/reservations - Should get user reservations', async () => {
+            const response = await request(app)
+                .get('/api/v1/meals/reservations')
+                .set('Authorization', `Bearer ${authToken}`);
 
-        const response = await request(app)
-            .delete(`/api/v1/meals/reservations/${testReservationId}`)
-            .set('Authorization', `Bearer ${authToken}`);
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
 
-        expect(response.status).toBe(200);
-    });
-});
+        test('POST /api/v1/meals/reservations - Should create a reservation', async () => {
+            if (!testMenuId) {
+                console.log('Skipping: No menu available for reservation test');
+                return;
+            }
 
-describe('Saved Cards Endpoints', () => {
-    test('GET /api/v1/wallet/cards - Should get saved cards', async () => {
-        const response = await request(app)
-            .get('/api/v1/wallet/cards')
-            .set('Authorization', `Bearer ${authToken}`);
+            const response = await request(app)
+                .post('/api/v1/meals/reservations')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({ menuId: testMenuId });
 
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-    });
+            // 201 Created or 200 OK
+            expect([201, 200]).toContain(response.status);
 
-    test('POST /api/v1/wallet/cards - Should save a new card', async () => {
-        const cardData = {
-            cardHolder: 'Test User',
-            cardNumber: '4111111111111111',
-            expiryMonth: '12',
-            expiryYear: '26',
-            setAsDefault: true
-        };
+            if (response.status === 201 || response.status === 200) {
+                testReservationId = response.body.id || response.body.reservation?.id;
+            }
+        });
 
-        const response = await request(app)
-            .post('/api/v1/wallet/cards')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(cardData);
+        test('DELETE /api/v1/meals/reservations/:id - Should cancel a reservation', async () => {
+            if (!testReservationId) {
+                console.log('Skipping: No reservation to cancel');
+                return;
+            }
 
-        expect(response.status).toBe(201);
-    });
-});
+            const response = await request(app)
+                .delete(`/api/v1/meals/reservations/${testReservationId}`)
+                .set('Authorization', `Bearer ${authToken}`);
 
-describe('Meal Service Error Handling', () => {
-    test('Should reject unauthorized access to wallet', async () => {
-        const response = await request(app).get('/api/v1/wallet');
-        expect(response.status).toBe(401);
+            expect(response.status).toBe(200);
+        });
     });
 
-    test('Should reject unauthorized access to menus', async () => {
-        const response = await request(app).get('/api/v1/meals/menus');
-        expect(response.status).toBe(401);
+    describe('Saved Cards Endpoints', () => {
+        test('GET /api/v1/wallet/cards - Should get saved cards', async () => {
+            const response = await request(app)
+                .get('/api/v1/wallet/cards')
+                .set('Authorization', `Bearer ${authToken}`);
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        test('POST /api/v1/wallet/cards - Should save a new card', async () => {
+            const cardData = {
+                cardHolder: 'Test User',
+                cardNumber: '4111111111111111',
+                expiryMonth: '12',
+                expiryYear: '26',
+                setAsDefault: true
+            };
+
+            const response = await request(app)
+                .post('/api/v1/wallet/cards')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(cardData);
+
+            expect(response.status).toBe(201);
+        });
     });
 
-    test('Should reject invalid topup amount', async () => {
-        const response = await request(app)
-            .post('/api/v1/wallet/top-up')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ amount: -50 });
+    describe('Meal Service Error Handling', () => {
+        test('Should reject unauthorized access to wallet', async () => {
+            const response = await request(app).get('/api/v1/wallet');
+            expect(response.status).toBe(401);
+        });
 
-        expect(response.status).toBe(400);
+        test('Should reject unauthorized access to menus', async () => {
+            const response = await request(app).get('/api/v1/meals/menus');
+            expect(response.status).toBe(401);
+        });
+
+        test('Should reject invalid topup amount', async () => {
+            const response = await request(app)
+                .post('/api/v1/wallet/top-up')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({ amount: -50 });
+
+            expect(response.status).toBe(400);
+        });
     });
-});
 
+} ) ;  
+ 
