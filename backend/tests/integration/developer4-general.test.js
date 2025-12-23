@@ -180,8 +180,8 @@ describe('Developer 4 General System Verification', () => {
                 .send({ menuId: menu.id });
 
             expect(response.status).toBe(201);
-            expect(response.body.reservation).toHaveProperty('qr_code');
-            expect(response.body.reservation.qr_code).toContain('data:image/png;base64,');
+            expect(response.body).toHaveProperty('qr_code');
+            expect(response.body.qr_code).toContain('data:image/png;base64,');
         });
     });
 
@@ -278,7 +278,7 @@ describe('Developer 4 General System Verification', () => {
                 });
 
             expect(createResponse.status).toBe(201);
-            const menuId = createResponse.body.menu.id;
+            const menuId = createResponse.body.id;
 
             // 2. Menu should NOT be visible to students (unpublished)
             const menusBefore = await request(app)

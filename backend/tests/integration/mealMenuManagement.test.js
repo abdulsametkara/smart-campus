@@ -140,10 +140,10 @@ describe('Meal Menu Management Integration Tests', () => {
                 .send(menuData);
 
             expect(response.status).toBe(201);
-            expect(response.body.menu).toHaveProperty('id');
-            expect(response.body.menu).toHaveProperty('meal_type', 'lunch');
-            expect(response.body.menu).toHaveProperty('price', 20.00);
-            expect(response.body.menu).toHaveProperty('is_published', true);
+            expect(response.body).toHaveProperty('id');
+            expect(response.body).toHaveProperty('meal_type', 'lunch');
+            expect(response.body).toHaveProperty('price', 20.00);
+            expect(response.body).toHaveProperty('is_published', true);
 
             testMenuId = response.body.menu.id;
         });
@@ -171,8 +171,8 @@ describe('Meal Menu Management Integration Tests', () => {
                 .send(menuData);
 
             expect(response.status).toBe(201);
-            expect(response.body.menu).toHaveProperty('meal_type', 'dinner');
-            expect(response.body.menu).toHaveProperty('is_published', false);
+            expect(response.body).toHaveProperty('meal_type', 'dinner');
+            expect(response.body).toHaveProperty('is_published', false);
         });
 
         test('POST /api/v1/meals/menus - Non-admin should NOT create menu', async () => {
@@ -283,7 +283,7 @@ describe('Meal Menu Management Integration Tests', () => {
                 .send({ is_published: true });
 
             expect(response.status).toBe(200);
-            expect(response.body.menu).toHaveProperty('is_published', true);
+            expect(response.body).toHaveProperty('is_published', true);
         });
 
         test('PATCH /api/v1/meals/menus/:id/publish - Admin should unpublish menu', async () => {
