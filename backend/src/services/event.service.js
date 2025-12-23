@@ -215,9 +215,9 @@ class EventService {
             const user = await User.findByPk(userId);
             const notificationService = require('./notification.service');
 
-            // Send Email (Existing Logic)
+            // Send Email (New Logic)
             if (user && user.email) {
-                await this.sendRegistrationEmail(user, event, registration, qrImage, isWaitlisted);
+                await emailService.sendEventRegistrationEmail(user, event, registration, qrImage, isWaitlisted);
             }
 
             // Send SMS & Push (Bonus)
@@ -297,7 +297,7 @@ class EventService {
         try {
             const user = await User.findByPk(userId);
             if (user && user.email) {
-                await this.sendCancellationEmail(user, event);
+                await emailService.sendEventCancellationEmail(user, event);
             }
         } catch (emailError) {
             console.error('Failed to send cancellation email:', emailError);
@@ -424,111 +424,6 @@ class EventService {
         );
 
         return registrationsWithQR;
-    }
-
-    /**
-     * Send registration confirmation email
-     */
-    async sendRegistrationEmail(user, event, registration, qrImage, isWaitlisted) {
-        const transporter = require('nodemailer').createTransport({
-            host: process.env.EMAIL_HOST,
-            port: Number(process.env.EMAIL_PORT) || 587,
-            secure: false,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        const statusText = isWaitlisted ? 'Waitlist' : 'Confirmed';
-        const html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; }
-                    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; }
-                    .header { background: #10b981; color: white; padding: 20px; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
-                    .qr-code { text-align: center; margin: 20px 0; }
-                    .qr-code img { max-width: 200px; }
-                    .info { background: #f9fafb; padding: 15px; border-radius: 5px; margin: 15px 0; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>Event Registration ${statusText}</h1>
-                    </div>
-                    <p>Hello <strong>${user.full_name}</strong>,</p>
-                    <p>Your registration for <strong>${event.title}</strong> has been ${isWaitlisted ? 'added to the waitlist' : 'confirmed'}.</p>
-                    <div class="info">
-                        <p><strong>Event Details:</strong></p>
-                        <p>Date: ${event.date}</p>
-                        <p>Time: ${event.start_time} - ${event.end_time}</p>
-                        <p>Location: ${event.location}</p>
-                    </div>
-                    ${!isWaitlisted ? `
-                        <div class="qr-code">
-                            <p><strong>Your QR Code for Check-in:</strong></p>
-                            <img src="${qrImage}" alt="QR Code" />
-                        </div>
-                    ` : '<p>You will be notified if a spot becomes available.</p>'}
-                </div>
-            </body>
-            </html>
-        `;
-
-        await transporter.sendMail({
-            from: `"Campy Events" <${process.env.EMAIL_USER}>`,
-            to: user.email,
-            subject: `Event Registration ${statusText}: ${event.title}`,
-            html: html
-        });
-    }
-
-    /**
-     * Send cancellation email
-     */
-    async sendCancellationEmail(user, event) {
-        const transporter = require('nodemailer').createTransport({
-            host: process.env.EMAIL_HOST,
-            port: Number(process.env.EMAIL_PORT) || 587,
-            secure: false,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        const html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; }
-                    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; }
-                    .header { background: #ef4444; color: white; padding: 20px; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>Event Registration Cancelled</h1>
-                    </div>
-                    <p>Hello <strong>${user.full_name}</strong>,</p>
-                    <p>Your registration for <strong>${event.title}</strong> has been cancelled.</p>
-                    <p>If you paid for this event, the amount has been refunded to your wallet.</p>
-                </div>
-            </body>
-            </html>
-        `;
-
-        await transporter.sendMail({
-            from: `"Campy Events" <${process.env.EMAIL_USER}>`,
-            to: user.email,
-            subject: `Event Registration Cancelled: ${event.title}`,
-            html: html
-        });
     }
 }
 

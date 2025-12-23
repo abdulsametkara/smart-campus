@@ -165,8 +165,84 @@ const sendReservationStatusEmail = async (user, reservation, status) => {
   }
 };
 
+const sendEventRegistrationEmail = async (user, event, registration, qrImage, isWaitlisted) => {
+  const transporter = createTransporter();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const myEventsUrl = `${frontendUrl}/events/my-events`;
+
+  const statusText = isWaitlisted ? 'Bekleme Listesi' : 'Onaylandı';
+  const statusColor = isWaitlisted ? '#f59e0b' : '#10b981'; // Orange or Green
+
+  let bodyContent = `Merhaba <strong>${user.full_name}</strong>,<br><br>
+    <strong>${event.title}</strong> etkinliği için kaydınızın durumu: <span style="color:${statusColor}; font-weight:bold;">${statusText}</span>.<br><br>
+    <strong>📅 Etkinlik Detayları:</strong><br>
+    • <strong>Tarih:</strong> ${new Date(event.date).toLocaleDateString('tr-TR')}<br>
+    • <strong>Saat:</strong> ${event.start_time ? event.start_time.substring(0, 5) : ''} - ${event.end_time ? event.end_time.substring(0, 5) : ''}<br>
+    • <strong>Konum:</strong> ${event.location}<br>`;
+
+  if (!isWaitlisted) {
+    bodyContent += `<br>Giriş için aşağıdaki QR kodu görevliye gösteriniz:<br>
+      <div style="text-align: center; margin: 20px 0;">
+        <img src="${qrImage}" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;" />
+      </div>`;
+  } else {
+    bodyContent += `<br>Kontenjan açıldığında size e-posta ile bilgi verilecektir.<br>`;
+  }
+
+  const html = getHtmlTemplate(
+    `Etkinlik Kaydı: ${event.title}`,
+    bodyContent,
+    'Biletlerimi Görüntüle',
+    myEventsUrl
+  );
+
+  try {
+    await transporter.sendMail({
+      from: `"Campy Events" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: `Etkinlik Kaydı (${statusText}): ${event.title}`,
+      html: html
+    });
+    console.log(`Event registration email (${statusText}) sent to ${user.email}`);
+  } catch (error) {
+    console.error('Email sending failed:', error);
+  }
+};
+
+const sendEventCancellationEmail = async (user, event) => {
+  const transporter = createTransporter();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const eventsUrl = `${frontendUrl}/events`;
+
+  const bodyContent = `Merhaba <strong>${user.full_name}</strong>,<br><br>
+    <strong>${event.title}</strong> etkinliği için oluşturduğunuz kayıt iptal edilmiştir.<br>
+    ${event.is_paid ? 'Eğer ödeme yaptıysanız, tutar cüzdanınıza iade edilmiştir.' : ''}<br><br>
+    İlginiz için teşekkür ederiz.`;
+
+  const html = getHtmlTemplate(
+    `Etkinlik Kaydı İptali`,
+    bodyContent,
+    'Diğer Etkinlikleri İncele',
+    eventsUrl
+  );
+
+  try {
+    await transporter.sendMail({
+      from: `"Campy Events" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: `Kayıt İptali: ${event.title}`,
+      html: html
+    });
+    console.log(`Event cancellation email sent to ${user.email}`);
+  } catch (error) {
+    console.error('Email sending failed:', error);
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendReservationStatusEmail,
+  sendEventRegistrationEmail,
+  sendEventCancellationEmail
 };
