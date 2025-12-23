@@ -323,7 +323,7 @@ describe('Classroom Reservation Integration Tests', () => {
 
             const response = await request(app)
                 .patch(`/api/v1/reservations/${reservation.id}/approve`)
-                .set('Authorization', `Bearer ${adminToken`)
+                .set('Authorization', `Bearer ${adminToken}`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(200);
@@ -348,8 +348,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/ api / v1 / reservations / ${ reservation.id } / approve`)
-                .set('Authorization', `Bearer ${ adminToken }`)
+                .patch(`/ api / v1 / reservations / ${reservation.id} / approve`)
+                .set('Authorization', `Bearer ${adminToken}`)
                 .send({ status: 'rejected' });
 
             expect(response.status).toBe(200);
@@ -372,8 +372,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/ api / v1 / reservations / ${ reservation.id } / approve`)
-                .set('Authorization', `Bearer ${ studentToken }`)
+                .patch(`/ api / v1 / reservations / ${reservation.id} / approve`)
+                .set('Authorization', `Bearer ${studentToken}`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(403);
@@ -407,8 +407,8 @@ describe('Classroom Reservation Integration Tests', () => {
             });
 
             const response = await request(app)
-                .patch(`/ api / v1 / reservations / ${ pendingReservation.id } / approve`)
-                .set('Authorization', `Bearer ${ adminToken }`)
+                .patch(`/ api / v1 / reservations / ${pendingReservation.id} / approve`)
+                .set('Authorization', `Bearer ${adminToken}`)
                 .send({ status: 'approved' });
 
             expect(response.status).toBe(409);
