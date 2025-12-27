@@ -33,6 +33,7 @@ COPY --from=builder /usr/src/app/src ./src
 COPY --from=builder /usr/src/app/models ./models
 COPY --from=builder /usr/src/app/migrations ./migrations
 COPY --from=builder /usr/src/app/seeders ./seeders
+COPY --from=builder /usr/src/app/seed_data ./seed_data
 COPY --from=builder /usr/src/app/jobs ./jobs
 COPY --from=builder /usr/src/app/routes ./routes
 COPY --from=builder /usr/src/app/scripts ./scripts

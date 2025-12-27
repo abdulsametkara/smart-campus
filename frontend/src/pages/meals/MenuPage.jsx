@@ -1,58 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import mealService from '../../services/meal.service';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import NotificationService from '../../services/notificationService';
-import PaymentService from '../../services/paymentService';
+import Swal from 'sweetalert2';
+import { useThemeMode } from '../../context/ThemeContext';
 import './MenuPage.css';
 
-const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-
 const MenuPage = () => {
+    const { t, isEnglish } = useThemeMode();
     const [menus, setMenus] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    const [selectedMealType, setSelectedMealType] = useState('lunch'); // 'lunch' or 'dinner'
     const [weekDates, setWeekDates] = useState([]);
     const [weekOffset, setWeekOffset] = useState(0);
 
-    useEffect(() => {
-        generateWeekDates(weekOffset);
-    }, [weekOffset]);
+    // Dynamic days based on locale
+    const getDayName = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { weekday: 'long' });
+    };
 
     useEffect(() => {
-        if (weekDates.length > 0) {
-            fetchData();
-        }
-    }, [weekDates]);
+        generateWeekDates(weekOffset);
+        fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [weekOffset]);
 
     const fetchData = async () => {
         try {
-            setLoading(true);
-            // Hafta başlangıç ve bitiş tarihlerini gönder
-            const startDate = weekDates[0]; // İlk gün (Pazartesi)
-            const endDate = weekDates[6]; // Son gün (Pazar)
-
-            console.log('[MenuPage] Fetching menus for week:', startDate, 'to', endDate);
-
             const [menuData, resData] = await Promise.all([
-                mealService.getWeeklyMenus(startDate, endDate),
+                mealService.getWeeklyMenus(),
                 mealService.getMyReservations()
             ]);
-
-            console.log('[MenuPage] Received menu data:', menuData);
-            console.log('[MenuPage] Received reservation data:', resData);
-
-            // Backend'den gelen menüleri array olarak al
-            const menusArray = Array.isArray(menuData) ? menuData : (menuData.menus || menuData.data || []);
-            console.log('[MenuPage] Processed menus array:', menusArray);
-            setMenus(menusArray);
-            setReservations(Array.isArray(resData) ? resData : (resData.reservations || resData.data || []));
+            setMenus(menuData);
+            setReservations(resData);
         } catch (error) {
-            console.error('Menu fetch error:', error);
-            NotificationService.error('Hata', 'Veriler yüklenemedi');
-            setMenus([]);
-            setReservations([]);
+            console.error(error);
+            Swal.fire(t('error') || 'Hata', t('fetchError'), 'error');
         } finally {
             setLoading(false);
         }
@@ -61,26 +44,20 @@ const MenuPage = () => {
     const generateWeekDates = (offset = 0) => {
         // Generate 7 days for the week based on offset
         const today = new Date();
-        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeek = today.getDay();
         const monday = new Date(today);
-        // Calculate Monday: if today is Sunday (0), go back 6 days, otherwise go back (dayOfWeek - 1) days
         monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + (offset * 7));
-        monday.setHours(0, 0, 0, 0); // Set to midnight local time
 
         const dates = [];
         for (let i = 0; i < 7; i++) {
             const day = new Date(monday);
             day.setDate(monday.getDate() + i);
-            // Format as YYYY-MM-DD in local timezone
-            const year = day.getFullYear();
-            const month = String(day.getMonth() + 1).padStart(2, '0');
-            const dayNum = String(day.getDate()).padStart(2, '0');
-            dates.push(`${year}-${month}-${dayNum}`);
+            dates.push(day.toISOString().split('T')[0]);
         }
         setWeekDates(dates);
 
         // Default to today if in range, else first day of week
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayStr = new Date().toISOString().split('T')[0];
         if (offset === 0 && dates.includes(todayStr)) {
             setSelectedDate(todayStr);
         } else {
@@ -91,35 +68,25 @@ const MenuPage = () => {
 
     const handleReserve = async (menuId) => {
         try {
-            const menu = menus.find(m => m.id === menuId);
-            const price = parseFloat(menu?.price || 20.00).toFixed(2);
-            const mealTypeLabel = menu?.meal_type === 'dinner' ? 'Akşam' : 'Öğle';
-
-            const result = await NotificationService.confirm(
-                'Yemek Rezervasyonu',
-                `${mealTypeLabel} yemeği için hesabınızdan ${price} TL düşülecektir. Onaylıyor musunuz?`,
-                {
-                    confirmButtonText: 'Evet, Rezerve Et',
-                    cancelButtonText: 'İptal'
-                }
-            );
+            const result = await Swal.fire({
+                title: t('confirmReserve'),
+                text: t('reserveCostWarning'),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: t('confirmReserveBtn'),
+                cancelButtonText: t('cancel')
+            });
 
             if (result.isConfirmed) {
-                await PaymentService.reserveMeal(menuId);
-                NotificationService.success('Başarılı', 'Rezervasyonunuz oluşturuldu.');
-                // Refresh reservations and menus
+                await mealService.makeReservation(menuId);
+                Swal.fire(t('success') || 'Başarılı', t('reserveSuccess'), 'success');
+                // Refresh reservations
                 const resData = await mealService.getMyReservations();
-                setReservations(Array.isArray(resData) ? resData : (resData.reservations || resData.data || []));
-                // Refresh menus to update reservation status
-                const startDate = weekDates[0];
-                const endDate = weekDates[6];
-                const menuData = await mealService.getWeeklyMenus(startDate, endDate);
-                const menusArray = Array.isArray(menuData) ? menuData : (menuData.menus || menuData.data || []);
-                setMenus(menusArray);
+                setReservations(resData);
             }
         } catch (error) {
             console.error(error);
-            NotificationService.error('Hata', error.response?.data?.message || 'Rezervasyon yapılamadı (Yetersiz bakiye olabilir).');
+            Swal.fire(t('error') || 'Hata', error.response?.data?.message || t('reserveError'), 'error');
         }
     };
 
@@ -128,29 +95,12 @@ const MenuPage = () => {
         return reservations.some(r => r.menu_id === menuId && r.status !== 'cancelled');
     };
 
-    // Menü tarihini normalize et (YYYY-MM-DD formatına çevir)
-    const normalizeDate = (dateStr) => {
-        if (!dateStr) return null;
-        // Eğer Date objesi ise
-        if (dateStr instanceof Date) {
-            return dateStr.toISOString().split('T')[0];
-        }
-        // Eğer string ise, T'den önceki kısmı al
-        if (typeof dateStr === 'string') {
-            return dateStr.split('T')[0];
-        }
-        return dateStr;
-    };
-
-    const currentMenu = menus.find(m => {
-        const menuDate = normalizeDate(m.date);
-        return menuDate === selectedDate && m.meal_type === selectedMealType;
-    });
+    const currentMenu = menus.find(m => m.date === selectedDate);
 
     if (loading) {
         return (
             <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                Menüler Yükleniyor...
+                {t('loading')}
             </div>
         );
     }
@@ -158,17 +108,19 @@ const MenuPage = () => {
     const goToPrevWeek = () => setWeekOffset(prev => prev - 1);
     const goToNextWeek = () => setWeekOffset(prev => prev + 1);
 
-    // Get week label
+    // Get week label formatted efficiently
     const getWeekLabel = () => {
         if (weekDates.length === 0) return '';
         const start = new Date(weekDates[0]);
         const end = new Date(weekDates[6]);
-        return `${start.getDate()}.${start.getMonth() + 1} - ${end.getDate()}.${end.getMonth() + 1}.${end.getFullYear()}`;
+        const options = { day: 'numeric', month: 'numeric' };
+        const locale = isEnglish ? 'en-US' : 'tr-TR';
+        return `${start.toLocaleDateString(locale, options)} - ${end.toLocaleDateString(locale, { ...options, year: 'numeric' })}`;
     };
 
     return (
         <div className="menu-page-container">
-            <h1 className="page-title">Yemek Menüsü</h1>
+            <h1 className="page-title">{t('menuTitle')}</h1>
 
             <div className="nav-arrows">
                 <button className="nav-arrow" onClick={goToPrevWeek}>
@@ -183,59 +135,24 @@ const MenuPage = () => {
             </div>
 
             <div className="week-tabs">
-                {weekDates.map((date, index) => {
-                    // Calculate day name from date to ensure consistency with menu header
-                    const [year, month, day] = date.split('-').map(Number);
-                    const dateObj = new Date(year, month - 1, day);
-                    const dayIndex = dateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                    const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-                    const dayName = dayNames[dayIndex];
-
-                    return (
-                        <button
-                            key={date}
-                            className={`day-tab ${selectedDate === date ? 'active' : ''}`}
-                            onClick={() => setSelectedDate(date)}
-                        >
-                            <span className="day-name">{dayName.toUpperCase()}</span>
-                            <span className="day-date">{date.split('-').slice(1).reverse().join('.')}</span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Meal Type Toggle */}
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                <button
-                    className={`btn ${selectedMealType === 'lunch' ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setSelectedMealType('lunch')}
-                >
-                    🍽️ Öğle Yemeği
-                </button>
-                <button
-                    className={`btn ${selectedMealType === 'dinner' ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setSelectedMealType('dinner')}
-                >
-                    🌙 Akşam Yemeği
-                </button>
+                {weekDates.map((date, index) => (
+                    <button
+                        key={date}
+                        className={`day-tab ${selectedDate === date ? 'active' : ''}`}
+                        onClick={() => setSelectedDate(date)}
+                    >
+                        <span className="day-name">{getDayName(date).toUpperCase()}</span>
+                        <span className="day-date">{date.split('-').slice(1).reverse().join('.')}</span>
+                    </button>
+                ))}
             </div>
 
             <div className="menu-content">
                 {currentMenu ? (
                     <div className="menu-card">
                         <div className="menu-header">
-                            <h2>
-                                {(() => {
-                                    // Parse date correctly (YYYY-MM-DD format) - use local timezone
-                                    const [year, month, day] = selectedDate.split('-').map(Number);
-                                    const date = new Date(year, month - 1, day);
-                                    const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-                                    const dayName = dayNames[date.getDay()];
-                                    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-                                    return `${day} ${monthNames[month - 1]} ${dayName}`;
-                                })()}
-                            </h2>
-                            <span className="cafeteria-badge">{currentMenu.cafeteria?.name || currentMenu.Cafeterium?.name || 'Ana Yemekhane'}</span>
+                            <h2>{new Date(selectedDate).toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+                            <span className="cafeteria-badge">{currentMenu.Cafeterium?.name || 'Ana Yemekhane'}</span>
                         </div>
 
                         <div className="menu-items">
@@ -244,27 +161,12 @@ const MenuPage = () => {
                                 <div key={idx} className="menu-item">
                                     <span className="item-icon">🍽️</span>
                                     <span className="item-name">{item}</span>
-                                    {(item.toLowerCase().includes('vegan') || item.toLowerCase().includes('vejetaryen') || item.toLowerCase().includes('sebze')) && (
-                                        <span className="badge badge-green" style={{ marginLeft: 'auto', fontSize: '0.7rem', background: '#dcfce7', color: '#166534', padding: '2px 6px', borderRadius: '4px' }}>
-                                            🌱
-                                        </span>
-                                    )}
                                 </div>
                             ))}
                         </div>
 
-                        {/* Vegan/Veg Indicators Summary */}
-                        <div style={{ padding: '0 1.5rem', marginBottom: '1rem', display: 'flex', gap: '5px' }}>
-                            {/* Simple check for demo purposes */}
-                            {(JSON.stringify(currentMenu.items_json).toLowerCase().includes('vegan')) && (
-                                <span className="badge-pill" style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    🌱 Vegan Seçenek Mevcut
-                                </span>
-                            )}
-                        </div>
-
                         <div className="nutrition-info">
-                            <h4>Besin Değerleri</h4>
+                            <h4>{t('nutritionValues')}</h4>
                             {(() => {
                                 const nutrition = typeof currentMenu.nutrition_json === 'object'
                                     ? currentMenu.nutrition_json
@@ -280,27 +182,27 @@ const MenuPage = () => {
                                                         <span className="nut-item-name">{item.name}</span>
                                                         <div className="nut-item-values">
                                                             <span className="nut-pill">{item.calories} kcal</span>
-                                                            <span className="nut-pill protein">{item.protein}g protein</span>
-                                                            <span className="nut-pill carbs">{item.carbs}g karb</span>
+                                                            <span className="nut-pill protein">{item.protein}g {t('protein').toLowerCase()}</span>
+                                                            <span className="nut-pill carbs">{item.carbs}g {t('carbs').toLowerCase()}</span>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                             {nutrition.total && (
                                                 <div className="nutrition-total">
-                                                    <span className="total-label">TOPLAM</span>
+                                                    <span className="total-label">{t('total')}</span>
                                                     <div className="nutrition-grid">
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.calories}</span>
-                                                            <span className="nut-key">Kalori</span>
+                                                            <span className="nut-key">{t('calories')}</span>
                                                         </div>
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.protein}g</span>
-                                                            <span className="nut-key">Protein</span>
+                                                            <span className="nut-key">{t('protein')}</span>
                                                         </div>
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.carbs}g</span>
-                                                            <span className="nut-key">Karbonhidrat</span>
+                                                            <span className="nut-key">{t('carbs')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -327,18 +229,18 @@ const MenuPage = () => {
                             {isMenuReserved(currentMenu.id) ? (
                                 <div className="reserved-badge">
                                     <span className="check-icon">✓</span>
-                                    Rezerve Edildi
+                                    {t('reserved')}
                                 </div>
                             ) : (
                                 <button className="reserve-btn" onClick={() => handleReserve(currentMenu.id)}>
-                                    Hemen Rezerve Et ({parseFloat(currentMenu.price || 20.00).toFixed(2)} TL)
+                                    {t('reserveNow')} (20 TL)
                                 </button>
                             )}
                         </div>
                     </div>
                 ) : (
                     <div className="no-menu-state">
-                        <p>Bugün için planlanmış bir menü bulunamadı.</p>
+                        <p>{t('noMenu')}</p>
                     </div>
                 )}
             </div>

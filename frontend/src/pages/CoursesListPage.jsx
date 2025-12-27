@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { coursesService, enrollmentsService } from '../services/academicService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useThemeMode } from '../context/ThemeContext';
 import './CoursesListPage.css';
 
 const CoursesListPage = () => {
     const { user } = useAuth();
+    const { t } = useThemeMode();
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -44,7 +46,7 @@ const CoursesListPage = () => {
 
             setError(null);
         } catch (err) {
-            setError(err.response?.data?.message || 'Dersler yüklenirken hata oluştu');
+            setError(err.response?.data?.message || t('fetchError') || 'Dersler yüklenirken hata oluştu');
             console.error(err);
         } finally {
             setLoading(false);
@@ -52,14 +54,14 @@ const CoursesListPage = () => {
     };
 
     const handleDelete = async (id, code) => {
-        if (!window.confirm(`"${code}" dersini silmek istediğinizden emin misiniz?`)) {
+        if (!window.confirm(t('confirmDeleteCourse', { code }).replace('{{code}}', code))) {
             return;
         }
         try {
             await coursesService.delete(id);
             setCourses(courses.filter(c => c.id !== id));
         } catch (err) {
-            alert(err.response?.data?.message || 'Ders silinirken hata oluştu');
+            alert(err.response?.data?.message || t('courseDeleteError'));
         }
     };
 
@@ -72,9 +74,9 @@ const CoursesListPage = () => {
         return (
             <div className="page courses-page">
                 <div className="page-header">
-                    <h1>Dersler</h1>
+                    <h1>{t('coursesTitle')}</h1>
                 </div>
-                <LoadingSpinner size="large" message="Dersler yükleniyor..." />
+                <LoadingSpinner size="large" message={t('loading')} />
             </div>
         );
     }
@@ -82,14 +84,14 @@ const CoursesListPage = () => {
     return (
         <div className="page courses-page">
             <div className="page-header">
-                <h1>Dersler</h1>
+                <h1>{t('coursesTitle')}</h1>
                 {user?.role === 'admin' && (
                     <Link to="/courses/new" className="btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Yeni Ders Ekle
+                        {t('addNewCourse')}
                     </Link>
                 )}
             </div>
@@ -102,7 +104,7 @@ const CoursesListPage = () => {
             <div className="search-box">
                 <input
                     type="text"
-                    placeholder="Ders kodu veya adı ile ara..."
+                    placeholder={t('searchCoursesPlaceholder')}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
@@ -113,20 +115,20 @@ const CoursesListPage = () => {
                 <table className="courses-table">
                     <thead>
                         <tr>
-                            <th>Ders Kodu</th>
-                            <th>Ders Adı</th>
-                            <th>Kredi</th>
-                            <th>AKTS</th>
-                            <th>Haftalık Saat</th>
-                            <th>Bölüm</th>
-                            {user?.role === 'admin' && <th>İşlemler</th>}
+                            <th>{t('courseCode') || 'Ders Kodu'}</th>
+                            <th>{t('courseName') || 'Ders Adı'}</th>
+                            <th>{t('credits')}</th>
+                            <th>{t('ects')}</th>
+                            <th>{t('weeklyHours')}</th>
+                            <th>{t('department')}</th>
+                            {user?.role === 'admin' && <th>{t('actions') || 'İşlemler'}</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {filteredCourses.length === 0 ? (
                             <tr>
                                 <td colSpan={user?.role === 'admin' ? 7 : 6} className="empty-state">
-                                    Ders bulunamadı
+                                    {t('noCoursesFound')}
                                 </td>
                             </tr>
                         ) : (
@@ -143,13 +145,13 @@ const CoursesListPage = () => {
                                     {user?.role === 'admin' && (
                                         <td className="actions">
                                             <Link to={`/courses/${course.id}/edit`} className="btn secondary btn-sm">
-                                                Düzenle
+                                                {t('edit') || 'Düzenle'}
                                             </Link>
                                             <button
                                                 className="btn danger btn-sm"
                                                 onClick={() => handleDelete(course.id, course.code)}
                                             >
-                                                Sil
+                                                {t('delete') || 'Sil'}
                                             </button>
                                         </td>
                                     )}

@@ -2,7 +2,9 @@ const { Exam, Grade, CourseSection, Enrollment, User } = require('../../models')
 const { Op } = require('sequelize');
 const sequelize = require('../../models').sequelize;
 
-// --- EXAM MANAGEMENT ---
+// --- GRADE MANAGEMENT ---
+
+const { createAndEmitNotification } = require('../utils/notificationHelper');
 
 exports.createExam = async (req, res) => {
     try {
@@ -138,6 +140,24 @@ exports.submitValidGrades = async (req, res) => {
                 grade.score = item.score;
                 grade.feedback = item.feedback;
                 await grade.save();
+            }
+
+            // Trigger Notification
+            // Assuming we have the student ID and exam info
+            // Fetch student name if we want to be personal, or just generic
+            try {
+                // Ideally run this asynchronously or in background
+                const notificationContent = {
+                    userId: item.student_id,
+                    title: 'Yeni Not Girildi',
+                    message: `${exam.section?.course?.code || 'Ders'} - ${exam.title} sınav notunuz açıklandı: ${item.score}`,
+                    type: 'academic'
+                };
+                // Access app via req.app to get io instance
+                await createAndEmitNotification(req.app, notificationContent);
+            } catch (notifErr) {
+                console.error('Failed to send grade notification:', notifErr);
+                // Don't fail the request just because notification failed
             }
         }
 

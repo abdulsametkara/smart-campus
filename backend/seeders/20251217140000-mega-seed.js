@@ -478,6 +478,240 @@ module.exports = {
         ]);
         console.log(`✅ Part 3 Data Initialized`);
 
+        // ==================== 9. EXAMS & GRADES (For Academic Analytics) ====================
+        const exams = [];
+
+        // Create one MIDTERM and one FINAL exam per section
+        for (const section of sectionRows) {
+            exams.push({
+                section_id: section.id,
+                title: 'Vize Sınavı',
+                type: 'MIDTERM',
+                weight: 40,
+                date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+                is_published: true,
+                average_score: 0,
+                created_at: now,
+                updated_at: now
+            });
+            exams.push({
+                section_id: section.id,
+                title: 'Final Sınavı',
+                type: 'FINAL',
+                weight: 60,
+                date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+                is_published: true,
+                average_score: 0,
+                created_at: now,
+                updated_at: now
+            });
+        }
+
+        await queryInterface.bulkInsert('exams', exams, {});
+        console.log(`✅ ${exams.length} Exams created`);
+
+        // Fetch exam IDs
+        const examRows = await queryInterface.sequelize.query(
+            `SELECT id, section_id FROM exams`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+
+        // Create grades for each enrollment (student-exam pair)
+        const grades = [];
+
+        // Fetch enrollments to create grades
+        const enrollmentRows = await queryInterface.sequelize.query(
+            `SELECT id, student_id, section_id FROM enrollments`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+
+        for (const enroll of enrollmentRows) {
+            // Find exams for this section
+            const sectionExams = examRows.filter(e => e.section_id === enroll.section_id);
+
+            for (const exam of sectionExams) {
+                const score = Math.floor(Math.random() * 50) + 50; // 50-100
+                grades.push({
+                    exam_id: exam.id,
+                    student_id: enroll.student_id,
+                    score: score,
+                    feedback: score >= 70 ? 'Başarılı' : 'Geliştirilmeli',
+                    created_at: now,
+                    updated_at: now
+                });
+            }
+        }
+
+        await queryInterface.bulkInsert('grades', grades, {});
+        console.log(`✅ ${grades.length} Grades created`);
+
+        // ==================== 10. ATTENDANCE SESSIONS & RECORDS ====================
+        const attendanceSessions = [];
+        const attendanceRecords = [];
+
+        // Get section IDs for creating sessions
+        const sectionRowsForAttendance = await queryInterface.sequelize.query(
+            `SELECT cs.id as section_id, cs.course_id, cs.instructor_id FROM course_sections cs LIMIT 20`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+
+        // Create 3 sessions per section (last 30 days)
+        let sessionIdCounter = 1;
+        const sessionMap = {}; // store session details
+
+        for (const section of sectionRowsForAttendance) {
+            for (let i = 0; i < 3; i++) {
+                const sessionDate = new Date();
+                sessionDate.setDate(sessionDate.getDate() - (i * 7 + Math.floor(Math.random() * 5)));
+
+                const endTime = new Date(sessionDate);
+                endTime.setHours(endTime.getHours() + 3);
+
+                attendanceSessions.push({
+                    section_id: section.section_id,
+                    instructor_id: section.instructor_id,
+                    start_time: sessionDate,
+                    end_time: endTime,
+                    qr_code: `QR-${section.section_id}-${i}-${Date.now()}`,
+                    status: 'CLOSED',
+                    created_at: now,
+                    updated_at: now
+                });
+                sessionMap[sessionIdCounter] = section.section_id;
+                sessionIdCounter++;
+            }
+        }
+
+        await queryInterface.bulkInsert('attendance_sessions', attendanceSessions, {});
+        console.log(`✅ ${attendanceSessions.length} Attendance Sessions created`);
+
+        // Fetch created session IDs
+        const sessionRows = await queryInterface.sequelize.query(
+            `SELECT id, section_id FROM attendance_sessions`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+
+        // For each session, create records for enrolled students
+        for (const session of sessionRows) {
+            // Get students enrolled in this section
+            const enrolledStudents = await queryInterface.sequelize.query(
+                `SELECT student_id FROM enrollments WHERE section_id = ${session.section_id}`,
+                { type: Sequelize.QueryTypes.SELECT }
+            );
+
+            enrolledStudents.forEach(student => {
+                // Random status: 75% PRESENT, 18% ABSENT, 7% EXCUSED
+                const rand = Math.random();
+                let status = 'PRESENT';
+                if (rand > 0.93) status = 'EXCUSED';
+                else if (rand > 0.75) status = 'ABSENT';
+
+                attendanceRecords.push({
+                    session_id: session.id,
+                    student_id: student.student_id,
+                    status: status,
+                    check_in_time: status === 'PRESENT' ? now : null,
+                    created_at: now,
+                    updated_at: now
+                });
+            });
+        }
+
+        await queryInterface.bulkInsert('attendance_records', attendanceRecords, {});
+        console.log(`✅ ${attendanceRecords.length} Attendance Records created`);
+
+        // ==================== 11. MEAL RESERVATIONS (For Meal Analytics) ====================
+        const mealReservations = [];
+        const studentUserIds = userRows.filter(u => u.role === 'student').map(u => u.id);
+        const mealTypes = ['lunch', 'dinner']; // Only lunch and dinner per model
+
+        // Last 14 days of reservations
+        for (let day = 0; day < 14; day++) {
+            const reservationDate = new Date();
+            reservationDate.setDate(reservationDate.getDate() - day);
+            const dateStr = reservationDate.toISOString().split('T')[0];
+
+            // 20-40 reservations per day
+            const dailyCount = Math.floor(Math.random() * 20) + 20;
+            const selectedStudents = getRandom(studentUserIds, dailyCount);
+
+            selectedStudents.forEach(studentId => {
+                const mealType = mealTypes[Math.floor(Math.random() * mealTypes.length)];
+                mealReservations.push({
+                    user_id: studentId,
+                    cafeteria_id: cafeteriaId,
+                    date: dateStr,
+                    meal_type: mealType,
+                    status: Math.random() > 0.1 ? 'used' : 'reserved', // lowercase per model
+                    created_at: now,
+                    updated_at: now
+                });
+            });
+        }
+
+        await queryInterface.bulkInsert('meal_reservations', mealReservations, {});
+        console.log(`✅ ${mealReservations.length} Meal Reservations created`);
+
+        // ==================== 12. EVENTS & REGISTRATIONS (For Event Analytics) ====================
+        const eventsData = [
+            { title: 'Kariyer Günleri 2025', description: 'Sektör profesyonelleriyle tanışma fırsatı', location: 'Ana Konferans Salonu', capacity: 200, category: 'Seminer' }, // Was Kariyer
+            { title: 'Hackathon: Smart Campus', description: '48 saatlik yazılım maratonu', location: 'Bilgisayar Lab', capacity: 100, category: 'Atölye' }, // Was Teknoloji
+            { title: 'Mezuniyet Töreni', description: '2025 Bahar Mezuniyet Töreni', location: 'Stadyum', capacity: 5000, category: 'Kültürel' }, // Was Tören
+            { title: 'Yapay Zeka Atölyesi', description: 'Temel ML kavramları ve uygulamaları', location: 'B-101', capacity: 50, category: 'Atölye' },
+            { title: 'Spor Festivali', description: 'Fakülteler arası turnuva', location: 'Spor Kompleksi', capacity: 300, category: 'Spor' }
+        ];
+
+        const events = eventsData.map((e, i) => {
+            const eventDate = new Date();
+            eventDate.setDate(eventDate.getDate() + (i * 7) + 5); // Future events
+            const dateStr = eventDate.toISOString().split('T')[0];
+
+            return {
+                title: e.title,
+                description: e.description,
+                category: e.category,
+                date: dateStr,
+                start_time: '10:00:00',
+                end_time: '15:00:00',
+                location: e.location,
+                capacity: e.capacity,
+                registered_count: 0,
+                status: 'published',
+                created_at: now,
+                updated_at: now
+            };
+        });
+
+        await queryInterface.bulkInsert('events', events, {});
+        console.log(`✅ ${events.length} Events created`);
+
+        // Fetch event IDs
+        const eventRows = await queryInterface.sequelize.query(
+            `SELECT id FROM events`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+
+        // Register random students to events
+        const eventRegistrations = [];
+        eventRows.forEach(event => {
+            const registrantCount = Math.floor(Math.random() * 30) + 15; // 15-45 per event
+            const registrants = getRandom(studentUserIds, registrantCount);
+
+            registrants.forEach(studentId => {
+                eventRegistrations.push({
+                    event_id: event.id,
+                    user_id: studentId,
+                    registration_date: now,
+                    checked_in: Math.random() > 0.7,
+                    created_at: now,
+                    updated_at: now
+                });
+            });
+        });
+
+        await queryInterface.bulkInsert('event_registrations', eventRegistrations, {});
+        console.log(`✅ ${eventRegistrations.length} Event Registrations created`);
+
         console.log('🎉 Mega Seed Complete!');
     },
 

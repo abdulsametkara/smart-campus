@@ -1,5 +1,4 @@
 const eventService = require('../services/event.service');
-
 /**
  * Get all events with filters
  */
@@ -20,7 +19,6 @@ const getAllEvents = async (req, res) => {
         res.status(500).json({ message: error.message || 'Error retrieving events' });
     }
 };
-
 /**
  * Get event by ID
  */
@@ -37,7 +35,6 @@ const getEventById = async (req, res) => {
         res.status(500).json({ message: error.message || 'Error retrieving event' });
     }
 };
-
 /**
  * Create new event (Admin/Event Manager only)
  */
@@ -51,7 +48,6 @@ const createEvent = async (req, res) => {
         res.status(400).json({ message: error.message || 'Error creating event' });
     }
 };
-
 /**
  * Update event
  */
@@ -69,7 +65,6 @@ const updateEvent = async (req, res) => {
         res.status(400).json({ message: error.message || 'Error updating event' });
     }
 };
-
 /**
  * Delete event
  */
@@ -86,7 +81,6 @@ const deleteEvent = async (req, res) => {
         res.status(400).json({ message: error.message || 'Error deleting event' });
     }
 };
-
 module.exports = {
     getAllEvents,
     getEventById,
@@ -94,4 +88,3 @@ module.exports = {
     updateEvent,
     deleteEvent
 };
-

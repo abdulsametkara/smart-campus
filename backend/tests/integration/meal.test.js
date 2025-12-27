@@ -7,14 +7,6 @@ process.env.NODE_ENV = 'test';
 
 const request = require('supertest');
 const app = require('../../src/app');
-
-// Mock nodemailer
-jest.mock('nodemailer', () => ({
-    createTransport: jest.fn().mockReturnValue({
-        sendMail: jest.fn().mockResolvedValue(true)
-    })
-}));
-
 const { User, Wallet, sequelize } = require('../../models');
 
 describe('Meal Service Integration Tests', () => {
@@ -76,23 +68,30 @@ describe('Meal Service Integration Tests', () => {
     });
 
     afterAll(async () => {
-        try {
-            if (createdUser) {
-                // Manual cleanup of dependencies (Cascade backup)
-                await sequelize.query(`DELETE FROM "activity_logs" WHERE "user_id" = ${createdUser.id}`);
-                await sequelize.query(`DELETE FROM "saved_cards" WHERE "user_id" = ${createdUser.id}`);
-                await sequelize.query(`DELETE FROM "meal_reservations" WHERE "user_id" = ${createdUser.id}`);
-                await sequelize.query(`DELETE FROM "session_tokens" WHERE "user_id" = ${createdUser.id}`);
-                await sequelize.query(`DELETE FROM "wallets" WHERE "user_id" = ${createdUser.id}`);
-                // Cleanup: Force delete user (cascade should handle wallet/reservations)
-                await createdUser.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
-            }
-        } catch (error) {
-            console.error('Final Cleanup Error:', error);
-        } finally {
-            await sequelize.close(); // Close DB connection
-        }
+        if (createdUser) {
+            try {
+                // Delete related records manually to avoid FK constraints
+                if (sequelize.models.Transaction) {
+                    const wallet = await sequelize.models.Wallet.findOne({ where: { user_id: createdUser.id } });
+                    if (wallet) {
+                        await sequelize.models.Transaction.destroy({ where: { wallet_id: wallet.id } });
+                        // Important: Delete wallet AFTER transactions
+                    }
+                }
 
+                await sequelize.models.Wallet.destroy({ where: { user_id: createdUser.id } });
+                await sequelize.models.MealReservation.destroy({ where: { user_id: createdUser.id } });
+                // If SavedCard model exists and was used
+                if (sequelize.models.SavedCard) {
+                    await sequelize.models.SavedCard.destroy({ where: { user_id: createdUser.id } });
+                }
+
+                await createdUser.destroy({ force: true });
+            } catch (err) {
+                console.error('Cleanup Error:', err);
+            }
+        }
+        await sequelize.close(); // Close DB connection
     });
 
     describe('Menu Endpoints', () => {

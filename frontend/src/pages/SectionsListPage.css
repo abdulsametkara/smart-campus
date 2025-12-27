@@ -229,3 +229,85 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ========================================
+   DARK MODE - Section Cards
+======================================== */
+
+[data-theme="dark"] .sections-page .page-header h1 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .filters-card {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+}
+
+[data-theme="dark"] .filters-card h3 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .filter-group label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .filter-group input,
+[data-theme="dark"] .filter-group select {
+  background: #1e293b;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .filter-group input:focus,
+[data-theme="dark"] .filter-group select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .filter-group select option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .section-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.8));
+  border-color: #475569;
+}
+
+[data-theme="dark"] .section-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] .section-card-body h3 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .course-code {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .info-item {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .info-item svg {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .empty-state {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .pagination span {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .loading-spinner {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .loading-spinner::before {
+  border-color: #334155;
+  border-top-color: #3b82f6;
+}

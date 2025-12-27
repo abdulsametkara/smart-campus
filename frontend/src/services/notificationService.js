@@ -1,56 +1,65 @@
-import Swal from 'sweetalert2';
+import axios from 'axios';
 
-// Simple shared notification service wrapping SweetAlert2
-const NotificationService = {
-  success(title, text, options = {}) {
-    return Swal.fire({
-      icon: 'success',
-      title,
-      text,
-      ...options
-    });
-  },
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/v1';
 
-  error(title, text, options = {}) {
-    return Swal.fire({
-      icon: 'error',
-      title,
-      text,
-      ...options
-    });
-  },
-
-  warning(title, text, options = {}) {
-    return Swal.fire({
-      icon: 'warning',
-      title,
-      text,
-      ...options
-    });
-  },
-
-  info(title, text, options = {}) {
-    return Swal.fire({
-      icon: 'info',
-      title,
-      text,
-      ...options
-    });
-  },
-
-  confirm(title, text, options = {}) {
-    return Swal.fire({
-      icon: 'question',
-      title,
-      text,
-      showCancelButton: true,
-      confirmButtonText: 'Onayla',
-      cancelButtonText: 'Vazgeç',
-      ...options
-    });
-  }
+const getAuthHeader = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export default NotificationService;
+const notificationService = {
+    getNotifications: async (page = 1, limit = 10, type = null) => {
+        const params = { page, limit };
+        if (type) params.type = type;
 
+        const response = await axios.get(`${API_URL}/notifications`, {
+            headers: getAuthHeader(),
+            params
+        });
+        return response.data;
+    },
 
+    markAsRead: async (id) => {
+        const response = await axios.put(`${API_URL}/notifications/${id}/read`, {}, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    },
+
+    markAllRead: async () => {
+        const response = await axios.put(`${API_URL}/notifications/mark-all-read`, {}, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    },
+
+    deleteNotification: async (id) => {
+        const response = await axios.delete(`${API_URL}/notifications/${id}`, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    },
+
+    getPreferences: async () => {
+        const response = await axios.get(`${API_URL}/notifications/preferences`, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    },
+
+    updatePreferences: async (prefs) => {
+        const response = await axios.put(`${API_URL}/notifications/preferences`, prefs, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    },
+
+    sendNotification: async (data) => {
+        const response = await axios.post(`${API_URL}/notifications/send`, data, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    }
+};
+
+export default notificationService;

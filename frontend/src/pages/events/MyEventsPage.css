@@ -1,322 +1,321 @@
 .my-events-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
 }
 
 .my-events-header {
-  text-align: center;
-  margin-bottom: 32px;
+    text-align: center;
+    margin-bottom: 32px;
 }
 
 .my-events-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
 }
 
 .my-events-header p {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0;
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
 }
 
 .no-registrations {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .no-registrations p {
-  font-size: 18px;
-  color: #6b7280;
-  margin: 0 0 24px 0;
+    font-size: 18px;
+    color: #6b7280;
+    margin: 0 0 24px 0;
 }
 
 .btn-browse {
-  padding: 12px 24px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+    padding: 12px 24px;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-browse:hover {
-  background: #059669;
+    background: #059669;
 }
 
 .registrations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 24px;
 }
 
 .registration-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    border: 1px solid #e5e7eb;
 }
 
 .registration-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
 }
 
 .registration-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-  flex: 1;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    flex: 1;
 }
 
 .registration-status {
-  margin-left: 16px;
+    margin-left: 16px;
 }
 
 .status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .status-badge.checked-in {
-  background: #d1fae5;
-  color: #065f46;
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .status-badge.upcoming {
-  background: #dbeafe;
-  color: #1e40af;
+    background: #dbeafe;
+    color: #1e40af;
 }
 
 .status-badge.past {
-  background: #e5e7eb;
-  color: #6b7280;
+    background: #e5e7eb;
+    color: #6b7280;
 }
 
 .registration-details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .detail-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
 }
 
 .detail-icon {
-  font-size: 16px;
+    font-size: 16px;
 }
 
 .qr-section {
-  background: #f9fafb;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .qr-section h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
 }
 
 .qr-container {
-  display: flex;
-  justify-content: center;
-  padding: 16px;
-  background: white;
-  border-radius: 8px;
-  margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 12px;
 }
 
 .qr-hint {
-  font-size: 12px;
-  color: #6b7280;
-  margin: 8px 0 0 0;
+    font-size: 12px;
+    color: #6b7280;
+    margin: 8px 0 0 0;
 }
 
 .btn-view-qr {
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 12px;
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 12px;
 }
 
 .btn-view-qr:hover {
-  background: #2563eb;
+    background: #2563eb;
 }
 
 .checked-in-message {
-  background: #d1fae5;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: center;
-  margin-bottom: 20px;
+    background: #d1fae5;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .check-icon {
-  font-size: 32px;
-  color: #059669;
-  display: block;
-  margin-bottom: 8px;
+    font-size: 32px;
+    color: #059669;
+    display: block;
+    margin-bottom: 8px;
 }
 
 .checked-in-message p {
-  margin: 4px 0;
-  color: #065f46;
-  font-weight: 600;
+    margin: 4px 0;
+    color: #065f46;
+    font-weight: 600;
 }
 
 .check-time {
-  font-size: 12px;
-  color: #047857;
-  font-weight: 400;
+    font-size: 12px;
+    color: #047857;
+    font-weight: 400;
 }
 
 .registration-actions {
-  display: flex;
-  gap: 12px;
+    display: flex;
+    gap: 12px;
 }
 
 .btn-details,
 .btn-cancel {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-details {
-  background: #10b981;
-  color: white;
+    background: #10b981;
+    color: white;
 }
 
 .btn-details:hover {
-  background: #059669;
+    background: #059669;
 }
 
 .btn-cancel {
-  background: #ef4444;
-  color: white;
+    background: #ef4444;
+    color: white;
 }
 
 .btn-cancel:hover {
-  background: #dc2626;
+    background: #dc2626;
 }
 
 .qr-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .qr-modal-content {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
-  max-width: 500px;
-  width: 90%;
-  text-align: center;
-  position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    position: relative;
 }
 
 .qr-modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 32px;
-  color: #6b7280;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #6b7280;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .qr-modal-close:hover {
-  color: #111827;
+    color: #111827;
 }
 
 .qr-modal-content h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 24px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 24px 0;
 }
 
 .qr-modal-qr {
-  display: flex;
-  justify-content: center;
-  padding: 24px;
-  background: #f9fafb;
-  border-radius: 8px;
-  margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 16px;
 }
 
 .qr-modal-hint {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
 }
 
 @media (max-width: 768px) {
-  .registrations-grid {
-    grid-template-columns: 1fr;
-  }
+    .registrations-grid {
+        grid-template-columns: 1fr;
+    }
 
-  .registration-header {
-    flex-direction: column;
-    gap: 12px;
-  }
+    .registration-header {
+        flex-direction: column;
+        gap: 12px;
+    }
 
-  .registration-status {
-    margin-left: 0;
-  }
+    .registration-status {
+        margin-left: 0;
+    }
 }
-

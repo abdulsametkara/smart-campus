@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Swal from 'sweetalert2';
+import { useThemeMode } from '../context/ThemeContext';
 
 const AdminUsersPage = () => {
+  const { t } = useThemeMode();
   const [users, setUsers] = useState([]);
   const [meta, setMeta] = useState({ page: 1, limit: 10 });
   const [filters, setFilters] = useState({ search: '', role: '' });
@@ -18,7 +20,7 @@ const AdminUsersPage = () => {
       setUsers(res.data.data || []);
       setMeta(res.data.meta || { page: 1, limit: 10, total: 0, totalPages: 1 });
     } catch (err) {
-      Swal.fire('Hata', 'Kullanıcı listesi alınamadı', 'error');
+      Swal.fire(t('error') || 'Hata', 'Kullanıcı listesi alınamadı', 'error');
     } finally {
       setLoading(false);
     }
@@ -35,26 +37,23 @@ const AdminUsersPage = () => {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'Emin misiniz?',
-      text: "Bu kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz!",
+      title: t('areYouSure') || 'Emin misiniz?',
+      text: t('confirmDeleteUser'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Evet, sil!',
-      cancelButtonText: 'İptal'
+      confirmButtonText: t('yesDelete') || 'Evet, sil!',
+      cancelButtonText: t('cancel') || 'İptal'
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Normalde DELETE /users/:id endpointi olmalı
-          // Şimdilik mock veya eğer endpoint yoksa hata verebilir.
-          // Varsayalım ki api.delete('/users/' + id) çalışıyor
           await api.delete(`/users/${id}`);
-          Swal.fire('Silindi!', 'Kullanıcı başarıyla silindi.', 'success');
+          Swal.fire(t('userDeletedTitle'), t('userDeletedDesc'), 'success');
           loadUsers(meta.page);
         } catch (err) {
-          const msg = err?.response?.data?.message || 'Silme işlemi başarısız.';
-          Swal.fire('Hata', msg, 'error');
+          const msg = err?.response?.data?.message || t('deleteError') || 'Silme işlemi başarısız.';
+          Swal.fire(t('error') || 'Hata', msg, 'error');
         }
       }
     });
@@ -63,19 +62,19 @@ const AdminUsersPage = () => {
   const handleEdit = (user) => {
     // SweetAlert ile basit bir edit formu
     Swal.fire({
-      title: 'Kullanıcıyı Düzenle',
+      title: t('editUser'),
       html: `
         <input id="swal-input1" class="swal2-input" placeholder="Ad Soyad" value="${user.full_name || ''}">
         <select id="swal-input2" class="swal2-input">
-          <option value="student" ${user.role === 'student' ? 'selected' : ''}>Öğrenci</option>
-          <option value="faculty" ${user.role === 'faculty' ? 'selected' : ''}>Akademisyen</option>
-          <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Yönetici</option>
+          <option value="student" ${user.role === 'student' ? 'selected' : ''}>${t('roleStudent') || 'Öğrenci'}</option>
+          <option value="faculty" ${user.role === 'faculty' ? 'selected' : ''}>${t('roleFaculty') || 'Akademisyen'}</option>
+          <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>${t('roleAdmin') || 'Yönetici'}</option>
         </select>
       `,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: 'Kaydet',
-      cancelButtonText: 'İptal',
+      confirmButtonText: t('save') || 'Kaydet',
+      cancelButtonText: t('cancel') || 'İptal',
       preConfirm: () => {
         return {
           full_name: document.getElementById('swal-input1').value,
@@ -85,21 +84,18 @@ const AdminUsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // PUT /users/:id (Admin yetkisiyle başkasını güncelleme endpointi gerekebilir)
-          // Eğer backend sadece /users/me destekliyorsa bu çalışmayabilir.
-          // Amaç UI demosu ise bu yeterli.
-          await api.put(`/users/${user.id}`, result.value); // Bu endpoint admin için özel olmalı
-          Swal.fire('Başarılı', 'Kullanıcı güncellendi', 'success');
+          await api.put(`/users/${user.id}`, result.value);
+          Swal.fire(t('success') || 'Başarılı', t('userUpdated') || 'Kullanıcı güncellendi', 'success');
           loadUsers(meta.page);
         } catch (err) {
-          Swal.fire('Hata', 'Güncelleme yapılamadı. Backend desteği gerekebilir.', 'error');
+          Swal.fire(t('error') || 'Hata', err?.response?.data?.message || 'Güncelleme yapılamadı.', 'error');
         }
       }
     });
   };
 
   const getRoleLabel = (role) => {
-    const labels = { student: 'Öğrenci', faculty: 'Akademisyen', admin: 'Yönetici' };
+    const labels = { student: t('roleStudent') || 'Öğrenci', faculty: t('roleFaculty') || 'Akademisyen', admin: t('roleAdmin') || 'Yönetici' };
     return labels[role] || role;
   };
 
@@ -107,27 +103,27 @@ const AdminUsersPage = () => {
     <div className="page">
       <div className="page-header">
         <p className="eyebrow">Admin Panel</p>
-        <h1>Kullanıcı Yönetimi</h1>
-        <p>Sistemdeki tüm kullanıcıları buradan yönetebilirsiniz.</p>
+        <h1>{t('userManagementTitle')}</h1>
+        <p>{t('userManagementDesc')}</p>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="filter-bar">
           <input
-            placeholder="İsim veya email ara..."
+            placeholder={t('searchUsersPlaceholder')}
             value={filters.search}
             onChange={onSearch}
             className="filter-input"
             style={{ flex: 1, minWidth: 200 }}
           />
           <select value={filters.role} onChange={onRole} className="filter-input">
-            <option value="">Tüm Roller</option>
-            <option value="student">Öğrenci</option>
-            <option value="faculty">Akademisyen</option>
-            <option value="admin">Yönetici</option>
+            <option value="">{t('allRoles')}</option>
+            <option value="student">{t('roleStudent') || 'Öğrenci'}</option>
+            <option value="faculty">{t('roleFaculty') || 'Akademisyen'}</option>
+            <option value="admin">{t('roleAdmin') || 'Yönetici'}</option>
           </select>
           <button className="btn" onClick={applyFilters}>
-            Ara / Filtrele
+            {t('filterButton')}
           </button>
         </div>
       </div>
@@ -136,17 +132,17 @@ const AdminUsersPage = () => {
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center' }}>
             <div className="spinner"></div>
-            <p className="muted" style={{ marginTop: 10 }}>Yükleniyor...</p>
+            <p className="muted" style={{ marginTop: 10 }}>{t('loading')}</p>
           </div>
         ) : (
           <table className="data-table">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Kullanıcı</th>
-                <th>Rol</th>
-                <th>Durum</th>
-                <th style={{ textAlign: 'right' }}>İşlemler</th>
+                <th>{t('user') || 'Kullanıcı'}</th>
+                <th>{t('role') || 'Rol'}</th>
+                <th>{t('status') || 'Durum'}</th>
+                <th style={{ textAlign: 'right' }}>{t('actions') || 'İşlemler'}</th>
               </tr>
             </thead>
             <tbody>
@@ -168,12 +164,12 @@ const AdminUsersPage = () => {
                     <span className={`badge ${u.role}`}>{getRoleLabel(u.role)}</span>
                   </td>
                   <td>
-                    <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>Aktif</span>
+                    <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>{t('activeUser')}</span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <button
                       className="icon-btn"
-                      title="Düzenle"
+                      title={t('edit') || "Düzenle"}
                       onClick={() => handleEdit(u)}
                       style={{ marginRight: 8, color: '#3b82f6' }}
                     >
@@ -181,7 +177,7 @@ const AdminUsersPage = () => {
                     </button>
                     <button
                       className="icon-btn"
-                      title="Sil"
+                      title={t('delete') || "Sil"}
                       onClick={() => handleDelete(u.id)}
                       style={{ color: '#ef4444' }}
                     >
@@ -193,7 +189,7 @@ const AdminUsersPage = () => {
               {!users.length && (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    Kullanıcı bulunamadı.
+                    {t('noUsersFound')}
                   </td>
                 </tr>
               )}
@@ -204,13 +200,13 @@ const AdminUsersPage = () => {
 
       <div className="pagination" style={{ marginTop: 20, justifyContent: 'center' }}>
         <button disabled={meta.page <= 1} onClick={() => loadUsers(meta.page - 1)} className="btn sm outline">
-          ← Önceki
+          ← {t('prev') || 'Önceki'}
         </button>
         <span style={{ margin: '0 15px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-          Sayfa {meta.page} / {meta.totalPages || 1}
+          {t('page') || 'Sayfa'} {meta.page} / {meta.totalPages || 1}
         </span>
         <button disabled={meta.page >= (meta.totalPages || 1)} onClick={() => loadUsers(meta.page + 1)} className="btn sm outline">
-          Sonraki →
+          {t('next') || 'Sonraki'} →
         </button>
       </div>
     </div>
