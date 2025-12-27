@@ -69,7 +69,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 user?.role === 'student'
                     ? { path: '/sections', label: t('courseEnroll') }
                     : { path: '/sections', label: t('sections') },
-                { path: '/academic/calendar', label: t('academicCalendar') }
+                { path: '/academic/calendar', label: t('academicCalendar') },
+                { path: '/reservations', label: 'Sınıf Rezervasyonları' }
             ]
         });
         // Yoklama - Role based
@@ -155,7 +156,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 children: [
                     { path: '/admin/users', label: t('users') },
                     { path: '/admin/logs', label: t('systemLogs') },
-                    { path: '/admin/academic', label: t('academicManagement') }
+                    { path: '/admin/academic', label: t('academicManagement') },
+                    { path: '/admin/reservations', label: 'Rezervasyon Yönetimi' }
                 ]
             });
         }

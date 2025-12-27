@@ -40,6 +40,8 @@ import MyAdviseesPage from './pages/MyAdviseesPage';
 import WalletPage from './pages/WalletPage';
 import MenuPage from './pages/meals/MenuPage';
 import MyReservationsPage from './pages/meals/MyReservationsPage';
+import ClassroomReservationsPage from './pages/ClassroomReservationsPage';
+import ClassroomReservationManagementPage from './pages/ClassroomReservationManagementPage';
 
 
 import AdminAnalyticsDashboard from './pages/admin/Analytics/AdminAnalyticsDashboard';
@@ -424,6 +426,24 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <MyReservationsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Classroom Reservation Routes */}
+            <Route
+              path="/reservations"
+              element={
+                <ProtectedRoute>
+                  <ClassroomReservationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reservations"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <ClassroomReservationManagementPage />
                 </ProtectedRoute>
               }
             />
