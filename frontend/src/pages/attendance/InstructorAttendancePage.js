@@ -276,87 +276,162 @@ const InstructorAttendancePage = () => {
 
                 {/* Sağ: Aktif Oturum Kartı */}
                 {activeSession ? (
-                    <div className="qr-container" style={{ border: '2px solid #22c55e' }}>
-                        <h3 style={{ color: '#166534' }}>Oturum Aktif</h3>
-                        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>Öğrenciler bu kodu tarayarak katılabilir</p>
-
-                        <div style={{ background: 'white', padding: '1rem', display: 'inline-block', borderRadius: '12px', border: '1px solid #eee' }}>
-                            <QRCodeSVG value={activeSession.qr_code} size={180} />
-                        </div>
-
-                        <div className="custom-alert info" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
-                            Kod: <strong>{activeSession.qr_code}</strong>
-                        </div>
-
-                        <div style={{ marginTop: '1rem', color: '#ef4444', fontWeight: 600 }}>
-                            Bitiş: {new Date(activeSession.expires_at).toLocaleTimeString('tr-TR')}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                            <button className="action-button" style={{ flex: 1, background: '#fff', color: '#333', border: '1px solid #ccc' }} onClick={() => handleFetchReport()}>
-                                RAPORU GÖSTER
-                            </button>
-                            <button className="action-button" style={{ flex: 1, background: '#ef4444' }} onClick={handleEndSession}>
-                                OTURUMU BİTİR
-                            </button>
-                        </div>
-
-                        {/* Real-time Students List */}
-                        <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                <h4 style={{ margin: 0, color: '#374151' }}>
-                                    🔴 Canlı Katılım ({realtimeStudents.length})
-                                </h4>
+                    <div className="course-attendance-card" style={{ border: '2px solid #22c55e', padding: '1.5rem' }}>
+                        {/* Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
                                 <span style={{
-                                    fontSize: '0.75rem',
-                                    padding: '0.25rem 0.5rem',
+                                    background: '#22c55e',
+                                    color: 'white',
+                                    padding: '0.25rem 0.75rem',
                                     borderRadius: '20px',
-                                    background: isConnected ? '#dcfce7' : '#fef2f2',
-                                    color: isConnected ? '#166534' : '#dc2626'
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600
                                 }}>
-                                    {isConnected ? '● Bağlı' : '○ Bağlantı Yok'}
+                                    ● Oturum Aktif
                                 </span>
                             </div>
+                            <div style={{
+                                background: '#fef2f2',
+                                color: '#dc2626',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                fontSize: '1.1rem'
+                            }}>
+                                ⏱️ {new Date(activeSession.expires_at).toLocaleTimeString('tr-TR')}
+                            </div>
+                        </div>
 
-                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                {realtimeStudents.length === 0 ? (
-                                    <p style={{ color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center', margin: '1rem 0' }}>
-                                        Henüz katılım yok...
-                                    </p>
-                                ) : (
-                                    realtimeStudents.map((student, idx) => (
-                                        <div
-                                            key={idx}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '0.5rem 0.75rem',
-                                                background: idx === 0 ? '#ecfdf5' : 'transparent',
-                                                borderRadius: '8px',
-                                                marginBottom: '0.25rem',
-                                                animation: idx === 0 ? 'fadeIn 0.5s ease' : 'none'
-                                            }}
-                                        >
-                                            <div>
-                                                <span style={{ fontWeight: 600, color: '#1f2937' }}>{student.name}</span>
-                                                <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                                                    {student.studentNumber}
+                        {/* QR Code and Info */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            {/* QR Code */}
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                background: '#f9fafb',
+                                padding: '1.5rem',
+                                borderRadius: '12px'
+                            }}>
+                                <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+                                    Öğrenciler bu kodu tarayarak katılabilir
+                                </p>
+                                <div style={{ background: 'white', padding: '1rem', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                                    <QRCodeSVG value={activeSession.qr_code} size={160} />
+                                </div>
+                                <div style={{
+                                    marginTop: '1rem',
+                                    background: '#eff6ff',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '8px',
+                                    color: '#3b82f6',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    Kod: <strong>{activeSession.qr_code}</strong>
+                                </div>
+                            </div>
+
+                            {/* Live Attendance */}
+                            <div style={{
+                                background: '#f9fafb',
+                                padding: '1rem',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                    <h4 style={{ margin: 0, color: '#374151', fontSize: '1rem' }}>
+                                        🔴 Canlı Katılım ({realtimeStudents.length})
+                                    </h4>
+                                    <span style={{
+                                        fontSize: '0.75rem',
+                                        padding: '0.25rem 0.5rem',
+                                        borderRadius: '20px',
+                                        background: isConnected ? '#dcfce7' : '#fef2f2',
+                                        color: isConnected ? '#166534' : '#dc2626'
+                                    }}>
+                                        {isConnected ? '● Bağlı' : '○ Bağlantı Yok'}
+                                    </span>
+                                </div>
+
+                                <div style={{ flex: 1, maxHeight: '200px', overflowY: 'auto' }}>
+                                    {realtimeStudents.length === 0 ? (
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            height: '150px',
+                                            color: '#9ca3af'
+                                        }}>
+                                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👥</div>
+                                            <p style={{ margin: 0, fontSize: '0.9rem' }}>Henüz katılım yok...</p>
+                                        </div>
+                                    ) : (
+                                        realtimeStudents.map((student, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    padding: '0.5rem 0.75rem',
+                                                    background: idx === 0 ? '#ecfdf5' : 'white',
+                                                    borderRadius: '8px',
+                                                    marginBottom: '0.25rem',
+                                                    border: '1px solid #e5e7eb'
+                                                }}
+                                            >
+                                                <div>
+                                                    <span style={{ fontWeight: 600, color: '#1f2937' }}>{student.name}</span>
+                                                    <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                                                        {student.studentNumber}
+                                                    </span>
+                                                </div>
+                                                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
+                                                    {new Date(student.checkedInAt).toLocaleTimeString('tr-TR')}
                                                 </span>
                                             </div>
-                                            <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
-                                                {new Date(student.checkedInAt).toLocaleTimeString('tr-TR')}
-                                            </span>
-                                        </div>
-                                    ))
-                                )}
+                                        ))
+                                    )}
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <button
+                                className="action-button"
+                                style={{
+                                    background: '#fff',
+                                    color: '#374151',
+                                    border: '2px solid #e5e7eb',
+                                    justifyContent: 'center',
+                                    padding: '0.75rem 1.5rem'
+                                }}
+                                onClick={() => handleFetchReport()}
+                            >
+                                📋 RAPORU GÖSTER
+                            </button>
+                            <button
+                                className="action-button"
+                                style={{
+                                    background: '#ef4444',
+                                    justifyContent: 'center',
+                                    padding: '0.75rem 1.5rem'
+                                }}
+                                onClick={handleEndSession}
+                            >
+                                ⏹️ OTURUMU BİTİR
+                            </button>
                         </div>
                     </div>
                 ) : (
-                    <div className="course-attendance-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#9ca3af' }}>
+                    <div className="course-attendance-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#9ca3af', minHeight: '300px' }}>
                         <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>💤</div>
-                        <p>Henüz aktif bir oturum yok.</p>
+                        <p style={{ margin: 0 }}>Henüz aktif bir oturum yok.</p>
+                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>Soldaki formdan yeni oturum başlatabilirsiniz.</p>
                     </div>
                 )}
             </div>
