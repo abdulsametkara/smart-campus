@@ -23,11 +23,11 @@ class SchedulingService {
         const sectionsToSchedule = sections;
 
         if (sectionsToSchedule.length === 0) {
-            throw new Error('No sections found to schedule for this semester.');
+            return { success: false, message: 'No sections found to schedule for this semester.', assignments: {} };
         }
 
         if (classrooms.length === 0) {
-            throw new Error('No active classrooms found.');
+            return { success: false, message: 'No active classrooms found.', assignments: {} };
         }
 
         // 2. Define Variables and Domains
@@ -47,10 +47,42 @@ class SchedulingService {
         const success = this.backtrack(sectionsToSchedule, 0, classrooms, assignments);
 
         if (!success) {
-            throw new Error('Could not generate a conflict-free schedule. Please add more rooms or reduce constraints.');
+            return { success: false, message: 'Uygun bir program oluşturulamadı. Daha fazla oda ekleyin veya kısıtlamaları azaltın.', assignments: {} };
         }
 
-        return assignments;
+        return { success: true, message: 'Schedule generated successfully', assignments };
+    }
+
+    /**
+     * Calculate score for soft constraints (gaps between classes)
+     */
+    calculateScore(assignment) {
+        if (!assignment || Object.keys(assignment).length === 0) return 0;
+
+        let score = 0;
+        const entries = Object.entries(assignment);
+
+        for (const [sectionId, slot] of entries) {
+            if (!slot.instructorId) continue;
+
+            // Find other classes for same instructor
+            for (const [otherId, otherSlot] of entries) {
+                if (sectionId === otherId) continue;
+                if (slot.instructorId !== otherSlot.instructorId) continue;
+                if (slot.day !== otherSlot.day) continue;
+
+                // Calculate gap between classes
+                const end1 = parseInt(slot.end.split(':')[0]);
+                const start2 = parseInt(otherSlot.start.split(':')[0]);
+                const gap = Math.abs(start2 - end1) * 10; // Gap in minutes (assuming hour-based)
+
+                if (gap <= 20) score += 5;      // Short gap bonus
+                else if (gap <= 60) score -= 2; // Small penalty
+                else score -= 5;                 // Large gap penalty
+            }
+        }
+
+        return score;
     }
 
     /**

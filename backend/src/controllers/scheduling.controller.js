@@ -10,11 +10,19 @@ exports.generateSchedule = async (req, res) => {
             return res.status(400).json({ message: 'Semester is required.' });
         }
 
-        const schedule = await schedulingService.generateSchedule(semester);
+        const result = await schedulingService.generateSchedule(semester);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: result.message,
+                success: false
+            });
+        }
 
         res.status(200).json({
-            message: 'Schedule generated successfully',
-            schedule
+            message: result.message,
+            success: true,
+            schedule: result.assignments
         });
     } catch (error) {
         console.error('Schedule generation error:', error);

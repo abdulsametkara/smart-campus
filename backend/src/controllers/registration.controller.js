@@ -8,7 +8,11 @@ const registerToEvent = async (req, res) => {
         const { customFields } = req.body;
         const userId = req.user.id;
         const result = await eventService.registerToEvent(userId, eventId, customFields);
-        res.status(201).json(result);
+        // Wrap response to match expected format
+        res.status(201).json({
+            registration: result,
+            qrCode: result.qr_code
+        });
     } catch (error) {
         console.error('Register to Event Error:', error);
         const statusCode = error.statusCode || 400;
