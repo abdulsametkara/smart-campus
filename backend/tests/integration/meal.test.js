@@ -69,8 +69,27 @@ describe('Meal Service Integration Tests', () => {
 
     afterAll(async () => {
         if (createdUser) {
-            // Cleanup: Force delete user (cascade should handle wallet/reservations)
-            await createdUser.destroy({ force: true }).catch(err => console.error('Cleanup Error:', err));
+            try {
+                // Delete related records manually to avoid FK constraints
+                if (sequelize.models.Transaction) {
+                    const wallet = await sequelize.models.Wallet.findOne({ where: { user_id: createdUser.id } });
+                    if (wallet) {
+                        await sequelize.models.Transaction.destroy({ where: { wallet_id: wallet.id } });
+                        // Important: Delete wallet AFTER transactions
+                    }
+                }
+
+                await sequelize.models.Wallet.destroy({ where: { user_id: createdUser.id } });
+                await sequelize.models.MealReservation.destroy({ where: { user_id: createdUser.id } });
+                // If SavedCard model exists and was used
+                if (sequelize.models.SavedCard) {
+                    await sequelize.models.SavedCard.destroy({ where: { user_id: createdUser.id } });
+                }
+
+                await createdUser.destroy({ force: true });
+            } catch (err) {
+                console.error('Cleanup Error:', err);
+            }
         }
         await sequelize.close(); // Close DB connection
     });

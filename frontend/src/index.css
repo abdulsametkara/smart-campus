@@ -1,13 +1,373 @@
+/* ========================================
+   GLOBAL STYLES & DARK MODE
+======================================== */
+
+:root {
+  /* Light Mode Colors */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --accent-primary: #2563eb;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --input-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --accent-primary: #3b82f6;
+  --accent-success: #34d399;
+  --accent-warning: #fbbf24;
+  --accent-danger: #f87171;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --input-bg: #1e293b;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* ========================================
+   DARK MODE - Main Content Area
+======================================== */
+
+[data-theme="dark"] .page,
+[data-theme="dark"] .main-content {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .app-shell {
+  background-color: var(--bg-primary);
+}
+
+/* ========================================
+   DARK MODE - Cards & Containers
+======================================== */
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .MuiCard-root,
+[data-theme="dark"] .MuiPaper-root {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .profile-hero-card,
+[data-theme="dark"] .profile-cards-grid .card {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .profile-hero-bg {
+  background: linear-gradient(135deg, #1e3a5f 0%, #134e4a 100%) !important;
+}
+
+/* ========================================
+   DARK MODE - Typography
+======================================== */
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] .MuiTypography-root {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .MuiTypography-colorTextSecondary,
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] .muted {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] label {
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   DARK MODE - Form Elements
+======================================== */
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] .MuiInputBase-root,
+[data-theme="dark"] .MuiOutlinedInput-root,
+[data-theme="dark"] .MuiSelect-select {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .MuiInputLabel-root {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .form-field input,
+[data-theme="dark"] .form-field textarea {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-field input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ========================================
+   DARK MODE - Tables
+======================================== */
+
+[data-theme="dark"] table,
+[data-theme="dark"] .MuiTable-root {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] .MuiTableCell-head {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] td,
+[data-theme="dark"] .MuiTableCell-root {
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] tr:nth-child(even),
+[data-theme="dark"] .MuiTableRow-root:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] tr:hover,
+[data-theme="dark"] .MuiTableRow-root:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ========================================
+   DARK MODE - Buttons
+======================================== */
+
+[data-theme="dark"] .btn,
+[data-theme="dark"] .MuiButton-outlined {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   DARK MODE - Chips & Badges
+======================================== */
+
+[data-theme="dark"] .MuiChip-root {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .badge {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* ========================================
+   DARK MODE - Tabs
+======================================== */
+
+[data-theme="dark"] .MuiTabs-root,
+[data-theme="dark"] .MuiTab-root {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .MuiTab-root.Mui-selected {
+  color: var(--accent-primary) !important;
+}
+
+/* ========================================
+   DARK MODE - Dialogs & Modals
+======================================== */
+
+[data-theme="dark"] .MuiDialog-paper,
+[data-theme="dark"] .MuiModal-root .MuiBox-root,
+[data-theme="dark"] .swal2-popup {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .swal2-title,
+[data-theme="dark"] .swal2-html-container {
+  color: var(--text-primary) !important;
+}
+
+/* ========================================
+   DARK MODE - Lists
+======================================== */
+
+[data-theme="dark"] .MuiList-root,
+[data-theme="dark"] .MuiListItem-root {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .MuiListItem-root:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   DARK MODE - Accordion
+======================================== */
+
+[data-theme="dark"] .MuiAccordion-root {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .MuiAccordionSummary-root {
+  color: var(--text-primary);
+}
+
+/* ========================================
+   DARK MODE - Calendar & Scheduler
+======================================== */
+
+[data-theme="dark"] .fc,
+[data-theme="dark"] .fc-theme-standard {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .fc-theme-standard td,
+[data-theme="dark"] .fc-theme-standard th {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .fc-col-header-cell {
+  background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   DARK MODE - QR Code & Special Elements
+======================================== */
+
+[data-theme="dark"] .qr-container,
+[data-theme="dark"] [class*="qr"] {
+  background-color: #ffffff !important;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+/* ========================================
+   DARK MODE - Reservation Cards
+======================================== */
+
+[data-theme="dark"] .reservation-card,
+[data-theme="dark"] [class*="reservation"] {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+/* ========================================
+   DARK MODE - Status Boxes
+======================================== */
+
+[data-theme="dark"] .status-box {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .status-box.success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+/* ========================================
+   DARK MODE - Collapsible Sections
+======================================== */
+
+[data-theme="dark"] .collapsible-header {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .collapsible-content {
+  background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   DARK MODE - Pagination
+======================================== */
+
+[data-theme="dark"] .MuiPaginationItem-root {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .MuiPaginationItem-root.Mui-selected {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* ========================================
+   DARK MODE - Scrollbar
+======================================== */
+
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ========================================
+   DARK MODE - Charts (Chart.js)
+======================================== */
+
+[data-theme="dark"] canvas {
+  filter: brightness(0.95);
 }

@@ -144,6 +144,7 @@
     font-size: 1.1rem;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    overflow: hidden;
 }
 
 .user-info {
@@ -337,4 +338,212 @@
         align-items: center;
         justify-content: center;
     }
+}
+
+/* Settings Toggles */
+.sidebar-settings-toggles {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0 16px 12px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 12px;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex: 1;
+    justify-content: center;
+}
+
+.toggle-btn:hover {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-btn svg {
+    font-size: 1.25rem;
+}
+
+.toggle-divider {
+    width: 1px;
+    height: 24px;
+    background: #cbd5e1;
+    margin: 0 4px;
+}
+
+/* Dark Mode Styles */
+[data-theme="dark"] .sidebar {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .sidebar-header {
+    border-color: #334155;
+}
+
+[data-theme="dark"] .sidebar-brand,
+[data-theme="dark"] .nav-category-header,
+[data-theme="dark"] .user-name {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .sidebar-user {
+    background: linear-gradient(135deg, #1e3a5f, #1e3a3f);
+    border-color: #334155;
+}
+
+[data-theme="dark"] .user-role {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .nav-category-header:hover,
+[data-theme="dark"] .nav-item:hover {
+    background: #334155;
+}
+
+/* Dark Mode - Sub-menu items (improved contrast) */
+[data-theme="dark"] .nav-category-items {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+[data-theme="dark"] .nav-item {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .nav-item.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-left-color: #3b82f6;
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .nav-arrow {
+    color: #64748b;
+}
+
+[data-theme="dark"] .nav-category-header.active-category {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .sidebar-settings-toggles {
+    background: linear-gradient(135deg, #334155, #1e293b);
+    border-color: #475569;
+}
+
+[data-theme="dark"] .toggle-btn {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .toggle-btn:hover {
+    background: #475569;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .toggle-divider {
+    background: #475569;
+}
+
+[data-theme="dark"] .sidebar-footer {
+    border-color: #334155;
+}
+
+[data-theme="dark"] .logout-btn {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.1));
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+[data-theme="dark"] .logout-btn:hover {
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Header & Bell Styles */
+.header-search {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    padding: 8px 16px;
+    min-width: 240px;
+    transition: all 0.2s;
+}
+
+.header-search:focus-within {
+    background: white;
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Footer Profile Link */
+.footer-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    margin: 8px 0;
+    text-decoration: none;
+    color: var(--sidebar-text);
+    border-radius: 10px;
+    transition: all 0.2s;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.footer-profile-link:hover {
+    background: var(--sidebar-hover);
+}
+
+.footer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    overflow: hidden;
+}
+
+.footer-user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.footer-role {
+    font-size: 0.75rem;
+    color: var(--sidebar-text-muted);
+}
+
+.footer-arrow {
+    color: var(--sidebar-text-muted);
+    font-size: 1.2rem;
+}
+
+[data-theme="dark"] .footer-profile-link {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-main);
+}
+
+[data-theme="dark"] .footer-profile-link:hover {
+    background: rgba(255, 255, 255, 0.05);
 }

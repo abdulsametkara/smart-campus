@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import mealService from '../../services/meal.service';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Swal from 'sweetalert2';
+import { useThemeMode } from '../../context/ThemeContext';
 import './MenuPage.css';
 
-const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-
 const MenuPage = () => {
+    const { t, isEnglish } = useThemeMode();
     const [menus, setMenus] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,9 +14,15 @@ const MenuPage = () => {
     const [weekDates, setWeekDates] = useState([]);
     const [weekOffset, setWeekOffset] = useState(0);
 
+    // Dynamic days based on locale
+    const getDayName = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { weekday: 'long' });
+    };
+
     useEffect(() => {
         generateWeekDates(weekOffset);
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [weekOffset]);
 
     const fetchData = async () => {
@@ -29,7 +35,7 @@ const MenuPage = () => {
             setReservations(resData);
         } catch (error) {
             console.error(error);
-            Swal.fire('Hata', 'Veriler yüklenemedi', 'error');
+            Swal.fire(t('error') || 'Hata', t('fetchError'), 'error');
         } finally {
             setLoading(false);
         }
@@ -63,24 +69,24 @@ const MenuPage = () => {
     const handleReserve = async (menuId) => {
         try {
             const result = await Swal.fire({
-                title: 'Yemek Rezervasyonu',
-                text: "Hesabınızdan 20 TL düşülecektir. Onaylıyor musunuz?",
+                title: t('confirmReserve'),
+                text: t('reserveCostWarning'),
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Evet, Rezerve Et',
-                cancelButtonText: 'İptal'
+                confirmButtonText: t('confirmReserveBtn'),
+                cancelButtonText: t('cancel')
             });
 
             if (result.isConfirmed) {
                 await mealService.makeReservation(menuId);
-                Swal.fire('Başarılı', 'Rezervasyonunuz oluşturuldu.', 'success');
+                Swal.fire(t('success') || 'Başarılı', t('reserveSuccess'), 'success');
                 // Refresh reservations
                 const resData = await mealService.getMyReservations();
                 setReservations(resData);
             }
         } catch (error) {
             console.error(error);
-            Swal.fire('Hata', error.response?.data?.message || 'Rezervasyon yapılamadı (Yetersiz bakiye olabilir).', 'error');
+            Swal.fire(t('error') || 'Hata', error.response?.data?.message || t('reserveError'), 'error');
         }
     };
 
@@ -94,7 +100,7 @@ const MenuPage = () => {
     if (loading) {
         return (
             <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                Menüler Yükleniyor...
+                {t('loading')}
             </div>
         );
     }
@@ -102,17 +108,19 @@ const MenuPage = () => {
     const goToPrevWeek = () => setWeekOffset(prev => prev - 1);
     const goToNextWeek = () => setWeekOffset(prev => prev + 1);
 
-    // Get week label
+    // Get week label formatted efficiently
     const getWeekLabel = () => {
         if (weekDates.length === 0) return '';
         const start = new Date(weekDates[0]);
         const end = new Date(weekDates[6]);
-        return `${start.getDate()}.${start.getMonth() + 1} - ${end.getDate()}.${end.getMonth() + 1}.${end.getFullYear()}`;
+        const options = { day: 'numeric', month: 'numeric' };
+        const locale = isEnglish ? 'en-US' : 'tr-TR';
+        return `${start.toLocaleDateString(locale, options)} - ${end.toLocaleDateString(locale, { ...options, year: 'numeric' })}`;
     };
 
     return (
         <div className="menu-page-container">
-            <h1 className="page-title">Yemek Menüsü</h1>
+            <h1 className="page-title">{t('menuTitle')}</h1>
 
             <div className="nav-arrows">
                 <button className="nav-arrow" onClick={goToPrevWeek}>
@@ -133,7 +141,7 @@ const MenuPage = () => {
                         className={`day-tab ${selectedDate === date ? 'active' : ''}`}
                         onClick={() => setSelectedDate(date)}
                     >
-                        <span className="day-name">{DAYS[index]}</span>
+                        <span className="day-name">{getDayName(date).toUpperCase()}</span>
                         <span className="day-date">{date.split('-').slice(1).reverse().join('.')}</span>
                     </button>
                 ))}
@@ -143,7 +151,7 @@ const MenuPage = () => {
                 {currentMenu ? (
                     <div className="menu-card">
                         <div className="menu-header">
-                            <h2>{new Date(selectedDate).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+                            <h2>{new Date(selectedDate).toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
                             <span className="cafeteria-badge">{currentMenu.Cafeterium?.name || 'Ana Yemekhane'}</span>
                         </div>
 
@@ -158,7 +166,7 @@ const MenuPage = () => {
                         </div>
 
                         <div className="nutrition-info">
-                            <h4>Besin Değerleri</h4>
+                            <h4>{t('nutritionValues')}</h4>
                             {(() => {
                                 const nutrition = typeof currentMenu.nutrition_json === 'object'
                                     ? currentMenu.nutrition_json
@@ -174,27 +182,27 @@ const MenuPage = () => {
                                                         <span className="nut-item-name">{item.name}</span>
                                                         <div className="nut-item-values">
                                                             <span className="nut-pill">{item.calories} kcal</span>
-                                                            <span className="nut-pill protein">{item.protein}g protein</span>
-                                                            <span className="nut-pill carbs">{item.carbs}g karb</span>
+                                                            <span className="nut-pill protein">{item.protein}g {t('protein').toLowerCase()}</span>
+                                                            <span className="nut-pill carbs">{item.carbs}g {t('carbs').toLowerCase()}</span>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                             {nutrition.total && (
                                                 <div className="nutrition-total">
-                                                    <span className="total-label">TOPLAM</span>
+                                                    <span className="total-label">{t('total')}</span>
                                                     <div className="nutrition-grid">
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.calories}</span>
-                                                            <span className="nut-key">Kalori</span>
+                                                            <span className="nut-key">{t('calories')}</span>
                                                         </div>
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.protein}g</span>
-                                                            <span className="nut-key">Protein</span>
+                                                            <span className="nut-key">{t('protein')}</span>
                                                         </div>
                                                         <div className="nutrition-box total">
                                                             <span className="nut-val">{nutrition.total.carbs}g</span>
-                                                            <span className="nut-key">Karbonhidrat</span>
+                                                            <span className="nut-key">{t('carbs')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -221,18 +229,18 @@ const MenuPage = () => {
                             {isMenuReserved(currentMenu.id) ? (
                                 <div className="reserved-badge">
                                     <span className="check-icon">✓</span>
-                                    Rezerve Edildi
+                                    {t('reserved')}
                                 </div>
                             ) : (
                                 <button className="reserve-btn" onClick={() => handleReserve(currentMenu.id)}>
-                                    Hemen Rezerve Et (20 TL)
+                                    {t('reserveNow')} (20 TL)
                                 </button>
                             )}
                         </div>
                     </div>
                 ) : (
                     <div className="no-menu-state">
-                        <p>Bugün için planlanmış bir menü bulunamadı.</p>
+                        <p>{t('noMenu')}</p>
                     </div>
                 )}
             </div>

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import walletService from '../services/wallet.service';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Swal from 'sweetalert2';
+import { useThemeMode } from '../context/ThemeContext';
 import './WalletPage.css';
 
 const WalletPage = () => {
+    const { t, isEnglish } = useThemeMode();
     const [wallet, setWallet] = useState(null);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-
-
 
     useEffect(() => {
         fetchWalletData();
@@ -17,18 +17,17 @@ const WalletPage = () => {
 
     // Helper to format date safely
     const formatDate = (dateString) => {
-        if (!dateString) return 'Tarih yok';
+        if (!dateString) return isEnglish ? 'No Date' : 'Tarih yok';
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) {
-                // Try fixing common Postgres format issue
                 const fixed = new Date(dateString.replace(' ', 'T'));
-                if (isNaN(fixed.getTime())) return 'Tarih yok';
-                return fixed.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                if (isNaN(fixed.getTime())) return isEnglish ? 'No Date' : 'Tarih yok';
+                return fixed.toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
             }
-            return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return date.toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         } catch (e) {
-            return 'Tarih yok';
+            return isEnglish ? 'No Date' : 'Tarih yok';
         }
     };
 
@@ -43,7 +42,7 @@ const WalletPage = () => {
             setHistory(historyData);
         } catch (error) {
             console.error(error);
-            Swal.fire('Hata', 'Cüzdan bilgileri alınamadı', 'error');
+            Swal.fire(t('error') || 'Hata', t('walletFetchError'), 'error');
         } finally {
             setLoading(false);
         }
@@ -52,10 +51,10 @@ const WalletPage = () => {
     const handleTopUp = async () => {
         // Step 1: Input Amount
         const { value: amount } = await Swal.fire({
-            title: '💰 Bakiye Yükle',
+            title: `💰 ${t('topUpBalance')}`,
             html: `
                 <div class="topup-container">
-                    <p class="topup-subtitle">Yüklemek istediğiniz tutarı seçin veya girin</p>
+                    <p class="topup-subtitle">${t('selectTopUpAmount')}</p>
                     
                     <div class="amount-buttons">
                         <button type="button" class="amount-btn" data-amount="25">25 ₺</button>
@@ -68,7 +67,7 @@ const WalletPage = () => {
                     <div class="custom-amount-wrapper">
                         <span class="currency-symbol">₺</span>
                         <input type="number" id="amount-input" class="custom-amount-input" 
-                               value="100" min="1" placeholder="Tutar">
+                               value="100" min="1" placeholder="${t('enterAmount')}">
                     </div>
                 </div>
                 
@@ -111,8 +110,8 @@ const WalletPage = () => {
                 </style>
             `,
             showCancelButton: true,
-            confirmButtonText: 'Devam Et →',
-            cancelButtonText: 'İptal',
+            confirmButtonText: t('continue'),
+            cancelButtonText: t('cancel') || 'İptal',
             didOpen: () => {
                 // Add click handlers after popup opens
                 const buttons = document.querySelectorAll('.amount-btn');
@@ -133,7 +132,7 @@ const WalletPage = () => {
             preConfirm: () => {
                 const value = document.getElementById('amount-input').value;
                 if (!value || value <= 0) {
-                    Swal.showValidationMessage('Geçerli bir tutar giriniz!');
+                    Swal.showValidationMessage(t('invalidAmount'));
                     return false;
                 }
                 return value;
@@ -172,16 +171,16 @@ const WalletPage = () => {
                         <div style="font-weight: 600; color: #1e293b;">•••• •••• •••• ${card.card_last_four}</div>
                         <div style="font-size: 0.85rem; color: #64748b;">${card.card_holder} · ${card.expiry_month}/${card.expiry_year}</div>
                     </div>
-                    ${card.is_default ? '<span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">VARSAYILAN</span>' : ''}
+                    ${card.is_default ? `<span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${t('defaultCard')}</span>` : ''}
                 </div>
             `).join('');
 
             const { value: cardChoice } = await Swal.fire({
-                title: '<span style="font-weight: 700;">💳 Ödeme Yöntemi</span>',
+                title: `<span style="font-weight: 700;">💳 ${t('paymentMethod')}</span>`,
                 html: `
                     <input type="hidden" id="selected-card" value="${savedCards.find(c => c.is_default)?.id || savedCards[0].id}">
                     <div style="padding: 15px 0;">
-                        <p style="color: #64748b; margin-bottom: 20px; font-size: 0.95rem;">Kayıtlı kartlarınızdan birini seçin veya yeni kart ekleyin</p>
+                        <p style="color: #64748b; margin-bottom: 20px; font-size: 0.95rem;">${t('selectCardDesc')}</p>
                         ${cardsHtml}
                         <div onclick="document.querySelectorAll('.card-option').forEach(c=>c.style.borderColor='#e2e8f0'); this.style.borderColor='#10b981'; document.getElementById('selected-card').value='new'"
                              class="card-option"
@@ -194,13 +193,13 @@ const WalletPage = () => {
                                         border-radius: 6px; display: flex; align-items: center; justify-content: center;">
                                 <span style="color: white; font-size: 1.5rem;">+</span>
                             </div>
-                            <div style="font-weight: 600; color: #10b981;">Yeni Kart Ekle</div>
+                            <div style="font-weight: 600; color: #10b981;">${t('addNewCard')}</div>
                         </div>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: `<span style="display: flex; align-items: center; gap: 8px;">💰 ${amount} TL Öde</span>`,
-                cancelButtonText: 'İptal',
+                confirmButtonText: `<span style="display: flex; align-items: center; gap: 8px;">💰 ${t('payAmount', { amount })}</span>`,
+                cancelButtonText: t('cancel') || 'İptal',
                 confirmButtonColor: '#667eea',
                 cancelButtonColor: '#94a3b8',
                 width: 480,
@@ -220,7 +219,7 @@ const WalletPage = () => {
         // Step 4: If no saved cards or user chose "new", show card entry form
         if (!selectedCardId) {
             const { value: cardData, isConfirmed } = await Swal.fire({
-                title: '<span style="font-weight: 700;">💳 Kart Bilgileri</span>',
+                title: `<span style="font-weight: 700;">💳 ${t('cardInfo')}</span>`,
                 html: `
                     <div style="padding: 15px 0;">
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
@@ -239,24 +238,24 @@ const WalletPage = () => {
                             </div>
                             <div style="display: flex; justify-content: space-between; position: relative;">
                                 <div>
-                                    <div style="font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Kart Sahibi</div>
+                                    <div style="font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">${t('cardHolderTitle')}</div>
                                     <div id="holder-display" style="font-size: 0.95rem; font-weight: 500; margin-top: 3px;">AD SOYAD</div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px;">Son Kullanma</div>
+                                    <div style="font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px;">${t('expiryTitle')}</div>
                                     <div id="expiry-display" style="font-size: 0.95rem; font-weight: 500; margin-top: 3px;">••/••</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <input type="text" id="card-holder" placeholder="Kart Sahibi Adı Soyadı"
+                            <input type="text" id="card-holder" placeholder="${t('cardHolderName')}"
                                    style="padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
                                           transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                    oninput="document.getElementById('holder-display').textContent = this.value.toUpperCase() || 'AD SOYAD'"
                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
-                            <input type="text" id="card-number" placeholder="Kart Numarası" maxlength="19"
+                            <input type="text" id="card-number" placeholder="${t('cardNumber')}" maxlength="19"
                                    style="padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1.1rem;
                                           font-family: 'Courier New', monospace; letter-spacing: 3px; transition: all 0.3s ease;
                                           box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
@@ -267,14 +266,14 @@ const WalletPage = () => {
                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
                             <div style="display: flex; gap: 14px;">
-                                <input type="text" id="card-expiry" placeholder="AA/YY" maxlength="5"
+                                <input type="text" id="card-expiry" placeholder="${t('expiryDate')}" maxlength="5"
                                        style="flex: 1; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
                                               text-align: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                        oninput="let v=this.value.replace(/\\D/g,''); if(v.length>=2) v=v.slice(0,2)+'/'+v.slice(2); this.value=v;
                                                 document.getElementById('expiry-display').textContent = v || '••/••';"
                                        onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102,126,234,0.15)'"
                                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
-                                <input type="text" id="card-cvc" placeholder="CVC" maxlength="3"
+                                <input type="text" id="card-cvc" placeholder="${t('cvc')}" maxlength="3"
                                        style="flex: 1; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1rem;
                                               text-align: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"
                                        oninput="this.value=this.value.replace(/\\D/g,'');"
@@ -288,14 +287,14 @@ const WalletPage = () => {
                                    onmouseover="this.style.borderColor='#667eea'"
                                    onmouseout="this.style.borderColor='transparent'">
                                 <input type="checkbox" id="save-card" checked style="width: 22px; height: 22px; accent-color: #667eea;">
-                                <span style="color: #475569; font-weight: 500;">Bu kartı sonraki ödemeler için kaydet</span>
+                                <span style="color: #475569; font-weight: 500;">${t('saveCard')}</span>
                             </label>
                         </div>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: `<span style="display: flex; align-items: center; gap: 8px;">💰 ${amount} TL Öde</span>`,
-                cancelButtonText: 'Geri',
+                confirmButtonText: `<span style="display: flex; align-items: center; gap: 8px;">💰 ${t('payAmount', { amount })}</span>`,
+                cancelButtonText: t('cancel') || 'Geri',
                 confirmButtonColor: '#667eea',
                 cancelButtonColor: '#94a3b8',
                 width: 480,
@@ -309,19 +308,19 @@ const WalletPage = () => {
                     const saveCard = document.getElementById('save-card').checked;
 
                     if (!holder || holder.length < 3) {
-                        Swal.showValidationMessage('Kart sahibi adını giriniz');
+                        Swal.showValidationMessage(t('enterCardHolder'));
                         return false;
                     }
                     if (!number || number.length < 16) {
-                        Swal.showValidationMessage('Geçerli bir kart numarası giriniz');
+                        Swal.showValidationMessage(t('enterCardNumber'));
                         return false;
                     }
                     if (!expiry || expiry.length < 5) {
-                        Swal.showValidationMessage('Son kullanma tarihini giriniz');
+                        Swal.showValidationMessage(t('enterExpiry'));
                         return false;
                     }
                     if (!cvc || cvc.length < 3) {
-                        Swal.showValidationMessage('CVC kodunu giriniz');
+                        Swal.showValidationMessage(t('enterCvc'));
                         return false;
                     }
                     return { holder, number, expiry, cvc, saveCard };
@@ -335,13 +334,13 @@ const WalletPage = () => {
         // Step 5: Process Payment
         try {
             Swal.fire({
-                title: '<span style="color: #667eea;">💳 Ödeme İşleniyor...</span>',
+                title: `<span style="color: #667eea;">💳 ${t('paymentProcessing')}</span>`,
                 html: `
                     <div style="padding: 40px 0;">
                         <div style="width: 80px; height: 80px; margin: 0 auto 25px; 
                                     border: 5px solid #e2e8f0; border-top-color: #667eea;
                                     border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                        <p style="color: #64748b; font-size: 1rem;">Bankanızla güvenli iletişim kuruluyor...</p>
+                        <p style="color: #64748b; font-size: 1rem;">${t('contactingBank')}</p>
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 10px;">🔒 256-bit SSL şifreleme</p>
                     </div>
                     <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -375,7 +374,7 @@ const WalletPage = () => {
             await fetchWalletData();
 
             Swal.fire({
-                title: '<span style="color: #10b981;">✓ Ödeme Başarılı!</span>',
+                title: `<span style="color: #10b981;">✓ ${t('paymentSuccess')}</span>`,
                 html: `
                     <div style="padding: 25px 0;">
                         <div style="width: 90px; height: 90px; margin: 0 auto 25px; 
@@ -385,36 +384,36 @@ const WalletPage = () => {
                             <span style="font-size: 3rem; color: white;">✓</span>
                         </div>
                         <p style="font-size: 2rem; font-weight: 800; color: #10b981; margin-bottom: 10px;">${amount} TL</p>
-                        <p style="color: #64748b; font-size: 1.05rem;">Cüzdanınıza başarıyla yüklendi!</p>
-                        ${newCardData?.saveCard ? '<p style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">💳 Kartınız kaydedildi</p>' : ''}
+                        <p style="color: #64748b; font-size: 1.05rem;">${t('paymentSuccessDesc')}</p>
+                        ${newCardData?.saveCard ? `<p style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">💳 ${t('cardSaved')}</p>` : ''}
                     </div>
                     <style>@keyframes successPop { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>
                 `,
-                confirmButtonText: 'Tamam',
+                confirmButtonText: t('confirm') || 'Tamam',
                 confirmButtonColor: '#10b981',
                 showClass: { popup: 'animate__animated animate__fadeInUp animate__faster' }
             });
         } catch (error) {
             console.error(error);
             Swal.fire({
-                title: '<span style="color: #ef4444;">❌ Ödeme Başarısız</span>',
-                html: '<p style="color: #64748b; padding: 20px 0;">İşlem sırasında bir hata oluştu.<br>Lütfen tekrar deneyiniz.</p>',
-                confirmButtonText: 'Tamam',
+                title: `<span style="color: #ef4444;">❌ ${t('paymentFailed')}</span>`,
+                html: `<p style="color: #64748b; padding: 20px 0;">${t('paymentFailedDesc')}</p>`,
+                confirmButtonText: t('confirm') || 'Tamam',
                 confirmButtonColor: '#ef4444',
                 showClass: { popup: 'animate__animated animate__shakeX' }
             });
         }
     };
 
-    if (loading) return <LoadingSpinner message="Cüzdanınız yükleniyor..." />;
+    if (loading) return <LoadingSpinner message={t('loadingWallet')} />;
 
     return (
         <div className="wallet-page-container">
-            <h1 className="page-title">Cüzdanım</h1>
+            <h1 className="page-title">{t('myWalletTitle')}</h1>
 
             <div className="wallet-summary-card">
                 <div className="balance-info">
-                    <span className="balance-label">Mevcut Bakiye</span>
+                    <span className="balance-label">{t('currentBalance')}</span>
                     <div className="balance-amount-row">
                         <span className="balance-amount">
                             {parseFloat(wallet?.balance || 0).toFixed(2)}
@@ -423,20 +422,20 @@ const WalletPage = () => {
                     </div>
                 </div>
                 <button className="top-up-btn" onClick={handleTopUp}>
-                    + Bakiye Yükle
+                    + {t('topUpBalance')}
                 </button>
             </div>
 
             <div className="transaction-history-section">
-                <h2>İşlem Geçmişi</h2>
+                <h2>{t('transactionHistory')}</h2>
                 <div className="history-table-wrapper">
                     <table className="history-table">
                         <thead>
                             <tr>
-                                <th>Tarih</th>
-                                <th>İşlem</th>
-                                <th>Tutar</th>
-                                <th>Durum</th>
+                                <th>{t('date')}</th>
+                                <th>{t('transaction')}</th>
+                                <th>{t('amount')}</th>
+                                <th>{t('status')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -445,7 +444,9 @@ const WalletPage = () => {
                                     <tr key={tx.id}>
                                         <td>{formatDate(tx.created_at)}</td>
                                         <td>
-                                            <div style={{ fontWeight: '500' }}>{tx.description || (tx.type?.toLowerCase() === 'credit' ? 'Bakiye Yükleme' : 'Harcama')}</div>
+                                            <div style={{ fontWeight: '500' }}>
+                                                {tx.description || (tx.type?.toLowerCase() === 'credit' ? t('topUpCredit') : t('spending'))}
+                                            </div>
                                             <div style={{ fontSize: '0.8rem', color: '#a0aec0' }}>{tx.reference_id || ''}</div>
                                         </td>
                                         <td className={tx.type?.toLowerCase() === 'credit' ? 'amount-plus' : 'amount-minus'}>
@@ -453,14 +454,14 @@ const WalletPage = () => {
                                         </td>
                                         <td>
                                             <span className={`status-badge ${tx.status?.toLowerCase() || 'completed'}`}>
-                                                {tx.status}
+                                                {t(tx.status?.toLowerCase()) || tx.status}
                                             </span>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="no-data">Henüz işlem geçmişi yok.</td>
+                                    <td colSpan="4" className="no-data">{t('noTransactions')}</td>
                                 </tr>
                             )}
                         </tbody>

@@ -1,81 +1,44 @@
-# Smart Campus Project 🚀
-> **Status:** ✅ Fully Dockerized | ✅ CI/CD Active | ✅ Production Ready
+# Smart Campus Project
 
-Web ve Mobil Programlama Dersi Final Projesi - Part 1
+**Version:** 4.0 (Final Delivery)
+**Status:** Completed
 
-## 🚀 Proje Hakkında
-Bu proje, üniversite kampüs süreçlerini yöneten kapsamlı bir web platformudur.  
-**Part 1** kapsamında; güvenli kimlik doğrulama (2FA, Lockout), rol tabanlı kullanıcı yönetimi ve yönetim paneli özellikleri **Docker** konteyner mimarisi üzerinde tamamlanmıştır.
+## 🚀 Overview
+Smart Campus is a comprehensive digital university management system. It integrates Academic management, Attendance tracking (QR/Geo), Cafeteria services, and Campus Social events into a single modern platform.
 
----
+## 📚 Documentation
+- **[Architecture](docs/ARCHITECTURE.md):** System design and tech stack.
+- **[Installation & Deployment](docs/DEPLOYMENT_GUIDE.md):** How to run with Docker.
+- **[User Manual](docs/USER_MANUAL.md):** Guides for Students, Faculty, and Admin.
+- **[API Documentation](docs/API_DOCUMENTATION.md):** Full REST API reference.
+- **[Database Schema](docs/DATABASE_SCHEMA.md):** ER Diagrams and Table definitions.
+- **[Developer Guide](docs/DEVELOPER_GUIDE.md):** Code structure and contribution.
+- **[Analytics Guide](docs/ANALYTICS_GUIDE.md):** Explaining the Admin Reports.
+- **[Test Report](docs/TEST_REPORT.md):** QA results.
 
-## 📚 Dokümantasyon
-Tüm detaylı proje dokümanlarına `docs/` klasöründen ulaşabilirsiniz:
+## 🛠️ Tech Stack
+- **Backend:** Node.js, Express, PostgreSQL, Socket.io
+- **Frontend:** React, Material UI, Chart.js
+- **DevOps:** Docker, Docker Compose
 
-- 📖 **[Proje Genel Bakış ve Mimari](docs/PROJECT_OVERVIEW.md)**
-- 🔌 **[API Dokümantasyonu (Endpoints)](docs/API_DOCUMENTATION.md)**
-- 🗄️ **[Veritabanı Şeması (ER Diyagramı)](docs/DATABASE_SCHEMA.md)**
-- 👤 **[Kullanıcı Kılavuzu](docs/USER_MANUAL_PART1.md)**
-- 🧪 **[Test Raporu](docs/TEST_REPORT_PART1.md)**
+## ⚡ Quick Start (Windows)
+Double-click `DEPLOY_WIN.bat` to install and run everything automatically.
 
----
-
-## 🏆 Öne Çıkan Özellikler & Bonuslar
-Projede temel gereksinimlerin ötesinde aşağıdaki **Bonus** özellikler geliştirilmiştir:
-- ✅ **İki Aşamalı Doğrulama (2FA):** Google Authenticator ile güvenli giriş.
-- ✅ **Hesap Güvenliği:** 5 hatalı girişte hesap kilitleme (Account Lockout).
-- ✅ **Aktivite Logları:** Kullanıcı hareketlerinin (Login, Logout, Update) izlenmesi.
-- ✅ **Rate Limiting:** Brute-force saldırılarına karşı koruma.
-- ✅ **Admin Paneli:** Logları ve kullanıcıları detaylı yönetme imkanı.
-- ✅ **Modern UI:** Tailwind benzeri custom CSS utility sınıfları ve şık kart tasarımları.
-
----
-
-## 🛠️ Hızlı Başlangıç (Docker)
-
-### 1. Projeyi İndirin
+## 🐳 Quick Start (Docker)
 ```bash
-git clone <repo-url>
-cd smart-campus
+docker-compose up --build
 ```
+frontend: http://localhost:80
+backend: http://localhost:5000
 
-### 2. Ayarları Yapın
-Backend dizinindeki `.env.example` dosyasını `.env` olarak kopyalayın.
-```bash
-cd backend
-cp .env.example .env
-# .env içindeki ayarları (Veritabanı şifresi vb.) düzenleyin
-cd ..
-```
+## ✨ Features (Part 4)
+- **Analytics:** Full admin dashboards for Academic/Attendance/Financial data.
+- **Notifications:** Real-time system-wide alerts.
+- **IoT:** Sensor data integration (Bonus).
+- **Background Jobs:** Automated cleanup and warnings.
 
-### 3. Başlatın
-Docker Compose ile tüm sistemi (Frontend + Backend + DB) ayağa kaldırın.
-```bash
-docker compose up -d --build
-```
-
-### 4. Veritabanını Hazırlayın
-Tabloları oluşturmak için backend konteynerinde migrasyon çalıştırın:
-```bash
-docker compose exec backend npm run db:migrate
-```
-
-### 5. Erişim
-- **Web Arayüzü:** [http://34.38.237.95:3000](http://34.38.237.95:3000)
-- **API:** [http://34.38.237.95:5000](http://34.38.237.95:5000)
-
----
-
-## 🧪 Varsayılan Kullanıcılar (Seed Data)
-
-| Rol | Email | Şifre |
-|-----|-------|-------|
-| **Öğrenci** | `student1@example.com` | `Password1` |
-| **Akademisyen** | `faculty1@example.com` | `Password1` |
-| **Admin** | `admin@example.com` | `Password1` |
-
----
-
-## 🤝 Lisans & İletişim
-Bu proje eğitim amaçlı geliştirilmiştir.
-**Grup Üyeleri:** (Bkz: [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md))
+## 👥 Contributors
+- Developer 1 (Backend)
+- Developer 2 (Frontend)
+- Developer 3 (UX/Real-time)
+- Developer 4 (DevOps/IoT)

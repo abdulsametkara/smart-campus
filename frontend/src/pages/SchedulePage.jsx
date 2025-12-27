@@ -3,17 +3,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { sectionsService, enrollmentsService } from '../services/academicService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useThemeMode } from '../context/ThemeContext';
 import './SchedulePage.css';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const HOURS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
-const DAY_LABELS = {
-    'Monday': 'Pazartesi',
-    'Tuesday': 'Salı',
-    'Wednesday': 'Çarşamba',
-    'Thursday': 'Perşembe',
-    'Friday': 'Cuma'
-};
 
 // Color palette for different courses
 const COLORS = [
@@ -23,6 +17,7 @@ const COLORS = [
 
 const SchedulePage = () => {
     const { user } = useAuth();
+    const { t } = useThemeMode();
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -86,7 +81,7 @@ const SchedulePage = () => {
             setError(null);
         } catch (err) {
             console.error('Error fetching schedule:', err);
-            setError('Ders programı yüklenirken hata oluştu');
+            setError(t('fetchError') || 'Ders programı yüklenirken hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -137,10 +132,14 @@ const SchedulePage = () => {
         }
     }
 
+    const getDayLabel = (day) => {
+        return t(`days.${day}`) || day;
+    };
+
     if (loading) {
         return (
             <div className="page schedule-page">
-                <LoadingSpinner size="large" message="Ders programı yükleniyor..." />
+                <LoadingSpinner size="large" message={t('loading')} />
             </div>
         );
     }
@@ -148,11 +147,11 @@ const SchedulePage = () => {
     return (
         <div className="page schedule-page">
             <div className="page-header">
-                <h1>Ders Programı</h1>
+                <h1>{t('scheduleTitle')}</h1>
                 <p className="page-subtitle">
-                    {user?.role === 'student' ? 'Kayıtlı olduğunuz derslerin haftalık programı' :
-                        user?.role === 'faculty' ? 'Verdiğiniz derslerin haftalık programı' :
-                            'Tüm derslerin haftalık programı'}
+                    {user?.role === 'student' ? t('studentSchedule') :
+                        user?.role === 'faculty' ? t('facultySchedule') :
+                            t('allSchedule')}
                 </p>
             </div>
 
@@ -169,7 +168,7 @@ const SchedulePage = () => {
                             <line x1="12" y1="9" x2="12" y2="13" />
                             <line x1="12" y1="17" x2="12.01" y2="17" />
                         </svg>
-                        <span><strong>Çakışma Uyarısı!</strong> {conflicts.length} ders çakışması tespit edildi.</span>
+                        <span><strong>{t('conflictWarning')}</strong> {t('conflictDetected', { count: conflicts.length }).replace('{{count}}', conflicts.length)}</span>
                     </div>
                     <div className="conflict-list">
                         {conflicts.map((c, i) => (
@@ -177,7 +176,7 @@ const SchedulePage = () => {
                                 <span className="conflict-course">{c.item1.courseCode}</span>
                                 <span className="conflict-vs">⚡</span>
                                 <span className="conflict-course">{c.item2.courseCode}</span>
-                                <span className="conflict-time">{DAY_LABELS[c.item1.day]} {c.item1.startTime}-{c.item1.endTime}</span>
+                                <span className="conflict-time">{getDayLabel(c.item1.day)} {c.item1.startTime}-{c.item1.endTime}</span>
                             </div>
                         ))}
                     </div>
@@ -192,14 +191,14 @@ const SchedulePage = () => {
                         <line x1="8" y1="2" x2="8" y2="6" />
                         <line x1="3" y1="10" x2="21" y2="10" />
                     </svg>
-                    <h3>Henüz ders yok</h3>
+                    <h3>{t('noClassesTitle')}</h3>
                     <p>
                         {user?.role === 'student'
-                            ? 'Henüz bir derse kayıt olmadınız.'
-                            : 'Size atanmış ders bulunmuyor.'}
+                            ? t('noClassesStudent')
+                            : t('noClassesFaculty')}
                     </p>
                     {user?.role === 'student' && (
-                        <Link to="/sections" className="btn">Ders Seç</Link>
+                        <Link to="/sections" className="btn">{t('selectCourse')}</Link>
                     )}
                 </div>
             ) : (
@@ -221,7 +220,7 @@ const SchedulePage = () => {
                             {DAYS.map(day => (
                                 <div key={day} className="day-column">
                                     <div className="day-header">
-                                        <span className="day-name">{DAY_LABELS[day]}</span>
+                                        <span className="day-name">{getDayLabel(day)}</span>
                                     </div>
                                     <div className="day-slots">
                                         {HOURS.map(hour => (
@@ -253,7 +252,7 @@ const SchedulePage = () => {
 
                     {/* Legend */}
                     <div className="schedule-legend">
-                        <h3>Dersler</h3>
+                        <h3>{t('courses')}</h3>
                         <div className="legend-items">
                             {sections.map((section, index) => (
                                 <div key={section.id} className="legend-item">

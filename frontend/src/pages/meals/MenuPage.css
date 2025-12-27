@@ -549,3 +549,114 @@
         font-size: 1rem;
     }
 }
+
+/* ========================================
+   DARK MODE - Menu Page
+======================================== */
+
+[data-theme="dark"] .page-title {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .week-tabs {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+[data-theme="dark"] .day-tab {
+    background: #334155;
+    color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .day-tab:hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+[data-theme="dark"] .day-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+[data-theme="dark"] .menu-card {
+    background: #1e293b;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .menu-items {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+[data-theme="dark"] .menu-item {
+    background: #334155;
+    color: #f1f5f9;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .menu-item:hover {
+    border-color: #667eea;
+    background: #3f4f6b;
+}
+
+[data-theme="dark"] .item-icon {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .nutrition-info {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-top-color: #334155;
+}
+
+[data-theme="dark"] .nutrition-info h4 {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .nutrition-box {
+    background: #334155;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .nut-val {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .nut-key {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .nutrition-item-row {
+    background: #334155;
+}
+
+[data-theme="dark"] .nut-item-name {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .action-area {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .nav-arrow {
+    background: #334155;
+    color: #60a5fa;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nav-arrow:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+[data-theme="dark"] .week-label {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .no-menu-state {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .swipe-hint {
+    color: #64748b;
+}

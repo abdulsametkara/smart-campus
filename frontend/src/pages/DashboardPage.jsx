@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useThemeMode } from '../context/ThemeContext';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const { t, isEnglish } = useThemeMode();
   const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
-    // Dynamic import to avoid circular dependencies if any, or just standard import
-    // Using standard fetch logic or service
     const fetchAnnouncements = async () => {
       try {
-        // Dynamically import service to ensure it's loaded only when needed or use standard import at top
-        // Let's rely on standard import at top, but since I am overwriting, I should check if service exists.
-        // It does exist.
         const { default: announcementService } = await import('../services/announcementService');
         const response = await announcementService.getAll();
         setAnnouncements(response.data || response || []);
@@ -25,18 +22,17 @@ const DashboardPage = () => {
   }, []);
 
   const getRoleLabel = (role) => {
-    const labels = { student: 'Öğrenci', faculty: 'Akademisyen', admin: 'Yönetici' };
-    return labels[role] || role;
+    return t(role) || role;
   };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
-      return 'Günaydın';
+      return t('greetingMorning');
     } else if (hour >= 12 && hour < 18) {
-      return 'İyi günler';
+      return t('greetingAfternoon');
     } else {
-      return 'İyi akşamlar';
+      return t('greetingEvening');
     }
   };
 
@@ -68,15 +64,15 @@ const DashboardPage = () => {
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
           </div>
-          <h1>Hızlı Erişim</h1>
-          <p className="muted">Profilini düzenle veya sistem ayarlarına eriş.</p>
+          <h1>{t('quickAccess')}</h1>
+          <p className="muted">{t('quickAccessDesc')}</p>
           <div className="hero-actions">
             <Link className="btn" to="/profile" style={{ textDecoration: 'none' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              Profili Düzenle
+              {t('editProfile')}
             </Link>
             {user?.role === 'admin' && (
               <Link className="btn secondary" to="/admin/users" style={{ textDecoration: 'none' }}>
@@ -86,7 +82,7 @@ const DashboardPage = () => {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                Kullanıcı Yönetimi
+                {t('userManagement')}
               </Link>
             )}
           </div>
@@ -101,7 +97,7 @@ const DashboardPage = () => {
                 </svg>
               </div>
               <div className="stat-card-info">
-                <div className="label">Rol</div>
+                <div className="label">{t('roleLabel')}</div>
                 <div className="value">{getRoleLabel(user?.role)}</div>
               </div>
             </div>
@@ -115,8 +111,8 @@ const DashboardPage = () => {
                 </svg>
               </div>
               <div className="stat-card-info">
-                <div className="label">Durum</div>
-                <div className="value">Aktif</div>
+                <div className="label">{t('statusLabel')}</div>
+                <div className="value">{t('active')}</div>
               </div>
             </div>
           </div>
@@ -126,10 +122,10 @@ const DashboardPage = () => {
       {/* DUYURU PANOSU WIDGET */}
       <section className="announcements-widget">
         <div className="widget-header">
-          <h2>📢 Duyurular</h2>
+          <h2>📢 {t('announcements')}</h2>
           {(user?.role === 'admin' || user?.role === 'faculty') && (
             <Link to="/announcements/manage" className="widget-action-link">
-              Yönet →
+              {t('manage')} →
             </Link>
           )}
         </div>
@@ -145,7 +141,7 @@ const DashboardPage = () => {
                   <div className="announcement-top">
                     <h4>{ann.title}</h4>
                     <span className="announcement-date">
-                      {ann.created_at ? new Date(ann.created_at).toLocaleDateString('tr-TR', {
+                      {ann.created_at ? new Date(ann.created_at).toLocaleDateString(isEnglish ? 'en-US' : 'tr-TR', {
                         day: 'numeric',
                         month: 'short'
                       }) : ''}
@@ -154,10 +150,10 @@ const DashboardPage = () => {
                   <p className="announcement-text">{ann.content}</p>
                   <div className="announcement-meta">
                     <span className="announcement-source">
-                      {ann.course ? `📚 ${ann.course.code}` : '📌 Genel Duyuru'}
+                      {ann.course ? `📚 ${ann.course.code}` : `📌 ${t('generalAnnouncement')}`}
                     </span>
                     <span className="announcement-author">
-                      👤 {ann.author?.full_name || 'Sistem Yöneticisi'}
+                      👤 {ann.author?.full_name || t('admin')}
                     </span>
                   </div>
                 </div>
@@ -166,7 +162,7 @@ const DashboardPage = () => {
           ) : (
             <div className="empty-announcements">
               <span className="empty-icon">📭</span>
-              <p>Henüz duyuru bulunmuyor</p>
+              <p>{t('noAnnouncements')}</p>
             </div>
           )}
         </div>

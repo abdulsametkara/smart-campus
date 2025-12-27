@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar/Sidebar';
 import LoginPage from './pages/LoginPage';
@@ -39,22 +40,28 @@ import MyAdviseesPage from './pages/MyAdviseesPage';
 import WalletPage from './pages/WalletPage';
 import MenuPage from './pages/meals/MenuPage';
 import MyReservationsPage from './pages/meals/MyReservationsPage';
+
+
+import AdminAnalyticsDashboard from './pages/admin/Analytics/AdminAnalyticsDashboard';
+import AcademicPerformance from './pages/admin/Analytics/AcademicPerformance';
+import AttendanceAnalytics from './pages/admin/Analytics/AttendanceAnalytics';
+import MealAnalytics from './pages/admin/Analytics/MealAnalytics';
+import EventAnalytics from './pages/admin/Analytics/EventAnalytics';
+
+import EventsPage from './pages/events/EventsPage';
+import EventDetailsPage from './pages/events/EventDetailsPage';
+import MyEventsPage from './pages/events/MyEventsPage';
+import EventManagementPage from './pages/events/EventManagementPage';
+import EventCheckInPage from './pages/events/EventCheckInPage';
+
+import NotificationsPage from './pages/NotificationsPage';
+import NotificationSettingsPage from './pages/NotificationSettingsPage';
+import IoTDashboard from './pages/admin/IoT/IoTDashboard';
 import './App.css';
 
-// Mobile Header Component
-function MobileHeader({ onMenuClick }) {
-  return (
-    <header className="mobile-header">
-      <button className="mobile-menu-btn" onClick={onMenuClick}>
-        ☰
-      </button>
-      <Link to="/dashboard" className="mobile-brand">
-        <span className="brand-text">Campy</span>
-      </Link>
-      <div className="mobile-header-spacer"></div>
-    </header>
-  );
-}
+import NotificationBell from './components/Notifications/NotificationBell';
+
+// Header removed as NotificationBell is moved to Sidebar
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -99,8 +106,20 @@ function AppContent() {
   return (
     <div className="app-shell with-sidebar">
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-      <MobileHeader onMenuClick={toggleSidebar} />
       <div className="app-main">
+        <button
+          className="mobile-menu-btn"
+          onClick={toggleSidebar}
+          style={{
+            display: window.innerWidth < 1024 ? 'block' : 'none',
+            position: 'fixed',
+            top: '10px',
+            left: '10px',
+            zIndex: 1000
+          }}
+        >
+          ☰
+        </button>
         <div className="app-container">
           <Routes>
             <Route path="/login" element={<Navigate to="/dashboard" replace />} />
@@ -143,6 +162,48 @@ function AppContent() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <AdminAcademicPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Analytics Routes */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminAnalyticsDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics/academic"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AcademicPerformance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics/attendance"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AttendanceAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics/meal"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <MealAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics/events"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <EventAnalytics />
                 </ProtectedRoute>
               }
             />
@@ -367,6 +428,83 @@ function AppContent() {
               }
             />
 
+            {/* Event Routes */}
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <EventsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/manage"
+              element={
+                <ProtectedRoute roles={['admin', 'faculty']}>
+                  <EventManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/checkin"
+              element={
+                <ProtectedRoute roles={['admin', 'faculty']}>
+                  <EventCheckInPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:eventId/checkin/:regId"
+              element={
+                <ProtectedRoute roles={['admin', 'faculty']}>
+                  <EventCheckInPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <EventDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-events"
+              element={
+                <ProtectedRoute>
+                  <MyEventsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Notification Routes */}
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationSettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/iot"
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <IoTDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
@@ -378,11 +516,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

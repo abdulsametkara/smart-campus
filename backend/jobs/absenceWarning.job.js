@@ -1,5 +1,7 @@
 const cron = require('node-cron');
 const db = require('../models');
+const { createAndEmitNotification } = require('../src/utils/notificationHelper');
+const app = require('../src/app');
 
 const checkAbsences = async () => {
     console.log('Running Absence Warning Job...');
@@ -37,8 +39,16 @@ const checkAbsences = async () => {
             const absenceRate = (totalSessions - attendedSessions) / totalSessions;
 
             if (absenceRate >= 0.20) {
-                console.log(`WARNING: Student ${enrollment.student.email} has ${(absenceRate * 100).toFixed(1)}% absence in section ${enrollment.section_id}`);
-                // TODO: Send Email Notification via nodemailer
+                console.log(`WARNING: Student ${enrollment.student.email} has ${(absenceRate * 100).toFixed(1)}% absence`);
+
+                // Create Notification using helper (emits socket event)
+                await createAndEmitNotification(app, {
+                    userId: enrollment.student.id,
+                    title: 'Devamsızlık Uyarısı',
+                    message: `Bu derste devamsızlık oranınız %${(absenceRate * 100).toFixed(1)} seviyesine ulaştı.`,
+                    type: 'attendance',
+                    isRead: false
+                });
             }
         }
     } catch (error) {
