@@ -76,7 +76,7 @@ describe('SchedulingService Unit Tests', () => {
             { id: 103, capacity: 50, instructor_id: 3, course: { code: 'CS201' } }
         ];
         const mockClassrooms = [
-            { id: 2, capacity: 20, is_active: true } // Too small
+            { id: 2, capacity: 20, is_active: true } // Too small for quota of 50
         ];
 
         CourseSection.findAll.mockResolvedValue(mockSections);
@@ -84,7 +84,8 @@ describe('SchedulingService Unit Tests', () => {
 
         const result = await schedulingService.generateSchedule('2024-FALL');
 
-        // Should fail to find solution (no room with sufficient capacity)
+        // Should fail - no room with capacity >= quota (50)
+        // getDomains returns empty slots when room.capacity < section.quota
         expect(result.success).toBe(false);
         expect(result.message).toContain('Uygun bir program');
     });
