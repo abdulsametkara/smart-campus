@@ -73,7 +73,7 @@ describe('SchedulingService Unit Tests', () => {
 
     it('should handle capacity constraints (Room too small)', async () => {
         const mockSections = [
-            { id: 103, capacity: 50, instructor_id: 3, course: { code: 'CS201' } }
+            { id: 103, quota: 50, instructor_id: 3, course: { code: 'CS201' } }
         ];
         const mockClassrooms = [
             { id: 2, capacity: 20, is_active: true } // Too small for quota of 50
