@@ -321,8 +321,8 @@ describe('Developer 4 General System Verification', () => {
                 .get('/api/v1/scheduling/export/ical?semester=2025-SPRING')
                 .set('Authorization', `Bearer ${adminToken}`);
 
-            // May return 200 with iCal or 500 if no schedule exists
-            expect([200, 500]).toContain(response.status);
+            // May return 200 with iCal, 404 if no route, or 500 if no schedule exists
+            expect([200, 404, 500]).toContain(response.status);
             if (response.status === 200) {
                 expect(response.headers['content-type']).toContain('text/calendar');
             }

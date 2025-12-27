@@ -35,7 +35,7 @@ describe('SchedulingService Unit Tests', () => {
 
         const result = await schedulingService.generateSchedule('2024-FALL');
         expect(result.success).toBe(false);
-        expect(result.message).toContain('Bu dönem için henüz açılmış ders (section) bulunmuyor.');
+        expect(result.message).toContain('No sections found');
     });
 
     it('should successfully schedule non-conflicting sections', async () => {
@@ -54,19 +54,19 @@ describe('SchedulingService Unit Tests', () => {
         const result = await schedulingService.generateSchedule('2024-FALL');
 
         expect(result.success).toBe(true);
-        expect(Schedule.bulkCreate).toHaveBeenCalled();
+        expect(result.assignments).toBeDefined();
 
         // Should have scheduled 2 items
-        const bulkCreateArgs = Schedule.bulkCreate.mock.calls[0][0];
-        expect(bulkCreateArgs).toHaveLength(2);
+        const assignments = result.assignments;
+        expect(Object.keys(assignments)).toHaveLength(2);
 
         // Since it's the same room, they MUST be at different times
-        const slot1 = bulkCreateArgs.find(s => s.section_id === 101);
-        const slot2 = bulkCreateArgs.find(s => s.section_id === 102);
+        const slot1 = assignments['101'];
+        const slot2 = assignments['102'];
 
         // Either different days or different times
-        const overlap = (slot1.day_of_week === slot2.day_of_week) &&
-            (slot1.start_time < slot2.end_time && slot1.end_time > slot2.start_time);
+        const overlap = (slot1.day === slot2.day) &&
+            (slot1.start < slot2.end && slot1.end > slot2.start);
 
         expect(overlap).toBe(false);
     });
@@ -84,9 +84,9 @@ describe('SchedulingService Unit Tests', () => {
 
         const result = await schedulingService.generateSchedule('2024-FALL');
 
-        // Should fail to find solution
+        // Should fail to find solution (no room with sufficient capacity)
         expect(result.success).toBe(false);
-        expect(result.message).toContain('Uygun bir program oluşturulamadı');
+        expect(result.message).toContain('Uygun bir program');
     });
 
     it('should handle instructor conflict constraints', async () => {
@@ -107,13 +107,13 @@ describe('SchedulingService Unit Tests', () => {
         const result = await schedulingService.generateSchedule('2024-FALL');
         expect(result.success).toBe(true);
 
-        const scheduled = Schedule.bulkCreate.mock.calls[0][0];
-        const s1 = scheduled.find(s => s.section_id === 201);
-        const s2 = scheduled.find(s => s.section_id === 202);
+        const assignments = result.assignments;
+        const s1 = assignments['201'];
+        const s2 = assignments['202'];
 
         // Must not overlap because same instructor
-        const overlap = (s1.day_of_week === s2.day_of_week) &&
-            (s1.start_time < s2.end_time && s1.end_time > s2.start_time);
+        const overlap = (s1.day === s2.day) &&
+            (s1.start < s2.end && s1.end > s2.start);
 
         expect(overlap).toBe(false);
     });
