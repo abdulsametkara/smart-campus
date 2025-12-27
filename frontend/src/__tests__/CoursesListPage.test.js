@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import CoursesListPage from '../pages/CoursesListPage';
 import { coursesService, enrollmentsService } from '../services/academicService';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeProvider } from '../context/ThemeContext';
 
 // Mock the service
 jest.mock('../services/academicService');
@@ -17,6 +18,18 @@ const mockUser = {
     id: 1,
     role: 'admin',
     name: 'Test Admin'
+};
+
+const renderWithProviders = (component) => {
+    return render(
+        <ThemeProvider>
+            <AuthContext.Provider value={{ user: mockUser }}>
+                <BrowserRouter>
+                    {component}
+                </BrowserRouter>
+            </AuthContext.Provider>
+        </ThemeProvider>
+    );
 };
 
 describe('CoursesListPage Component', () => {
@@ -38,25 +51,13 @@ describe('CoursesListPage Component', () => {
     });
 
     test('renders loading state initially', () => {
-        render(
-            <AuthContext.Provider value={{ user: mockUser }}>
-                <BrowserRouter>
-                    <CoursesListPage />
-                </BrowserRouter>
-            </AuthContext.Provider>
-        );
+        renderWithProviders(<CoursesListPage />);
         // It might differ depending on implementation, but searching for a text or spinner
         // Assuming the component fetches on mount
     });
 
     test('renders course list after fetching', async () => {
-        render(
-            <AuthContext.Provider value={{ user: mockUser }}>
-                <BrowserRouter>
-                    <CoursesListPage />
-                </BrowserRouter>
-            </AuthContext.Provider>
-        );
+        renderWithProviders(<CoursesListPage />);
 
         await waitFor(() => {
             expect(screen.getByText('CENG101')).toBeInTheDocument();
