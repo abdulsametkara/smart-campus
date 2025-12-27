@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import reservationService from '../services/reservationService';
 import LoadingSpinner from '../components/LoadingSpinner';
-import NotificationService from '../services/notificationService';
+import Swal from 'sweetalert2';
 import './SchedulePage.css';
 
 const ClassroomReservationManagementPage = () => {
@@ -14,7 +14,7 @@ const ClassroomReservationManagementPage = () => {
 
   useEffect(() => {
     if (user?.role !== 'admin') {
-      NotificationService.error('Yetki Hatası', 'Bu sayfaya sadece yöneticiler erişebilir.');
+      Swal.fire('Yetki Hatası', 'Bu sayfaya sadece yöneticiler erişebilir.', 'error');
       return;
     }
     fetchReservations();
@@ -28,7 +28,7 @@ const ClassroomReservationManagementPage = () => {
       setReservations(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Rezervasyonlar yüklenemedi:', err);
-      NotificationService.error('Hata', 'Rezervasyonlar yüklenemedi.');
+      Swal.fire('Hata', 'Rezervasyonlar yüklenemedi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -38,11 +38,11 @@ const ClassroomReservationManagementPage = () => {
     try {
       setProcessingId(id);
       await reservationService.updateStatus(id, newStatus);
-      NotificationService.success('Başarılı', `Rezervasyon ${newStatus === 'approved' ? 'onaylandı' : 'reddedildi'}.`);
+      Swal.fire('Başarılı', `Rezervasyon ${newStatus === 'approved' ? 'onaylandı' : 'reddedildi'}.`, 'success');
       await fetchReservations();
     } catch (err) {
       console.error('Durum güncellenemedi:', err);
-      NotificationService.error('Hata', err.response?.data?.message || 'Durum güncellenemedi.');
+      Swal.fire('Hata', err.response?.data?.message || 'Durum güncellenemedi.', 'error');
     } finally {
       setProcessingId(null);
     }
