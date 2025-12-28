@@ -137,7 +137,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div 
+    <div
       className="auth-page"
       style={{
         backgroundImage: `url(${process.env.PUBLIC_URL || ''}/images/recep-tayyip-erdogan-universitesi.webp)`,
