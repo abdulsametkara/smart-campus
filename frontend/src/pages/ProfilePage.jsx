@@ -194,19 +194,48 @@ const ProfilePage = () => {
         <div className="profile-hero-content">
           <div className="profile-avatar-large">
             <div className="avatar-frame-large">
-              {user?.profile_picture_url ? (
-                <img
-                  src={
-                    user.profile_picture_url.startsWith('http')
-                      ? user.profile_picture_url
-                      : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${user.profile_picture_url.startsWith('/') ? '' : '/'}${user.profile_picture_url}`.replace('/api/v1', '')
+              {(() => {
+                const getProfilePictureUrl = (user) => {
+                  if (!user?.profile_picture_url) return null;
+                  const url = user.profile_picture_url;
+
+                  // If it's a relative path, append to API base (minus /api/v1)
+                  if (url.startsWith('/')) {
+                    const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace('/api/v1', '');
+                    return `${apiBase}${url}`;
                   }
-                  alt="avatar"
-                  className="avatar-img"
-                />
-              ) : (
-                <div className="avatar-placeholder-large">{user?.email?.[0]?.toUpperCase()}</div>
-              )}
+
+                  // If it's an absolute URL from our server (http), convert to relative or https
+                  if (url.includes('/uploads/')) {
+                    // Extract relative path parts
+                    const parts = url.split('/uploads/');
+                    if (parts.length > 1) {
+                      const relativePath = `/uploads/${parts[1]}`;
+                      // Use current origin if possible, or constructs relative to API base
+                      // Since we serve uploads from root, relative path works if on same domain
+                      // Or constructs full HTTPS url
+                      // return relativePath; // Standard relative path
+                      // But let's be safe and use API URL base replacement
+                      const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace('/api/v1', '');
+                      return `${apiBase}${relativePath}`;
+                    }
+                  }
+
+                  return url;
+                };
+
+                const imgSrc = getProfilePictureUrl(user);
+
+                return imgSrc ? (
+                  <img
+                    src={imgSrc}
+                    alt="avatar"
+                    className="avatar-img"
+                  />
+                ) : (
+                  <div className="avatar-placeholder-large">{user?.email?.[0]?.toUpperCase()}</div>
+                );
+              })()}
             </div>
             <label className="avatar-upload-btn" title={t('uploadPhoto') || "Fotoğraf Yükle"}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

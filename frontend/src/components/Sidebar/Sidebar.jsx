@@ -181,6 +181,26 @@ const Sidebar = ({ isOpen, onClose }) => {
             onClose();
         }
     };
+    const getProfilePictureUrl = (user) => {
+        if (!user?.profile_picture_url) return null;
+        const url = user.profile_picture_url;
+
+        if (url.startsWith('/')) {
+            const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace('/api/v1', '');
+            return `${apiBase}${url}`;
+        }
+
+        if (url.includes('/uploads/')) {
+            const parts = url.split('/uploads/');
+            if (parts.length > 1) {
+                const relativePath = `/uploads/${parts[1]}`;
+                const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace('/api/v1', '');
+                return `${apiBase}${relativePath}`;
+            }
+        }
+        return url;
+    };
+
     return (
         <>
             {/* Overlay for mobile */}
@@ -206,11 +226,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {user && (
                     <div className="sidebar-user">
                         <div className="user-avatar">
-                            {user.profile_picture_url ? (
-                                <img src={user.profile_picture_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                user.full_name?.charAt(0).toUpperCase() || 'U'
-                            )}
+                            {(() => {
+                                const imgSrc = getProfilePictureUrl(user);
+                                return imgSrc ? (
+                                    <img src={imgSrc} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    user.full_name?.charAt(0).toUpperCase() || 'U'
+                                );
+                            })()}
                         </div>
                         <div className="user-info">
                             <div className="user-name">{user.full_name}</div>
@@ -288,11 +311,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                     {/* Profile Link */}
                     <Link to="/profile" className="footer-profile-link" onClick={handleLinkClick}>
                         <div className="footer-avatar">
-                            {user?.profile_picture_url ? (
-                                <img src={user.profile_picture_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                user?.full_name?.charAt(0).toUpperCase() || 'U'
-                            )}
+                            {(() => {
+                                const imgSrc = getProfilePictureUrl(user);
+                                return imgSrc ? (
+                                    <img src={imgSrc} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    user?.full_name?.charAt(0).toUpperCase() || 'U'
+                                );
+                            })()}
                         </div>
                         <div className="footer-user-info">
                             <span className="footer-name">{user?.full_name}</span>

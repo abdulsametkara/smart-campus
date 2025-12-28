@@ -33,7 +33,10 @@ const NotificationBell = () => {
 
         // Connect Socket only if user is authenticated
         try {
-            socketRef.current = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+            // Strip /api/v1 from URL for socket connection (socket is at root)
+            const socketUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace('/api/v1', '');
+
+            socketRef.current = io(socketUrl, {
                 path: '/socket.io',
                 transports: ['polling', 'websocket'], // Start with polling for reliability
                 reconnectionAttempts: 3,

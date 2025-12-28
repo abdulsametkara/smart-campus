@@ -90,8 +90,9 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
-    user.profile_picture_url = `${serverUrl}/uploads/${req.file.filename}`;
+    // Save relative path using /uploads prefix (served by express.static)
+    // This allows the frontend to construct the URL with the correct protocol/domain
+    user.profile_picture_url = `/uploads/${req.file.filename}`;
     await user.save();
 
     return res.json({ profile_picture_url: user.profile_picture_url });
